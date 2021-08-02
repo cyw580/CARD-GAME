@@ -78,7 +78,7 @@ void Shake(int power,int time){
 }
 
 void cline(){
-	printf("                                           ");
+	printf("                                        ");
 	return;
 }
 
@@ -107,7 +107,7 @@ struct player{
 	Card handcard[10],heap[105];
 	int used[10];
 	int buff[20];
-	//0-职业特性,1-燃烧,2-中毒,3-狂暴,4-虚弱
+	//0-职业特性,1-燃烧,2-中毒,3-狂暴,4-虚弱,5-治疗
 	player(){
 		hp=maxhp=400;def=0;cardcnt=4;
 		maxdef=100;maxcost=6;
@@ -135,24 +135,22 @@ int Check(int now){
 }
 
 void Card::Use(int from,int to){
-	int damage=ATK,damage2=ATK;
-	if(pl[from].occ==2 && ATK>0) damage=damage2=ATK+5*pl[from].buff[0];
-	if(pl[from].occ==5 && ATK>0) damage=damage2=ATK+10*pl[from].buff[0];
 	if(rand()%100<MISS){
 		SetPos(0,1);
 		printf("操作失误了!");
 		if(pl[from].occ==4 && ATK>0) pl[from].buff[0]=1;
 		UI();
 		return;
-	}
-	//失效判定
-	int flag;
-	if(func) flag=Special(from,to) ;
+	}//失效判定
+	int damage=ATK,damage2=ATK,flag;
+	if(func) flag=Special(from,to);
+	if(pl[from].occ==2 && ATK>0) damage=damage2=ATK+5*pl[from].buff[0];
+	if(pl[from].occ==5 && ATK>0) damage=damage2=ATK+6*pl[from].buff[0];
 	if(pl[from].buff[3]){
 		damage*=2;damage2*=2;
 	}
 	if(pl[from].occ==4 && pl[from].buff[0]){
-		damage*=0.6;damage2*=0.6;
+		damage*=0.7;damage2*=0.7;
 	}
 	if(pl[to].def>0 && flag!=1){
 		damage=max(0,damage-pl[to].def);
@@ -171,7 +169,7 @@ void Card::Use(int from,int to){
 	pl[from].def=min(pl[from].maxdef,pl[from].def+DEF);
 	pl[from].hp=min(pl[from].maxhp,pl[from].hp+HEAL);
 	//套盾与回血
-	if(HEAL<0 && pl[from].occ==2)pl[from].buff[0]++;
+	if(HEAL<0 && pl[from].occ==2) pl[from].buff[0]++;
 	if(pl[from].occ==4 && ATK>0) pl[from].buff[0]=1;
 	UI();
 	Check(to);Check(from);
@@ -180,7 +178,7 @@ void Card::Use(int from,int to){
 int Card::Special(int from,int to){
 	int damage=ATK;
 	if(pl[from].occ==2 && ATK>0) damage=ATK+5*pl[from].buff[0];
-	if(pl[from].occ==5 && ATK>0) damage=ATK+10*pl[from].buff[0];
+	if(pl[from].occ==5 && ATK>0) damage=ATK+6*pl[from].buff[0];
 	if(pl[from].buff[3]){
 		damage*=2;
 	}
@@ -233,16 +231,19 @@ int Card::Special(int from,int to){
 		pl[from].buff[0]+=2;
 	}
 	else if(func==13){
-		pl[to].hp-=pl[to].hp*0.35;
+		pl[to].hp-=pl[to].hp*0.4;
 	}
 	else if(func==14){
 		pl[to].buff[3]=2;
 	}
 	else if(func==15){
-		int da=15+30*pl[from].cost;
+		int da=20+30*pl[from].cost;
+		if(pl[from].buff[3]) da=da*2;
+		if(pl[from].buff[0]) da=da*0.7;
 		pl[from].cost=0;
 		if(da<pl[to].def) pl[to].def-=da;
 		else pl[to].hp-=da-pl[to].def,pl[to].def=0;
+		pl[from].buff[0]=1;
 	}
 	else if(func==16){
 		pl[to].cost=max(0,pl[to].cost-3);
@@ -256,49 +257,62 @@ int Card::Special(int from,int to){
 	}
 	else if(func==19){
 		pl[from].buff[0]++;
-		pl[from].maxhp+=10;
+		pl[from].maxhp+=15;
 		pl[from].maxdef+=10;
-		pl[from].hp=min(pl[from].maxhp,pl[from].hp+20);
+		pl[from].hp=min(pl[from].maxhp,pl[from].hp+30);
 	}
 	else if(func==20){
 		return 1;
 	}
 	else if(func==21){
-		
+		pl[to].def=min(pl[to].def+50,pl[to].maxdef);
 	}
 	else if(func==22){
-		
+		pl[from].maxhp-=20;
+		pl[from].hp=min(pl[from].hp,pl[from].maxhp);
+		pl[from].buff[0]++;
 	}
 	else if(func==23){
-		
+		pl[from].buff[5]+=3;
 	}
 	else if(func==24){
-		
+		pl[from].maxhp-=60;
+		pl[from].hp=pl[from].maxhp;
+		pl[from].buff[0]=0;
+	}
+	else if(func==25){
+		pl[from].buff[0]=0;
+		pl[from].cost+=2;
 	}
 	return 0;
 }
 
 string Card::Intro(){
-	if(func==1) return "使用后获得费用4点";
-	else if(func==2)return "使用后获得1点费用，并增加1点费用上限";
-	else if(func==3)return "使用后所有人获得2点费用";
-	else if(func==4)return "使对方被点燃三回合（每回合损失40HP,不计护甲）（击破护盾时才生效）";
-	else if(func==5)return "使自身进入狂暴状态至回合结束（造成的伤害变为原来的2倍）";
-	else if(func==6)return "使对方中毒三回合（每回合损失现有HP的20%,不计护甲）（职业为地精或击破护盾时才生效）";
+	if(func==1) return "+4◆";
+	else if(func==2)return "+1◆并+1◆上限";
+	else if(func==3)return "所有人+2◆";
+	else if(func==4)return "对方被点燃3回合（每回合损失40HP）（击破护盾时才生效）";
+	else if(func==5)return "自身进入狂暴状态至回合结束（造成的伤害变为原来的2倍）";
+	else if(func==6)return "对方中毒3回合（每回合损失现有HP的20%）（职业为地精或击破护盾时才生效）";
 	else if(func==7)return "立刻补充你的手牌";
-	else if(func==8)return "使用后手牌上限+1";
-	else if(func==9)return "使用后HP上限+80";
-	else if(func==10)return "使用后费用上限-1";
-	else if(func==11)return "使用后HP上限-80";
-	else if(func==12)return "使用后下回合额外获得2点费用";
-	else if(func==13)return "使对方损失35%生命值";
-	else if(func==14)return "在对方下回合结束前 对方进入狂暴状态（造成的伤害变为原来的2倍）";
-	else if(func==15)return "消耗所有费用，造成（30*费用+15）的伤害";
-	else if(func==16)return "使用后对方费用-3";
-	else if(func==17)return "你在本回合、对方在下回合都会进入狂暴状态（造成的伤害变为原来的2倍）";
-	else if(func==18)return "使用后获得费用2点";
-	else if(func==19)return "成长+1";
+	else if(func==8)return "手牌上限+1";
+	else if(func==9)return "HP上限+80";
+	else if(func==10)return "-1◆上限";
+	else if(func==11)return "HP上限-80";
+	else if(func==12)return "下回合额外+2◆";
+	else if(func==13)return "对方损失现有HP的40%";
+	else if(func==14)return "对方下回合结束前 对方进入狂暴状态（造成的伤害变为原来的2倍）";
+	else if(func==15)return "消耗所有费用，造成（30*费用+20）的伤害";
+	else if(func==16)return "对方-3◆";
+	else if(func==17)return "你在本回合、对方在下回合都进入狂暴状态（造成的伤害变为原来的2倍）";
+	else if(func==18)return "+2◆";
+	else if(func==19)return "+1<★成长>标记";
 	else if(func==20)return "穿透护盾的真实伤害";
+	else if(func==21)return "对方获得50护甲";
+	else if(func==22)return "HP上限-20，+1<★牺牲>标记";
+	else if(func==23)return "接下去3回合在每回合开始时恢复30HP";
+	else if(func==24)return "HP上限-60，清空<★牺牲>标记，恢复到满血";
+	else if(func==25)return "+2◆并清除<★疲惫>标记";
 	return "";
 }
 
@@ -312,8 +326,7 @@ void init(int x){
 		scanf("%d%d%d%d%d%d",&pl[x].heap[i].cost,&pl[x].heap[i].ATK,&pl[x].heap[i].HEAL,&pl[x].heap[i].DEF,&pl[x].heap[i].MISS,&pl[x].heap[i].func);
 		pl[x].heap[i].tag=i;
 		if(pl[x].occ==4 && pl[x].heap[i].HEAL>0) i--,tot--;
-		if(pl[x].occ==2 && pl[x].heap[i].HEAL>=50) i--,tot--;
-		if(pl[x].occ==5 && (pl[x].heap[i].DEF>30 || pl[x].heap[i].ATK>20)) i--,tot--;
+		if(pl[x].occ==5) i--,tot--;
 	}
 	pl[x].heapn=tot;
 	fclose(stdin);
@@ -363,37 +376,40 @@ string occ_intro(int x){
 void occ_func(int x){
 	SetColor(7,0);
 	if(x==1){
-		printf("HP 420 MAX_DEF 100 手牌上限4 ◆6");cline();
-		printf("\n\t1.所有职业技能牌都中规中矩，且都有特效");cline();
-		printf("\n\t2.[拾荒] 若回合开始时没有费用则获得1点费用");cline();
-		printf("\n");cline();
-		printf("\n");cline();
-		printf("\n");cline();
+		printf("HP 420   MAX_DEF 120   手牌上限4   ◆6");printf(" ");
+		printf("\n\t");printf("                                              ");
+		printf("\n\t 1.所有职业技能牌都中规中矩，且都有特效");printf("                  ");
+		printf("\n\t 2.[拾荒] 若回合开始时没有费用则获得1点费用");printf("                ");
+		printf("\n");printf("                                                      ");
+		printf("\n");printf("                                            ");
 	}else if(x==2){
-		printf("HP 560 MAX_DEF 80 手牌上限4 ◆5");cline();SetColor(13);
-		printf("\n\t<★牺牲> 每次因为自己出牌而受到伤害时会获得1个标记，每个标记使得攻击力增加5");cline();SetColor(7);
-		printf("\n\t1.一些职业技能牌会通过削弱自己而获得优势");cline();
-		printf("\n");cline();
-		printf("\n");cline();
+		printf("HP 600   MAX_DEF 80   手牌上限4   ◆5");printf("  ");SetColor(13);
+		printf("\n\t <★牺牲> 每个标记使ATK增加5");printf("                    ");;SetColor(7);
+		printf("\n\t 1.每次自己出牌而受到伤害会+1<★牺牲>标记");printf("               ");
+		printf("\n\t 2.一些职业技能牌会通过削弱自己而获得优势");printf("             ");
+		printf("\n");printf("                                                      ");
+		printf("\n");printf("                                            ");
 	}else if(x==3){
-		printf("HP 300 MAX_DEF 100 手牌上限4 ◆7");cline();SetColor(13);
-		printf("\n\t<★法力> 每回合开始有30%获得1个标记，在下回合获得等同于标记数量的费用并将标记清空");cline();SetColor(7);
-		printf("\n\t1.高伤害高爆发");cline();
-		printf("\n");cline();
-		printf("\n");cline();
+		printf("HP 320   MAX_DEF 120   手牌上限4   ◆7");printf(" ");SetColor(13);
+		printf("\n\t<★法力>下回合获得等于标记数量的◆并清空标记");printf("          ");SetColor(7);
+		printf("\n\t 1.[精通] 每回合开始有40%概率 +1<★法力>标记");printf("               ");
+		printf("\n\t 2.[法力凝聚] 一局游戏中第一个回合额外+1◆");printf("                ");
+		printf("\n");printf("                                                      ");
+		printf("\n");printf("                                            ");
 	}else if(x==4){
-		printf("HP 480 MAX_DEF 200 手牌上限4 ◆6");cline();SetColor(13);
-		printf("\n\t<★疲惫> 回合开始时标记清空，每回合第一次使用有攻击力牌后（无论是否miss）获得标记,");cline();
-		printf("\n\t        标记存在时攻击力变为原来的60%%");cline();SetColor(7);
-		printf("\n\t1.[装备精良] 每回合开始时若没有护甲 则护甲+30");cline();
-		printf("\n\t2.[无畏] 无法抽到公共牌库中具有治疗效果的牌");cline();
-		printf("\n");cline();
+		printf("HP 500   MAX_DEF 200   手牌上限4   ◆6");printf(" ");SetColor(13);
+		printf("\n\t<★疲惫>标记存在时攻击力变为原来的60%%");printf("         ");SetColor(7);
+		printf("\n\t 1.[备战状态] 回合开始时标记清空");printf("                ");
+		printf("\n\t 2.[尽力出击] 使用攻击牌后获得<★疲惫>标记");printf("                    ");
+		printf("\n\t 3.[装备精良] 每回合开始时若没有护甲 则护甲+30");printf("                 ");
+		printf("\n\t 4.[无畏] 无法抽到公共牌库中治疗牌");printf("  ");
 	}else if(x==5){
-		printf("HP 280 MAX_DEF 0 手牌上限4 ◆3");cline();SetColor(13);
-		printf("\n\t<★成长> 每个标记使你获得攻击力+10，HP上限+10，最大DEF+10，每次获得标记时恢复20HP");cline();SetColor(7);
-		printf("\n\t1.[贪婪] 回合开始时有且仅有3费，且每使用一张牌（不计弃牌）会自动抽一张牌");cline();
-		printf("\n\t2.[体弱] 无法抽到公共牌库中的牌");cline();
-		printf("\n\t3.[敏捷] 部分牌有穿透护盾攻击的能力");cline();
+		printf("HP 260   MAX_DEF 0   手牌上限4   ◆3");printf("   ");SetColor(13);
+		printf("\n\t<★成长>每个标记使你ATK+6 HP上限+15 MAX_DEF+10");printf("             ");SetColor(7);
+		printf("\n\t 1.[贪婪] 回合开始时变为3◆，使用牌后有80%会抽牌");printf("           ");
+		printf("\n\t 2.[健康] 每当获得1个<★成长>标记时恢复30HP");printf("                  ");
+		printf("\n\t 3.[与世隔绝] 无法抽到公共牌库中的牌");printf("          ");
+		printf("\n\t 4.[敏捷] 部分牌有穿透护盾攻击的能力");
 	}
 	return;
 }
@@ -492,6 +508,10 @@ int UI(){
 			SetColor(2),printf("中毒 %d : ",pl[rnk].buff[2]);
 		if(pl[rnk].buff[3])
 			SetColor(4),printf("狂暴 %d : ",pl[rnk].buff[3]);
+		if(pl[rnk].buff[4])
+			SetColor(4),printf("XX %d : ",pl[rnk].buff[4]);
+		if(pl[rnk].buff[5])
+			SetColor(4),printf("治疗 %d : ",pl[rnk].buff[5]);//修改颜色
 		printf("                                                 ");
 		
 		//血条绘制
@@ -535,13 +555,15 @@ int Ask(int now){
 			pl[now].cost=min(pl[now].maxcost,pl[now].cost+pl[now].buff[0]);
 			pl[now].buff[0]=0;
 		}
-		if(rand()%100<30) pl[now].buff[0]++;
+		if(rand()%100<40) pl[now].buff[0]++;
 	}
 	if(pl[now].occ==4) {
 		if(pl[now].def==0) pl[now].def=30;
 		pl[now].buff[0]=0;
 	}
 	if(pl[now].occ==5) pl[now].cost=3;
+	if(pl[now].buff[5])
+		pl[now].hp+=30;
 	if(pl[now].buff[1])
 		pl[now].hp-=40;
 	if(pl[now].buff[2])
@@ -645,7 +667,7 @@ int Ask(int now){
 				pl[now].used[curse]=1;
 				pl[now].rest--;
 				pl[now].handcard[curse].Use(now,3-now);
-				if(pl[now].occ==5) {
+				if(pl[now].occ==5 && rand()%100<80) {
 					pl[now].used[curse]=0;
 					pl[now].rest++;
 					pl[now].handcard[curse]=pl[now].heap[(rand()%pl[now].heapn)+1];
@@ -688,22 +710,16 @@ int main(){
 	printf("请输入初始费用:");
 	int start=0;
 	scanf("%d",&start);
-	// printf("1.浪人，2.术士，3.法师，4.战士，5.地精\n");
-	// for(int i=1;i<=2;i++){
-	// 	printf("请P%d选择职业:",i);
-	// 	cin>>pl[i].occ;
-	// 	if(pl[i].occ[0]<'0'||pl[i].occ[0]>'5') i--;
-	// }
 	for(int now=1;now<=2;now++){
 		Choose(now);//选择职业
-		SetPos(0,15+now);
+		SetPos(0,17+now);
 		printf("P%d的职业是",now);
 		printf(occ_name(pl[now].occ));
 	}
 	for(int i=1;i<=2;i++){
 		pl[i].cost=min(start,pl[i].maxcost);
 	}
-	Sleep(2000);
+	Sleep(1500);
 	system("cls");
 	for(int i=1;i<=2;i++) init(i);
 	int now=1;
@@ -711,6 +727,7 @@ int main(){
 		for(int i=1;i<=2;i++){
 			pl[i].prehp=pl[i].hp;
 		}
+		if(pl[now].cost==0 && pl[now].occ==1)  pl[now].cost=1;
 		pl[now].cost=min(pl[now].cost+1,pl[now].maxcost);//加费 
 		UI();
 		Ask(now);
