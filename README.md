@@ -17,5 +17,3 @@
 ### 3.法师 Wizard
 ### 4.战士 Warrior
 ### 5.地精 Goblin
-
-## 后记
