@@ -19,7 +19,7 @@ void SetPos(int x, int y)
         coord.Y = y;
 
         //HANDLE hout = GetStdHandle(STD_OUTPUT_HANDLE);
-        //SetConsoleCursorPosition(hout, coord);//ºÍÏÂÃæµÄ´úÂëÒ»Ñù¹¦ÄÜ
+        //SetConsoleCursorPosition(hout, coord);//å’Œä¸‹é¢çš„ä»£ç ä¸€æ ·åŠŸèƒ½
 
         SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
 };
@@ -48,16 +48,16 @@ void printf(string s){
 }
 
 void Shake(int power,int time){
-	int shake_time = 25; //ĞİÃßµÄÊ±¼ä£¬Îª5ºÁÃë
-    int shake_distance = power; //ÒÆ¶¯ÁË10ÏñËØ
-    RECT rect; //RECTÊÇÒ»¸ö¾ØĞÎ½á¹¹Ìå£¬Ïàµ±ÓÚ±£´æÁËÒ»¸ö¾ØĞÎµÄËÄÌõ±ßµÄ×ø±ê
-    HWND window = NULL, oldwindow = NULL; //Á½¸ö´°¿Ú¾ä±ú
-    int x, y, width, height; //ÓÃÀ´±£´æ´°¿Úºá×İ×ø±êºÍ¿í¶È¡¢¸ß¶ÈµÄ±äÁ¿
+	int shake_time = 25; //ä¼‘çœ çš„æ—¶é—´ï¼Œä¸º5æ¯«ç§’
+    int shake_distance = power; //ç§»åŠ¨äº†10åƒç´ 
+    RECT rect; //RECTæ˜¯ä¸€ä¸ªçŸ©å½¢ç»“æ„ä½“ï¼Œç›¸å½“äºä¿å­˜äº†ä¸€ä¸ªçŸ©å½¢çš„å››æ¡è¾¹çš„åæ ‡
+    HWND window = NULL, oldwindow = NULL; //ä¸¤ä¸ªçª—å£å¥æŸ„
+    int x, y, width, height; //ç”¨æ¥ä¿å­˜çª—å£æ¨ªçºµåæ ‡å’Œå®½åº¦ã€é«˜åº¦çš„å˜é‡
     int i;
     for (i = 0; i < time; i++) {
-        window = GetForegroundWindow(); //ÄÃµ½»î¶¯´°¿Ú
+        window = GetForegroundWindow(); //æ‹¿åˆ°æ´»åŠ¨çª—å£
         if (window != oldwindow) {
-            //»ñÈ¡Ö¸¶¨´°¿ÚµÄÎ»ÖÃ
+            //è·å–æŒ‡å®šçª—å£çš„ä½ç½®
             GetWindowRect(window, &rect);
             x = rect.left;
             y = rect.top;
@@ -65,8 +65,8 @@ void Shake(int power,int time){
             height = rect.bottom - y;
             oldwindow = window;
         }
-        MoveWindow(window, x - shake_distance, y, width, height, TRUE); //ÒÆ¶¯´°¿Ú£¬Ïò×óÒÆ¶¯ÁË10ÏñËØ£¬ÏÂÍ¬
-        Sleep(shake_time);  //ĞİÃßtimeºÁÃë£¬Ïß³ÌĞİÃß
+        MoveWindow(window, x - shake_distance, y, width, height, TRUE); //ç§»åŠ¨çª—å£ï¼Œå‘å·¦ç§»åŠ¨äº†10åƒç´ ï¼Œä¸‹åŒ
+        Sleep(shake_time);  //ä¼‘çœ timeæ¯«ç§’ï¼Œçº¿ç¨‹ä¼‘çœ 
         MoveWindow(window, x - shake_distance, y - shake_distance, width, height, TRUE);
         Sleep(shake_time);
         MoveWindow(window, x, y - shake_distance, width, height, TRUE);
@@ -75,6 +75,11 @@ void Shake(int power,int time){
         Sleep(shake_time);
     }
     return;
+}
+
+void cline(){
+	printf("                                           ");
+	return;
 }
 
 //--------------------------------------------------
@@ -102,7 +107,7 @@ struct player{
 	Card handcard[10],heap[105];
 	int used[10];
 	int buff[20];
-	//0-Ö°ÒµÌØĞÔ,1-È¼ÉÕ,2-ÖĞ¶¾,3-¿ñ±©,4-ĞéÈõ
+	//0-èŒä¸šç‰¹æ€§,1-ç‡ƒçƒ§,2-ä¸­æ¯’,3-ç‹‚æš´,4-è™šå¼±
 	player(){
 		hp=maxhp=400;def=0;cardcnt=4;
 		maxdef=100;maxcost=6;
@@ -135,23 +140,25 @@ void Card::Use(int from,int to){
 	if(pl[from].occ==5 && ATK>0) damage=damage2=ATK+10*pl[from].buff[0];
 	if(rand()%100<MISS){
 		SetPos(0,1);
-		printf("²Ù×÷Ê§ÎóÁË!");
+		printf("æ“ä½œå¤±è¯¯äº†!");
 		if(pl[from].occ==4 && ATK>0) pl[from].buff[0]=1;
 		UI();
 		return;
 	}
-	//Ê§Ğ§ÅĞ¶¨
+	//å¤±æ•ˆåˆ¤å®š
 	int flag;
 	if(func) flag=Special(from,to) ;
 	if(pl[from].buff[3]){
 		damage*=2;damage2*=2;
 	}
-	if(pl[from].occ==4&&pl[from].buff[0]) damage*=0.6;damage2*=0.6;
+	if(pl[from].occ==4 && pl[from].buff[0]){
+		damage*=0.6;damage2*=0.6;
+	}
 	if(pl[to].def>0 && flag!=1){
 		damage=max(0,damage-pl[to].def);
 		pl[to].def=max(0,pl[to].def-damage2);
 		if(pl[to].def==0){
-			Shake(3,1);//»÷ÆÆ»¤¶ÜµÄ¶¯»­
+			Shake(3,1);//å‡»ç ´æŠ¤ç›¾çš„åŠ¨ç”»
 		}
 	}
 	if(damage>0){
@@ -160,10 +167,10 @@ void Card::Use(int from,int to){
 	if(damage>=150){
 		Shake(10,1);
 	}
-	//½ø¹¥
+	//è¿›æ”»
 	pl[from].def=min(pl[from].maxdef,pl[from].def+DEF);
 	pl[from].hp=min(pl[from].maxhp,pl[from].hp+HEAL);
-	//Ì×¶ÜÓë»ØÑª
+	//å¥—ç›¾ä¸å›è¡€
 	if(HEAL<0 && pl[from].occ==2)pl[from].buff[0]++;
 	if(pl[from].occ==4 && ATK>0) pl[from].buff[0]=1;
 	UI();
@@ -272,26 +279,26 @@ int Card::Special(int from,int to){
 }
 
 string Card::Intro(){
-	if(func==1) return "Ê¹ÓÃºó»ñµÃ·ÑÓÃ4µã";
-	else if(func==2)return "Ê¹ÓÃºó»ñµÃ1µã·ÑÓÃ£¬²¢Ôö¼Ó1µã·ÑÓÃÉÏÏŞ";
-	else if(func==3)return "Ê¹ÓÃºóËùÓĞÈË»ñµÃ2µã·ÑÓÃ";
-	else if(func==4)return "Ê¹¶Ô·½±»µãÈ¼Èı»ØºÏ£¨Ã¿»ØºÏËğÊ§40HP,²»¼Æ»¤¼×£©£¨»÷ÆÆ»¤¶ÜÊ±²ÅÉúĞ§£©";
-	else if(func==5)return "Ê¹×ÔÉí½øÈë¿ñ±©×´Ì¬ÖÁ»ØºÏ½áÊø£¨Ôì³ÉµÄÉËº¦±äÎªÔ­À´µÄ2±¶£©";
-	else if(func==6)return "Ê¹¶Ô·½ÖĞ¶¾Èı»ØºÏ£¨Ã¿»ØºÏËğÊ§ÏÖÓĞHPµÄ20%,²»¼Æ»¤¼×£©£¨Ö°ÒµÎªµØ¾«»ò»÷ÆÆ»¤¶ÜÊ±²ÅÉúĞ§£©";
-	else if(func==7)return "Á¢¿Ì²¹³äÄãµÄÊÖÅÆ";
-	else if(func==8)return "Ê¹ÓÃºóÊÖÅÆÉÏÏŞ+1";
-	else if(func==9)return "Ê¹ÓÃºóHPÉÏÏŞ+80";
-	else if(func==10)return "Ê¹ÓÃºó·ÑÓÃÉÏÏŞ-1";
-	else if(func==11)return "Ê¹ÓÃºóHPÉÏÏŞ-80";
-	else if(func==12)return "Ê¹ÓÃºóÏÂ»ØºÏ¶îÍâ»ñµÃ2µã·ÑÓÃ";
-	else if(func==13)return "Ê¹¶Ô·½ËğÊ§35%ÉúÃüÖµ";
-	else if(func==14)return "ÔÚ¶Ô·½ÏÂ»ØºÏ½áÊøÇ° ¶Ô·½½øÈë¿ñ±©×´Ì¬£¨Ôì³ÉµÄÉËº¦±äÎªÔ­À´µÄ2±¶£©";
-	else if(func==15)return "ÏûºÄËùÓĞ·ÑÓÃ£¬Ôì³É£¨30*·ÑÓÃ+15£©µÄÉËº¦";
-	else if(func==16)return "Ê¹ÓÃºó¶Ô·½·ÑÓÃ-3";
-	else if(func==17)return "ÄãÔÚ±¾»ØºÏ¡¢¶Ô·½ÔÚÏÂ»ØºÏ¶¼»á½øÈë¿ñ±©×´Ì¬£¨Ôì³ÉµÄÉËº¦±äÎªÔ­À´µÄ2±¶£©";
-	else if(func==18)return "Ê¹ÓÃºó»ñµÃ·ÑÓÃ2µã";
-	else if(func==19)return "³É³¤+1";
-	else if(func==20)return "´©Í¸»¤¶ÜµÄÕæÊµÉËº¦";
+	if(func==1) return "ä½¿ç”¨åè·å¾—è´¹ç”¨4ç‚¹";
+	else if(func==2)return "ä½¿ç”¨åè·å¾—1ç‚¹è´¹ç”¨ï¼Œå¹¶å¢åŠ 1ç‚¹è´¹ç”¨ä¸Šé™";
+	else if(func==3)return "ä½¿ç”¨åæ‰€æœ‰äººè·å¾—2ç‚¹è´¹ç”¨";
+	else if(func==4)return "ä½¿å¯¹æ–¹è¢«ç‚¹ç‡ƒä¸‰å›åˆï¼ˆæ¯å›åˆæŸå¤±40HP,ä¸è®¡æŠ¤ç”²ï¼‰ï¼ˆå‡»ç ´æŠ¤ç›¾æ—¶æ‰ç”Ÿæ•ˆï¼‰";
+	else if(func==5)return "ä½¿è‡ªèº«è¿›å…¥ç‹‚æš´çŠ¶æ€è‡³å›åˆç»“æŸï¼ˆé€ æˆçš„ä¼¤å®³å˜ä¸ºåŸæ¥çš„2å€ï¼‰";
+	else if(func==6)return "ä½¿å¯¹æ–¹ä¸­æ¯’ä¸‰å›åˆï¼ˆæ¯å›åˆæŸå¤±ç°æœ‰HPçš„20%,ä¸è®¡æŠ¤ç”²ï¼‰ï¼ˆèŒä¸šä¸ºåœ°ç²¾æˆ–å‡»ç ´æŠ¤ç›¾æ—¶æ‰ç”Ÿæ•ˆï¼‰";
+	else if(func==7)return "ç«‹åˆ»è¡¥å……ä½ çš„æ‰‹ç‰Œ";
+	else if(func==8)return "ä½¿ç”¨åæ‰‹ç‰Œä¸Šé™+1";
+	else if(func==9)return "ä½¿ç”¨åHPä¸Šé™+80";
+	else if(func==10)return "ä½¿ç”¨åè´¹ç”¨ä¸Šé™-1";
+	else if(func==11)return "ä½¿ç”¨åHPä¸Šé™-80";
+	else if(func==12)return "ä½¿ç”¨åä¸‹å›åˆé¢å¤–è·å¾—2ç‚¹è´¹ç”¨";
+	else if(func==13)return "ä½¿å¯¹æ–¹æŸå¤±35%ç”Ÿå‘½å€¼";
+	else if(func==14)return "åœ¨å¯¹æ–¹ä¸‹å›åˆç»“æŸå‰ å¯¹æ–¹è¿›å…¥ç‹‚æš´çŠ¶æ€ï¼ˆé€ æˆçš„ä¼¤å®³å˜ä¸ºåŸæ¥çš„2å€ï¼‰";
+	else if(func==15)return "æ¶ˆè€—æ‰€æœ‰è´¹ç”¨ï¼Œé€ æˆï¼ˆ30*è´¹ç”¨+15ï¼‰çš„ä¼¤å®³";
+	else if(func==16)return "ä½¿ç”¨åå¯¹æ–¹è´¹ç”¨-3";
+	else if(func==17)return "ä½ åœ¨æœ¬å›åˆã€å¯¹æ–¹åœ¨ä¸‹å›åˆéƒ½ä¼šè¿›å…¥ç‹‚æš´çŠ¶æ€ï¼ˆé€ æˆçš„ä¼¤å®³å˜ä¸ºåŸæ¥çš„2å€ï¼‰";
+	else if(func==18)return "ä½¿ç”¨åè·å¾—è´¹ç”¨2ç‚¹";
+	else if(func==19)return "æˆé•¿+1";
+	else if(func==20)return "ç©¿é€æŠ¤ç›¾çš„çœŸå®ä¼¤å®³";
 	return "";
 }
 
@@ -328,11 +335,11 @@ void init(int x){
 }
 
 string occ_name(int x){
-	if(x==1)return "ÀËÈË";
-	else if(x==2)return "ÊõÊ¿";
-	else if(x==3)return "·¨Ê¦";
-	else if(x==4)return "Õ½Ê¿";
-	else if(x==5)return "µØ¾«";
+	if(x==1)return "æµªäºº";
+	else if(x==2)return "æœ¯å£«";
+	else if(x==3)return "æ³•å¸ˆ";
+	else if(x==4)return "æˆ˜å£«";
+	else if(x==5)return "åœ°ç²¾";
 	return "";
 }
 
@@ -346,25 +353,54 @@ string occ_file(int x){
 }
 
 string occ_intro(int x){
-	if(x==1)return "Ã»ÓĞ³¤´¦£¬Ò²Í¬ÑùÃ»ÓĞÈõµã";
-	else if(x==2)return "ÎşÉüÎá·ĞÌÚÈÈÑª£¬È¡µĞÖ®ÉúÃü";
-	else if(x==3)return "»ğÁ¦¼´ÕıÒå£¬·ÀÓù²»¹ı´ÎÒª";
-	else if(x==4)return "¼áÊµµÄ·ÀÓù£¬Ç¿´óµÄÁ¦Á¿";
-	else if(x==5)return "¸üÁé»î¸üÃô½İ£¬Í¨¹ı·¢Óı»ñµÃÓÅÊÆ";
+	if(x==1)return "æ²¡æœ‰é•¿å¤„ï¼Œä¹ŸåŒæ ·æ²¡æœ‰å¼±ç‚¹";
+	else if(x==2)return "ç‰ºç‰²å¾æ²¸è…¾çƒ­è¡€ï¼Œå–æ•Œä¹‹ç”Ÿå‘½";
+	else if(x==3)return "ç«åŠ›å³æ­£ä¹‰ï¼Œé˜²å¾¡ä¸è¿‡æ¬¡è¦";
+	else if(x==4)return "åšå®çš„é˜²å¾¡ï¼Œå¼ºå¤§çš„åŠ›é‡";
+	else if(x==5)return "æ›´çµæ´»æ›´æ•æ·ï¼Œé€šè¿‡å‘è‚²è·å¾—ä¼˜åŠ¿";
 	return "";
 }
-string occ_func(int x){
-	if(x==1)return "ÊôĞÔ: HP420 ×î´óDEF100 ÊÖÅÆÉÏÏŞ4 ·ÑÓÃÉÏÏŞ6\n1.ËùÓĞÖ°Òµ¼¼ÄÜÅÆ¶¼ÖĞ¹æÖĞ¾Ø£¬ÇÒ¶¼ÓĞÌØĞ§";
-	else if(x==2)return "ÊôĞÔ: HP560 ×î´óDEF80 ÊÖÅÆÉÏÏŞ4 ·ÑÓÃÉÏÏŞ5\n1.Ö°Òµ±ê¼Ç£ºÎşÉü£»Ã¿´ÎÒòÎª×Ô¼º³öÅÆ¶øÊÜµ½ÉËº¦Ê±»á»ñµÃ1¸ö±ê¼Ç£¬Ã¿¸ö±ê¼ÇÊ¹µÃ¹¥»÷Á¦Ôö¼Ó5\n2.¹«¹²ÅÆ¿âÖĞ£¨»Ø¸´Á¿ ¡İ 50£©µÄÅÆ²»»á³éµ½\n3.Ò»Ğ©Ö°Òµ¼¼ÄÜÅÆ»áÍ¨¹ıÏ÷Èõ×Ô¼º¶ø»ñµÃÓÅÊÆ";
-	else if(x==3)return "ÊôĞÔ: HP300 ×î´óDEF100 ÊÖÅÆÉÏÏŞ4 ·ÑÓÃÉÏÏŞ7\n1.Ö°Òµ±ê¼Ç£º·¨Á¦£»Ã¿»ØºÏ¿ªÊ¼ÓĞ30%»ñµÃ1¸ö±ê¼Ç£¬ÔÚÏÂ»ØºÏ»ñµÃµÈÍ¬ÓÚ±ê¼ÇÊıÁ¿µÄ·ÑÓÃ²¢½«±ê¼ÇÇå¿Õ\n2.¸ßÉËº¦¸ß±¬·¢";
-	else if(x==4)return "ÊôĞÔ: HP480 ×î´óDEF200 ÊÖÅÆÉÏÏŞ4 ·ÑÓÃÉÏÏŞ6\n1.Ö°Òµ±ê¼Ç£ºÆ£±¹£»»ØºÏ¿ªÊ¼Ê±±ê¼ÇÇå¿Õ£¬Ã¿»ØºÏµÚÒ»´ÎÊ¹ÓÃÓĞ¹¥»÷Á¦ÅÆºó£¨ÎŞÂÛÊÇ·ñmiss£©»ñµÃ±ê¼Ç£¬±ê¼Ç´æÔÚÊ±¹¥»÷Á¦±äÎªÔ­À´µÄ60%\n2.Ã¿»ØºÏ¿ªÊ¼Ê±ÈôÃ»ÓĞ»¤¼× Ôò»¤¼×+30\n3.ÓÉÓÚºÃÕ½£¬¹«¹²ÅÆ¿âÖĞËùÓĞÓĞÖÎÁÆĞ§¹ûµÄÅÆ¶¼²»»á³éµ½";
-	else if(x==5)return "ÊôĞÔ: HP280 ×î´óDEF0 ÊÖÅÆÉÏÏŞ4 ·ÑÓÃÉÏÏŞ3\n1.Ö°Òµ±ê¼Ç£º³É³¤£»Ã¿¸ö±ê¼ÇÊ¹Äã»ñµÃ¹¥»÷Á¦+10£¬HPÉÏÏŞ+10£¬×î´óDEF+10£¬Ã¿´Î»ñµÃ±ê¼ÇÊ±»Ö¸´20HP\n2.Ã¿»ØºÏ¶¼ÓĞ3·Ñ£¬ÇÒÃ¿Ê¹ÓÃÒ»ÕÅÅÆ£¨²»¼ÆÆúÅÆ£©»á×Ô¶¯³éÒ»ÕÅÅÆ\n3.ÓÉÓÚÉíÌåÈõĞ¡£¬¹«¹²ÅÆ¿âÖĞ£¨ATK>20 »ò DEF>30£©µÄÅÆÎŞ·¨³éµ½£¬µ«ÉíÌåÃô½İ£¬ÓĞ´©Í¸»¤¶Ü¹¥»÷µÄÄÜÁ¦";
-	return "";
+void occ_func(int x){
+	SetColor(7,0);
+	if(x==1){
+		printf("HP 420 MAX_DEF 100 æ‰‹ç‰Œä¸Šé™4 â—†6");cline();
+		printf("\n\t1.æ‰€æœ‰èŒä¸šæŠ€èƒ½ç‰Œéƒ½ä¸­è§„ä¸­çŸ©ï¼Œä¸”éƒ½æœ‰ç‰¹æ•ˆ");cline();
+		printf("\n\t2.[æ‹¾è’] è‹¥å›åˆå¼€å§‹æ—¶æ²¡æœ‰è´¹ç”¨åˆ™è·å¾—1ç‚¹è´¹ç”¨");cline();
+		printf("\n");cline();
+		printf("\n");cline();
+		printf("\n");cline();
+	}else if(x==2){
+		printf("HP 560 MAX_DEF 80 æ‰‹ç‰Œä¸Šé™4 â—†5");cline();SetColor(13);
+		printf("\n\t<â˜…ç‰ºç‰²> æ¯æ¬¡å› ä¸ºè‡ªå·±å‡ºç‰Œè€Œå—åˆ°ä¼¤å®³æ—¶ä¼šè·å¾—1ä¸ªæ ‡è®°ï¼Œæ¯ä¸ªæ ‡è®°ä½¿å¾—æ”»å‡»åŠ›å¢åŠ 5");cline();SetColor(7);
+		printf("\n\t1.ä¸€äº›èŒä¸šæŠ€èƒ½ç‰Œä¼šé€šè¿‡å‰Šå¼±è‡ªå·±è€Œè·å¾—ä¼˜åŠ¿");cline();
+		printf("\n");cline();
+		printf("\n");cline();
+	}else if(x==3){
+		printf("HP 300 MAX_DEF 100 æ‰‹ç‰Œä¸Šé™4 â—†7");cline();SetColor(13);
+		printf("\n\t<â˜…æ³•åŠ›> æ¯å›åˆå¼€å§‹æœ‰30%è·å¾—1ä¸ªæ ‡è®°ï¼Œåœ¨ä¸‹å›åˆè·å¾—ç­‰åŒäºæ ‡è®°æ•°é‡çš„è´¹ç”¨å¹¶å°†æ ‡è®°æ¸…ç©º");cline();SetColor(7);
+		printf("\n\t1.é«˜ä¼¤å®³é«˜çˆ†å‘");cline();
+		printf("\n");cline();
+		printf("\n");cline();
+	}else if(x==4){
+		printf("HP 480 MAX_DEF 200 æ‰‹ç‰Œä¸Šé™4 â—†6");cline();SetColor(13);
+		printf("\n\t<â˜…ç–²æƒ«> å›åˆå¼€å§‹æ—¶æ ‡è®°æ¸…ç©ºï¼Œæ¯å›åˆç¬¬ä¸€æ¬¡ä½¿ç”¨æœ‰æ”»å‡»åŠ›ç‰Œåï¼ˆæ— è®ºæ˜¯å¦missï¼‰è·å¾—æ ‡è®°,");cline();
+		printf("\n\t        æ ‡è®°å­˜åœ¨æ—¶æ”»å‡»åŠ›å˜ä¸ºåŸæ¥çš„60%%");cline();SetColor(7);
+		printf("\n\t1.[è£…å¤‡ç²¾è‰¯] æ¯å›åˆå¼€å§‹æ—¶è‹¥æ²¡æœ‰æŠ¤ç”² åˆ™æŠ¤ç”²+30");cline();
+		printf("\n\t2.[æ— ç•] æ— æ³•æŠ½åˆ°å…¬å…±ç‰Œåº“ä¸­å…·æœ‰æ²»ç–—æ•ˆæœçš„ç‰Œ");cline();
+		printf("\n");cline();
+	}else if(x==5){
+		printf("HP 280 MAX_DEF 0 æ‰‹ç‰Œä¸Šé™4 â—†3");cline();SetColor(13);
+		printf("\n\t<â˜…æˆé•¿> æ¯ä¸ªæ ‡è®°ä½¿ä½ è·å¾—æ”»å‡»åŠ›+10ï¼ŒHPä¸Šé™+10ï¼Œæœ€å¤§DEF+10ï¼Œæ¯æ¬¡è·å¾—æ ‡è®°æ—¶æ¢å¤20HP");cline();SetColor(7);
+		printf("\n\t1.[è´ªå©ª] å›åˆå¼€å§‹æ—¶æœ‰ä¸”ä»…æœ‰3è´¹ï¼Œä¸”æ¯ä½¿ç”¨ä¸€å¼ ç‰Œï¼ˆä¸è®¡å¼ƒç‰Œï¼‰ä¼šè‡ªåŠ¨æŠ½ä¸€å¼ ç‰Œ");cline();
+		printf("\n\t2.[ä½“å¼±] æ— æ³•æŠ½åˆ°å…¬å…±ç‰Œåº“ä¸­çš„ç‰Œ");cline();
+		printf("\n\t3.[æ•æ·] éƒ¨åˆ†ç‰Œæœ‰ç©¿é€æŠ¤ç›¾æ”»å‡»çš„èƒ½åŠ›");cline();
+	}
+	return;
 }
 
 void Choose(int now){
 	SetPos(0,5);
-	printf("¡óÑ¡ÔñP%dµÄÖ°Òµ¡ó",now);
+	printf("â—‡é€‰æ‹©P%dçš„èŒä¸šâ—‡",now);
 	int curse=1;
 	while(1){
 		for(int i=1;i<=5;i++){	
@@ -380,11 +416,22 @@ void Choose(int now){
 			printf(" | ");
 			printf(occ_intro(i));
 		}
+		SetPos(0,12);
+		occ_func(curse);
 		input=getch();
 		if(input==UP || input==LEFT)
 			curse--;
 		if(input==DOWN || input==RIGHT)
 			curse++;
+		if(input>='1' && input<='5'){
+			if(input-'0'==curse){
+				pl[now].occ=curse;
+				pl[now].job=occ_file(curse);
+				return;
+			}
+			else
+				curse=input-'0';
+		}
 		if(curse>5)curse=1;
 		if(curse<1)curse=5;
 		if(input==SPACE || input==ENTER || input=='z'){
@@ -398,7 +445,7 @@ void Choose(int now){
 int UI(){
 	for(int rnk=1;rnk<=2;rnk++){
 		int i;
-		//±àºÅ/Ãû×Ö/Ö°Òµ
+		//ç¼–å·/åå­—/èŒä¸š
 		SetColor(15);
 		SetPos(5,rnk*4);
 		printf("#%d ",rnk);
@@ -411,67 +458,67 @@ int UI(){
 		if(pl[rnk].occ>=2){
 			SetColor(13);
 			SetPos(8,rnk*4+2);
-			printf("¡ï%d   ",pl[rnk].buff[0]);
+			printf("â˜…%d   ",pl[rnk].buff[0]);
 		}
 
-		//·ÑÓÃ»æÖÆ
+		//è´¹ç”¨ç»˜åˆ¶
 		SetColor(11);
 		SetPos(17,rnk*4);
 		printf("%d/%d ",pl[rnk].cost,pl[rnk].maxcost);
 		SetPos(26,rnk*4);
 		for(i=1;i<=pl[rnk].cost;i++)
-			printf("¡ô");
+			printf("â—†");
 		for(;i<=pl[rnk].maxcost;i++)
-			printf("¡ó");
+			printf("â—‡");
 		printf("                                               ");
 		
-		//ÑªÁ¿»æÖÆ
+		//è¡€é‡ç»˜åˆ¶
 		if(pl[rnk].hprate()>5)SetColor(10);
 		else if(pl[rnk].hprate()>2)SetColor(6);
 		else SetColor(12);
 		SetPos(17,rnk*4+1);
 		printf("%d/%d            ",pl[rnk].hp,pl[rnk].maxhp);
 
-		//»¤¼×»æÖÆ
+		//æŠ¤ç”²ç»˜åˆ¶
 		SetColor(15);
 		SetPos(17,rnk*4+2);
 		printf("[%d/%d]            ",pl[rnk].def,pl[rnk].maxdef);
 		
-		//Buff»æÖÆ
+		//Buffç»˜åˆ¶
 		SetPos(26,rnk*4+2);
 		if(pl[rnk].buff[1])
-			SetColor(6),printf("È¼ÉÕ %d : ",pl[rnk].buff[1]);
+			SetColor(6),printf("ç‡ƒçƒ§ %d : ",pl[rnk].buff[1]);
 		if(pl[rnk].buff[2])
-			SetColor(2),printf("ÖĞ¶¾ %d : ",pl[rnk].buff[2]);
+			SetColor(2),printf("ä¸­æ¯’ %d : ",pl[rnk].buff[2]);
 		if(pl[rnk].buff[3])
-			SetColor(4),printf("¿ñ±© %d : ",pl[rnk].buff[3]);
+			SetColor(4),printf("ç‹‚æš´ %d : ",pl[rnk].buff[3]);
 		printf("                                                 ");
 		
-		//ÑªÌõ»æÖÆ
+		//è¡€æ¡ç»˜åˆ¶
 		SetPos(26,rnk*4+1);
 		if(pl[rnk].hprate()>5)SetColor(10);
 		else if(pl[rnk].hprate()>2)SetColor(6);
 		else SetColor(12);
 		
 		for(i=1;i<= pl[rnk].hp/40;i++)
-			printf("¡ö");
+			printf("â– ");
 		SetColor(8);
 		for(;i<= pl[rnk].prehp/40;i++)
-			printf("¡ö");
+			printf("â– ");
 		if(pl[rnk].hprate()>5)SetColor(10);
 		else if(pl[rnk].hprate()>2)SetColor(6);
 		else SetColor(12);
 		for(;i<=pl[rnk].maxhp/40;i++)
-			printf("¡õ");
+			printf("â–¡");
 		SetColor(7);
 		for(i=1;i<=pl[rnk].def/20;i++)
-			printf("¡ö");
+			printf("â– ");
 		printf("                                                       ");
 	}
 	return 0; 
 }
 
-int Sort(int now){//²¹³äÊÖÅÆ
+int Sort(int now){//è¡¥å……æ‰‹ç‰Œ
 	for(int i=1;i<=pl[now].cardcnt;i++){
 		if(pl[now].used[i]){
 			pl[now].handcard[i]=pl[now].heap[(rand()%pl[now].heapn)+1];
@@ -503,7 +550,7 @@ int Ask(int now){
 	UI();
 	if(Check(now))
 		return 0;
-	//buffÇ°ÅĞ
+	//buffå‰åˆ¤
 	Sort(now);
 	pl[now].rest=pl[now].cardcnt;
 	SetColor(7);
@@ -513,7 +560,7 @@ int Ask(int now){
 	SetPos(5,Row);
 	printf("  #"); 
 	SetPos(11,Row);SetColor(11);
-	printf("¡ô");
+	printf("â—†");
 	SetPos(18+14,Row);SetColor(7);
 	printf("ATK");
 	SetPos(26+14,Row);
@@ -529,8 +576,8 @@ int Ask(int now){
 			// printf("%d",pl[now].used[i]);//debug
 			SetPos(5,Row+i);
 			if(pl[now].used[i])SetColor(8);
-			if(curse==i && !option) SetColor(color=15),printf("¡ò%d",i); 
-			else if(curse==i && option) SetColor(color=15),printf("¡Á%d",i); 
+			if(curse==i && !option) SetColor(color=15),printf("â—%d",i); 
+			else if(curse==i && option) SetColor(color=15),printf("Ã—%d",i); 
 			else SetColor(color=7),printf("  %d",i); 
 			if(pl[now].used[i]){
 				SetColor(8);
@@ -555,7 +602,7 @@ int Ask(int now){
 			printf("%d  ",pl[now].handcard[i].DEF);
 			SetPos(42+14,Row+i);
 			printf("%d%%  ",pl[now].handcard[i].MISS);
-		}//ÏÔÊ¾ÊÖÅÆ
+		}//æ˜¾ç¤ºæ‰‹ç‰Œ
 		SetColor(7);
 		SetPos(0,0);
 		printf("%d",curse);
@@ -581,17 +628,17 @@ int Ask(int now){
 			}
 		}
 		if(curse<=0)curse=pl[now].cardcnt;
-		if(curse>pl[now].cardcnt)curse=1;//ÒÆ¶¯½¹µã
-		if(input=='z')//Ê¹ÓÃ
+		if(curse>pl[now].cardcnt)curse=1;//ç§»åŠ¨ç„¦ç‚¹
+		if(input=='z')//ä½¿ç”¨
 		{
 			option=0;
 			if(pl[now].used[curse]){
 				SetPos(0,1);
-				printf("Ñ¡ÖĞµÄÅÆ²»´æÔÚ£¡                 ");
+				printf("é€‰ä¸­çš„ç‰Œä¸å­˜åœ¨ï¼                 ");
 			}
 			else if(pl[now].cost<pl[now].handcard[curse].cost){
 				SetPos(0,1);
-				printf("·ÑÓÃ²»×ãÎŞ·¨Ê¹ÓÃ´ËÅÆ£¡                 ");
+				printf("è´¹ç”¨ä¸è¶³æ— æ³•ä½¿ç”¨æ­¤ç‰Œï¼                 ");
 			}
 			else{
 				pl[now].cost-=pl[now].handcard[curse].cost;
@@ -609,7 +656,7 @@ int Ask(int now){
 				}
 			}
 		}
-		if(input=='x'){//ÆúÅÆ
+		if(input=='x'){//å¼ƒç‰Œ
 			if(!option){
 				option=1;
 			}
@@ -623,7 +670,7 @@ int Ask(int now){
 				option=0;
 			}
 		}
-		if(input==SPACE || input==ENTER || pl[now].rest<=0)//½áÊø»ØºÏ
+		if(input==SPACE || input==ENTER || pl[now].rest<=0)//ç»“æŸå›åˆ
 			break; 
 		Check(now);
 	}
@@ -635,22 +682,22 @@ int main(){
 	srand(time(NULL));
 	printf("WELCOME!!\n");
 	for(int i=1;i<=2;i++){
-		printf("ÇëÊäÈëP%dµÄÃû×Ö:",i);
+		printf("è¯·è¾“å…¥P%dçš„åå­—:",i);
 		cin>>pl[i].name;
 	}
-	printf("ÇëÊäÈë³õÊ¼·ÑÓÃ:");
+	printf("è¯·è¾“å…¥åˆå§‹è´¹ç”¨:");
 	int start=0;
 	scanf("%d",&start);
-	// printf("1.ÀËÈË£¬2.ÊõÊ¿£¬3.·¨Ê¦£¬4.Õ½Ê¿£¬5.µØ¾«\n");
+	// printf("1.æµªäººï¼Œ2.æœ¯å£«ï¼Œ3.æ³•å¸ˆï¼Œ4.æˆ˜å£«ï¼Œ5.åœ°ç²¾\n");
 	// for(int i=1;i<=2;i++){
-	// 	printf("ÇëP%dÑ¡ÔñÖ°Òµ:",i);
+	// 	printf("è¯·P%dé€‰æ‹©èŒä¸š:",i);
 	// 	cin>>pl[i].occ;
 	// 	if(pl[i].occ[0]<'0'||pl[i].occ[0]>'5') i--;
 	// }
 	for(int now=1;now<=2;now++){
-		Choose(now);//Ñ¡ÔñÖ°Òµ
-		SetPos(0,10+now);
-		printf("P%dµÄÖ°ÒµÊÇ",now);
+		Choose(now);//é€‰æ‹©èŒä¸š
+		SetPos(0,15+now);
+		printf("P%dçš„èŒä¸šæ˜¯",now);
 		printf(occ_name(pl[now].occ));
 	}
 	for(int i=1;i<=2;i++){
@@ -664,7 +711,7 @@ int main(){
 		for(int i=1;i<=2;i++){
 			pl[i].prehp=pl[i].hp;
 		}
-		pl[now].cost=min(pl[now].cost+1,pl[now].maxcost);//¼Ó·Ñ 
+		pl[now].cost=min(pl[now].cost+1,pl[now].maxcost);//åŠ è´¹ 
 		UI();
 		Ask(now);
 		//debug
@@ -675,13 +722,13 @@ int main(){
 	system("cls");
 	printf("#%d ",winner);
 	printf(pl[winner].name);
-	printf("»ñµÃÁËÊ¤Àû!!");
+	printf("è·å¾—äº†èƒœåˆ©!!");
 	while(1){
 		SetColor(rand()%16);
 		SetPos(rand()%100,rand()%30);
 		printf("#%d ",winner);
 		printf(pl[winner].name);
-		printf("»ñµÃÁËÊ¤Àû!!");
+		printf("è·å¾—äº†èƒœåˆ©!!");
 		Sleep(10);
 	}
 	return 0;
