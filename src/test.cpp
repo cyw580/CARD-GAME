@@ -145,12 +145,12 @@ void Card::Use(int from,int to){
 	int damage=ATK,damage2=ATK,flag;
 	if(func) flag=Special(from,to);
 	if(pl[from].occ==2 && ATK>0) damage=damage2=ATK+5*pl[from].buff[0];
-	if(pl[from].occ==5 && ATK>0) damage=damage2=ATK+6*pl[from].buff[0];
-	if(pl[from].buff[3]){
-		damage*=2;damage2*=2;
-	}
+	if(pl[from].occ==5 && ATK>0) damage=damage2=ATK+8*pl[from].buff[0];
 	if(pl[from].occ==4 && pl[from].buff[0]){
 		damage*=0.7;damage2*=0.7;
+	}
+	if(pl[from].buff[3]){
+		damage*=2;damage2*=2;
 	}
 	if(pl[to].def>0 && flag!=1){
 		damage=max(0,damage-pl[to].def);
@@ -171,6 +171,12 @@ void Card::Use(int from,int to){
 	//套盾与回血
 	if(HEAL<0 && pl[from].occ==2) pl[from].buff[0]++;
 	if(pl[from].occ==4 && ATK>0) pl[from].buff[0]=1;
+	if(pl[from].occ==5 && flag==2){
+		pl[from].buff[0]++;
+		pl[from].maxhp+=15;
+		pl[from].maxdef+=10;
+		pl[from].hp=min(pl[from].maxhp,pl[from].hp+20);
+	}
 	UI();
 	Check(to);Check(from);
 }
@@ -178,7 +184,10 @@ void Card::Use(int from,int to){
 int Card::Special(int from,int to){
 	int damage=ATK;
 	if(pl[from].occ==2 && ATK>0) damage=ATK+5*pl[from].buff[0];
-	if(pl[from].occ==5 && ATK>0) damage=ATK+6*pl[from].buff[0];
+	if(pl[from].occ==5 && ATK>0) damage=ATK+8*pl[from].buff[0];
+	if(pl[from].occ==4 && pl[from].buff[0]){
+		damage*=0.7;
+	}
 	if(pl[from].buff[3]){
 		damage*=2;
 	}
@@ -256,10 +265,7 @@ int Card::Special(int from,int to){
 		pl[from].cost=min(pl[from].maxcost,pl[from].cost+2);
 	}
 	else if(func==19){
-		pl[from].buff[0]++;
-		pl[from].maxhp+=15;
-		pl[from].maxdef+=10;
-		pl[from].hp=min(pl[from].maxhp,pl[from].hp+30);
+		return 2;
 	}
 	else if(func==20){
 		return 1;
@@ -313,6 +319,7 @@ string Card::Intro(){
 	else if(func==23)return "接下去3回合在每回合开始时恢复30HP";
 	else if(func==24)return "HP上限-60，清空<★牺牲>标记，恢复到满血";
 	else if(func==25)return "+2◆并清除<★疲惫>标记";
+	else if(func==26)return "不要太贪心！";
 	return "";
 }
 
@@ -345,6 +352,28 @@ void init(int x){
 	pl[x].hp=pl[x].maxhp;
 	fin.close();
 	if(pl[x].occ==3) pl[x].buff[0]=1;
+}
+void adv(int x){
+	if(pl[x].occ==1){
+		pl[x].def=40;
+	}
+	else if(pl[x].occ==2){
+		pl[x].buff[5]=2;
+	}
+	else if(pl[x].occ==3){
+		pl[x].hp+=30;
+		pl[x].maxhp+=30;
+	}
+	else if(pl[x].occ==4){
+		pl[x].def=60;
+	}
+	else if(pl[x].occ==5){
+		pl[x].hp+=10;
+		pl[x].maxhp+=10;
+		pl[x].def+=20;
+		pl[x].maxdef+=20;
+	}
+	return;
 }
 
 string occ_name(int x){
@@ -406,10 +435,10 @@ void occ_func(int x){
 		printf("\n\t 3.[装备精良] 每回合开始时若没有护甲 则护甲+30");printf("                 ");
 		printf("\n\t 4.[无畏] 无法抽到公共牌库中治疗牌");printf("  ");
 	}else if(x==5){
-		printf("HP 260   MAX_DEF 0   手牌上限4   ◆3");printf("   ");SetColor(13);
-		printf("\n\t<★成长>每个标记使你ATK+6 HP上限+15 MAX_DEF+10");printf("             ");SetColor(7);
+		printf("HP 270   MAX_DEF 0   手牌上限3   ◆3");printf("   ");SetColor(13);
+		printf("\n\t<★成长>每个标记使你ATK+8 HP上限+15 MAX_DEF+10");printf("             ");SetColor(7);
 		printf("\n\t 1.[贪婪] 回合开始时变为3◆，使用牌后有80%会抽牌");printf("           ");
-		printf("\n\t 2.[健康] 每当获得1个<★成长>标记时恢复30HP");printf("                  ");
+		printf("\n\t 2.[健康] 每当获得1个<★成长>标记时恢复20HP");printf("                  ");
 		printf("\n\t 3.[与世隔绝] 无法抽到公共牌库中的牌");printf("          ");
 		printf("\n\t 4.[敏捷] 部分牌有穿透护盾攻击的能力");
 	}
@@ -442,7 +471,7 @@ void Choose(int now){
 			printf(" | ");
 			printf(occ_intro(i));
 		}
-		SetPos(0,12);
+		SetPos(0,14);
 		occ_func(curse);
 		input=getch();
 		if(input==UP || input==LEFT)
@@ -587,7 +616,7 @@ int Ask(int now){
 	}
 	if(pl[now].occ==5) pl[now].cost=3;
 	if(pl[now].buff[5])
-		pl[now].hp+=30;
+		pl[now].hp=min(pl[now].hp+30,pl[now].maxhp);
 	if(pl[now].buff[1])
 		pl[now].hp-=40;
 	if(pl[now].buff[2])
@@ -654,7 +683,7 @@ int Ask(int now){
 		SetPos(0,0);
 		printf("%d",curse);
 		SetPos(11,Row+7);
-		printf("                                                                    ");
+		printf("                                                                         ");
 		SetPos(11,Row+7);
 		printf(pl[now].handcard[curse].Intro());
 		input=getch();
@@ -758,26 +787,20 @@ int main(){
 		printf("请输入P%d的名字:",i);
 		cin>>pl[i].name;
 	}
-	printf("请输入初始费用:");
-	int start=0;
-	scanf("%d",&start);
 	for(int now=1;now<=2;now++){
 		Choose(now);//选择职业
-		SetPos(0,17+now);
+		SetPos(0,19+now);
 		printf("P%d的职业是",now);
 		printf(occ_name(pl[now].occ));
 	}
-	for(int i=1;i<=2;i++){
-		pl[i].cost=min(start,pl[i].maxcost);
-	}
+	for(int i=1;i<=2;i++) pl[i].cost=3;
 	Sleep(1500);
 	system("cls");
 	for(int i=1;i<=2;i++) init(i);
 	int now=1;
+	adv(3-now);
 	while(!Check(now)){
-		for(int i=1;i<=2;i++){
-			pl[i].prehp=pl[i].hp;
-		}
+		for(int i=1;i<=2;i++) pl[i].prehp=pl[i].hp;
 		if(pl[now].cost==0 && pl[now].occ==1)  pl[now].cost=1;
 		pl[now].cost=min(pl[now].cost+1,pl[now].maxcost);//加费 
 		UI();
