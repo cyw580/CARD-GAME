@@ -120,7 +120,7 @@ struct player{
 			buff[i]=max(0,buff[i]-1);
 		}
 	}
-}pl[5];
+}pl[105];
 
 //-------------------------------------------------
 int UI();
@@ -353,6 +353,7 @@ string occ_name(int x){
 	else if(x==3)return "法师";
 	else if(x==4)return "战士";
 	else if(x==5)return "地精";
+	else if(x==6)return "随缘";
 	return "";
 }
 
@@ -360,7 +361,7 @@ string occ_file(int x){
 	if(x==1)return "traveller";
 	else if(x==2)return "caster";
 	else if(x==3)return "wizard";
-	else if(x==4)return "fighter";
+	else if(x==4)return "warrior";
 	else if(x==5)return "goblin";
 	return "";
 }
@@ -371,6 +372,7 @@ string occ_intro(int x){
 	else if(x==3)return "火力即正义，防御不过次要";
 	else if(x==4)return "坚实的防御，强大的力量";
 	else if(x==5)return "更灵活更敏捷，通过发育获得优势";
+	else if(x==6)return "反正我都会玩，随便来一个";
 	return "";
 }
 void occ_func(int x){
@@ -398,8 +400,8 @@ void occ_func(int x){
 		printf("\n");printf("                                            ");
 	}else if(x==4){
 		printf("HP 500   MAX_DEF 200   手牌上限4   ◆6");printf(" ");SetColor(13);
-		printf("\n\t<★疲惫>标记存在时攻击力变为原来的60%%");printf("         ");SetColor(7);
-		printf("\n\t 1.[备战状态] 回合开始时标记清空");printf("                ");
+		printf("\n\t<★疲惫>标记存在时攻击力变为原来的70%%");printf("         ");SetColor(7);
+		printf("\n\t 1.[备战状态] 回合开始时<★疲惫>标记清空");printf("                ");
 		printf("\n\t 2.[尽力出击] 使用攻击牌后获得<★疲惫>标记");printf("                    ");
 		printf("\n\t 3.[装备精良] 每回合开始时若没有护甲 则护甲+30");printf("                 ");
 		printf("\n\t 4.[无畏] 无法抽到公共牌库中治疗牌");printf("  ");
@@ -411,6 +413,14 @@ void occ_func(int x){
 		printf("\n\t 3.[与世隔绝] 无法抽到公共牌库中的牌");printf("          ");
 		printf("\n\t 4.[敏捷] 部分牌有穿透护盾攻击的能力");
 	}
+	else if(x==6){
+		printf("HP ???   MAX_DEF ???   手牌上限?   ◆?");printf(" ");
+		printf("\n                                                            ");
+		printf("\n                                                            ");
+		printf("\n                                                            ");
+		printf("\n                                                            ");
+		printf("\n                                                            ");
+	}
 	return;
 }
 
@@ -419,7 +429,7 @@ void Choose(int now){
 	printf("◇选择P%d的职业◇",now);
 	int curse=1;
 	while(1){
-		for(int i=1;i<=5;i++){	
+		for(int i=1;i<=6;i++){	
 			if(curse!=i)
 				SetColor(7,0);
 			else
@@ -439,21 +449,35 @@ void Choose(int now){
 			curse--;
 		if(input==DOWN || input==RIGHT)
 			curse++;
-		if(input>='1' && input<='5'){
+		if(input>='1' && input<='6'){
 			if(input-'0'==curse){
-				pl[now].occ=curse;
-				pl[now].job=occ_file(curse);
-				return;
+				if(curse<=5){
+					pl[now].occ=curse;
+					pl[now].job=occ_file(curse);
+					return;
+				}
+				else {
+					pl[now].occ=rand()%5+1;
+					pl[now].job=occ_file(pl[now].occ);
+					return;
+				}
 			}
 			else
 				curse=input-'0';
 		}
-		if(curse>5)curse=1;
-		if(curse<1)curse=5;
+		if(curse>6) curse=1;
+		if(curse<1) curse=6;
 		if(input==SPACE || input==ENTER || input=='z'){
-			pl[now].occ=curse;
-			pl[now].job=occ_file(curse);
-			return;
+			if(curse<=5){
+				pl[now].occ=curse;
+				pl[now].job=occ_file(curse);
+				return;
+			}
+			else {
+				pl[now].occ=rand()%5+1;
+				pl[now].job=occ_file(pl[now].occ);
+				return;
+			}
 		}
 	}
 }
@@ -511,7 +535,7 @@ int UI(){
 		if(pl[rnk].buff[4])
 			SetColor(4),printf("XX %d : ",pl[rnk].buff[4]);
 		if(pl[rnk].buff[5])
-			SetColor(4),printf("治疗 %d : ",pl[rnk].buff[5]);//修改颜色
+			SetColor(10),printf("治疗 %d : ",pl[rnk].buff[5]);//修改颜色
 		printf("                                                 ");
 		
 		//血条绘制
@@ -549,7 +573,7 @@ int Sort(int now){//补充手牌
 }
 
 int Ask(int now){
-	int Row=13,option=0;
+	int Row=13,option_use=0,option_giveup=0,option_over=0;
 	if(pl[now].occ==3){
 		if(pl[now].buff[0]){
 			pl[now].cost=min(pl[now].maxcost,pl[now].cost+pl[now].buff[0]);
@@ -598,12 +622,13 @@ int Ask(int now){
 			// printf("%d",pl[now].used[i]);//debug
 			SetPos(5,Row+i);
 			if(pl[now].used[i])SetColor(8);
-			if(curse==i && !option) SetColor(color=15),printf("◎%d",i); 
-			else if(curse==i && option) SetColor(color=15),printf("×%d",i); 
+			if(curse==i && !option_giveup && !option_use) SetColor(color=15),printf("◎%d",i); 
+			else if(curse==i && option_giveup) SetColor(color=15),printf("×%d",i); 
+			else if(curse==i && option_use) SetColor(color=15),printf("●%d",i); 
 			else SetColor(color=7),printf("  %d",i); 
 			if(pl[now].used[i]){
 				SetColor(8);
-				printf("                                                              ");
+				printf("                                                               ");
 				SetPos(14,Row+i);
 				printf("[Used.]");
 				continue;
@@ -633,16 +658,19 @@ int Ask(int now){
 		SetPos(11,Row+7);
 		printf(pl[now].handcard[curse].Intro());
 		input=getch();
-		if(input==LEFT || input==UP){
-			option=0;
+		if(input>='1' && input<='9' ){
+			if(!pl[now].used[input-'0'] && input-'0'<=pl[now].cardcnt) curse=input-'0';
+		}
+		if(input==LEFT || input==UP || input=='w' || input=='a'){
+			option_use=option_giveup=option_over=0;
 			curse--;
 			while(pl[now].used[curse]&&curse>0){
 				curse--;
-				if(curse<=0)curse=pl[now].cardcnt;
+				if(curse<=0) curse=pl[now].cardcnt;
 			}
 		}
-		if(input==RIGHT || input==DOWN){
-			option=0;
+		if(input==RIGHT || input==DOWN || input=='s' || input=='d'){
+			option_use=option_giveup=option_over=0;
 			curse++;
 			while(pl[now].used[curse]&&curse<=pl[now].cardcnt+1){
 				curse++;
@@ -651,48 +679,71 @@ int Ask(int now){
 		}
 		if(curse<=0)curse=pl[now].cardcnt;
 		if(curse>pl[now].cardcnt)curse=1;//移动焦点
-		if(input=='z')//使用
+		if(input=='z' || input=='+')//使用
 		{
-			option=0;
-			if(pl[now].used[curse]){
-				SetPos(0,1);
-				printf("选中的牌不存在！                 ");
+			option_giveup=option_over=0;
+			if(!option_use){
+				option_use=1;
 			}
-			else if(pl[now].cost<pl[now].handcard[curse].cost){
-				SetPos(0,1);
-				printf("费用不足无法使用此牌！                 ");
+			else {
+				if(pl[now].used[curse]){
+					SetPos(0,1);
+					printf("选中的牌不存在！                 ");
+				}
+				else if(pl[now].cost<pl[now].handcard[curse].cost){
+					SetPos(0,1);
+					printf("费用不足无法使用此牌！                 ");
+				}
+				else{
+					pl[now].cost-=pl[now].handcard[curse].cost;
+					pl[now].used[curse]=1;
+					pl[now].rest--;
+					pl[now].handcard[curse].Use(now,3-now);
+					if(pl[now].occ==5 && rand()%100<80) {
+						pl[now].used[curse]=0;
+						pl[now].rest++;
+						pl[now].handcard[curse]=pl[now].heap[(rand()%pl[now].heapn)+1];
+					}
+					while(pl[now].used[curse] && curse<=pl[now].cardcnt+1 && pl[now].rest){
+						curse++;
+						if(curse>pl[now].cardcnt)curse=1;
+					}
+				}
+				option_use=0;
+			}
+		}
+		if(input=='x' || input=='-'){//弃牌
+			option_use=option_over=0;
+			if(!option_giveup){
+				option_giveup=1;
 			}
 			else{
-				pl[now].cost-=pl[now].handcard[curse].cost;
 				pl[now].used[curse]=1;
 				pl[now].rest--;
-				pl[now].handcard[curse].Use(now,3-now);
-				if(pl[now].occ==5 && rand()%100<80) {
-					pl[now].used[curse]=0;
-					pl[now].rest++;
-					pl[now].handcard[curse]=pl[now].heap[(rand()%pl[now].heapn)+1];
-				}
 				while(pl[now].used[curse] && curse<=pl[now].cardcnt+1 && pl[now].rest){
 					curse++;
 					if(curse>pl[now].cardcnt)curse=1;
 				}
+				option_giveup=0;
 			}
 		}
-		if(input=='x'){//弃牌
-			if(!option){
-				option=1;
-			}
-			else{
-				pl[now].used[curse]=1;
-				pl[now].rest--;
-				while(pl[now].used[curse] && curse<=pl[now].cardcnt+1 && pl[now].rest){
-					curse++;
-					if(curse>pl[now].cardcnt)curse=1;
-				}
-				option=0;
+		if(input==SPACE || input==ENTER) {//结束回合
+			if(!option_over){
+				option_over=1;
+				SetPos(11,Row+9);
+				printf("确定要结束回合吗？");
+			}else{
+				option_over=0;
+				SetPos(11,Row+9);
+				printf("                    ");
+				break;
 			}
 		}
-		if(input==SPACE || input==ENTER || pl[now].rest<=0)//结束回合
+		if(!option_over){
+			SetPos(11,Row+9);
+			printf("                    ");
+		}
+		if(pl[now].rest<=0)//结束回合
 			break; 
 		Check(now);
 	}
@@ -740,6 +791,7 @@ int main(){
 	printf("#%d ",winner);
 	printf(pl[winner].name);
 	printf("获得了胜利!!");
+	Shake(10,1);
 	while(1){
 		SetColor(rand()%16);
 		SetPos(rand()%100,rand()%30);
