@@ -73,7 +73,7 @@ void cline(){
 
 struct Card{
 	string name;
-	int cost,ATK,DEF,HEAL,MISS,func;
+	int cost,ATK,HEAL,DEF,MISS,func;
 	void Use(int from,int to);
 	int Special(int from,int to);
 	string Intro();
