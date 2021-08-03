@@ -152,7 +152,7 @@ int Card::Special(int from,int to){
 		pl[from].maxcost--;
 	}
 	else if(func==11){
-		pl[from].maxhp-=80;
+		pl[from].maxhp-=60;
 		pl[from].hp=min(pl[from].hp,pl[from].maxhp);
 	}
 	else if(func==12){
@@ -165,7 +165,7 @@ int Card::Special(int from,int to){
 		pl[to].buff[3]=2;
 	}
 	else if(func==15){
-		int da=20+30*pl[from].cost;
+		int da=25+35*pl[from].cost;
 		if(pl[from].buff[3]) da=da*2;
 		if(pl[from].buff[0]) da=da*0.7;
 		pl[from].cost=0;
@@ -201,7 +201,7 @@ int Card::Special(int from,int to){
 		pl[from].buff[5]+=3;
 	}
 	else if(func==24){
-		pl[from].maxhp-=60;
+		pl[from].maxhp-=80;
 		pl[from].hp=pl[from].maxhp;
 		pl[from].buff[0]=0;
 	}
@@ -223,11 +223,11 @@ string Card::Intro(){
 	else if(func==8)return "手牌上限+1";
 	else if(func==9)return "HP上限+80";
 	else if(func==10)return "-1◆上限";
-	else if(func==11)return "HP上限-80";
+	else if(func==11)return "HP上限-60";
 	else if(func==12)return "下回合额外+2◆";
 	else if(func==13)return "对方损失现有HP的40%";
 	else if(func==14)return "对方下回合结束前 对方进入狂暴状态（造成的伤害变为原来的2倍）";
-	else if(func==15)return "消耗所有费用，造成（30*费用+20）的伤害";
+	else if(func==15)return "消耗所有费用，造成（35*费用+25）的伤害";
 	else if(func==16)return "对方-3◆";
 	else if(func==17)return "你在本回合、对方在下回合都进入狂暴状态（造成的伤害变为原来的2倍）";
 	else if(func==18)return "+2◆";
@@ -236,7 +236,7 @@ string Card::Intro(){
 	else if(func==21)return "对方获得50护甲";
 	else if(func==22)return "HP上限-20，+1<★牺牲>标记";
 	else if(func==23)return "接下去3回合在每回合开始时恢复30HP";
-	else if(func==24)return "HP上限-60，清空<★牺牲>标记，恢复到满血";
+	else if(func==24)return "HP上限-80，仅清空<★牺牲>标记，恢复到满血";
 	else if(func==25)return "+2◆并清除<★疲惫>标记";
 	else if(func==26)return "不要太贪心！";
 	return "";
@@ -459,7 +459,7 @@ int Ask(int now){
 		if(rand()%100<40) pl[now].buff[0]++;
 	}
 	if(pl[now].occ==4) {
-		if(pl[now].def==0) pl[now].def=30;
+		if(pl[now].def==0) pl[now].def=40;
 		pl[now].buff[0]=0;
 	}
 	if(pl[now].occ==5) pl[now].cost=3;
@@ -541,6 +541,7 @@ int Ask(int now){
 		if(input==LEFT || input==UP || input=='w' || input=='a'){
 			option_use=option_giveup=option_over=0;
 			curse--;
+			if(curse<=0) curse=pl[now].cardcnt;
 			while(pl[now].used[curse]&&curse>0){
 				curse--;
 				if(curse<=0) curse=pl[now].cardcnt;
@@ -549,9 +550,10 @@ int Ask(int now){
 		if(input==RIGHT || input==DOWN || input=='s' || input=='d'){
 			option_use=option_giveup=option_over=0;
 			curse++;
-			while(pl[now].used[curse]&&curse<=pl[now].cardcnt+1){
+			if(curse>pl[now].cardcnt) curse=1;
+			while(pl[now].used[curse]&&curse<=pl[now].cardcnt){
 				curse++;
-				if(curse>pl[now].cardcnt)curse=1;
+				if(curse>pl[now].cardcnt) curse=1;
 			}
 		}
 		if(curse<=0)curse=pl[now].cardcnt;
