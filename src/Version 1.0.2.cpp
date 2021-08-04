@@ -209,6 +209,25 @@ int Card::Special(int from,int to){
 		pl[from].buff[0]=0;
 		pl[from].cost+=2;
 	}
+	else if(func==27){
+		pl[from].heap[++pl[from].heapn]=lib[6][1];
+		pl[from].heap[++pl[from].heapn]=lib[6][1];
+	}
+	else if(func==28){
+		pl[from].heap[++pl[from].heapn]=lib[6][1];
+		pl[from].heap[++pl[from].heapn]=lib[6][1];
+		pl[from].heap[++pl[from].heapn]=lib[6][1];
+		pl[from].heap[++pl[from].heapn]=lib[6][1];
+		pl[from].cost=max(pl[from].cost+4,pl[from].maxcost);
+	}
+	else if(func==30){
+		pl[from].heap[++pl[from].heapn]=lib[6][1];
+	}
+	else if(func==31){
+		pl[from].heap[++pl[from].heapn]=lib[6][1];
+		pl[to].hp=min(pl[to].hp+20,pl[to].maxhp);
+		for(int i=1;i<=10;i++) pl[from].buff[i]=0;
+	}
 	return 0;
 }
 
@@ -239,6 +258,11 @@ string Card::Intro(){
 	else if(func==24)return "HP上限-80，仅清空<★牺牲>标记，恢复到满血";
 	else if(func==25)return "+2◆并清除<★疲惫>标记";
 	else if(func==26)return "不要太贪心！";
+	else if(func==27)return "刷2张[虚空垃圾]进入牌库";
+	else if(func==28)return "+4◆,刷4张[虚空垃圾]至牌库；被弃置时不耗费不生效";
+	else if(func==29)return "被弃置时不耗费不生效";
+	else if(func==30)return "刷1张[虚空垃圾]至牌库";
+	else if(func==31)return "清空自身所有Buff，对方恢复20HP，刷1张[虚空垃圾]至牌库";
 	return "";
 }
 
@@ -246,9 +270,9 @@ void init(int x){
 	int tot=libcnt[0];
 	for(int i=1;i<=tot;i++){
 		pl[x].heap[i]=lib[0][i];
-		if(pl[x].occ==3 && pl[x].heap[i].HEAL>=80) i--,tot--;
+		if(pl[x].occ==3 && pl[x].heap[i].HEAL>=75) i--,tot--;
 		if(pl[x].occ==4 && pl[x].heap[i].HEAL>0) i--,tot--;
-		if(pl[x].occ==5) i--,tot--;
+		if(pl[x].occ==5 || pl[x].occ==6) i--,tot--;
 	}
 	pl[x].heapn=tot;
 	tot=libcnt[pl[x].occ];
@@ -268,7 +292,7 @@ void adv(int x){
 	if(pl[x].occ==1){
 		pl[x].def=40;
 	}
-	else if(pl[x].occ==2){
+	else if(pl[x].occ==2 || pl[x].occ==6){
 		pl[x].buff[5]=2;
 	}
 	else if(pl[x].occ==3){
@@ -293,27 +317,19 @@ string occ_name(int x){
 	else if(x==3)return "法师";
 	else if(x==4)return "战士";
 	else if(x==5)return "地精";
-	else if(x==6)return "随缘";
+	else if(x==6)return "恶魔";
+	else if(x==7)return "随缘";
 	return "";
 }
-
-// string occ_file(int x){
-// 	if(x==1)return "traveller";
-// 	else if(x==2)return "caster";
-// 	else if(x==3)return "wizard";
-// 	else if(x==4)return "warrior";
-// 	else if(x==5)return "goblin";
-// 	return "";
-// }
 
 void Choose(int now){
 	SetPos(0,1);
 	printf("          ◇选择P%d ",now);
 	printf(pl[now].name);
 	printf("的职业◇");
-	int curse=1;
+	int curse=1,sumjob=6;
 	while(1){
-		for(int i=1;i<=6;i++){	
+		for(int i=1;i<=sumjob+1;i++){	
 			if(curse!=i)
 				SetColor(7,0);
 			else
@@ -333,29 +349,29 @@ void Choose(int now){
 			curse--;
 		if(input==DOWN || input==RIGHT || input=='s' || input=='d')
 			curse++;
-		if(input>='1' && input<='6'){
+		if(input>='1' && input<='7'){
 			if(input-'0'==curse){
-				if(curse<=5){
+				if(curse<=sumjob){
 					pl[now].occ=curse;
 					return;
 				}
 				else {
-					pl[now].occ=rand()%5+1;
+					pl[now].occ=rand()%sumjob+1;
 					return;
 				}
 			}
 			else
 				curse=input-'0';
 		}
-		if(curse>6) curse=1;
-		if(curse<1) curse=6;
+		if(curse>sumjob+1) curse=1;
+		if(curse<1) curse=sumjob+1;
 		if(input==SPACE || input==ENTER || input=='z'){
-			if(curse<=5){
+			if(curse<=sumjob){
 				pl[now].occ=curse;
 				return;
 			}
 			else {
-				pl[now].occ=rand()%5+1;
+				pl[now].occ=rand()%sumjob+1;
 				return;
 			}
 		}
@@ -450,13 +466,22 @@ int Ask(int now){
 			pl[now].cost=min(pl[now].maxcost,pl[now].cost+pl[now].buff[0]);
 			pl[now].buff[0]=0;
 		}
-		if(rand()%100<40) pl[now].buff[0]++;
+		if(rand()%100<30) pl[now].buff[0]++;
 	}
 	if(pl[now].occ==4) {
 		if(pl[now].def==0) pl[now].def=40;
 		pl[now].buff[0]=0;
 	}
 	if(pl[now].occ==5) pl[now].cost=3;
+	if(pl[now].occ==6){
+		pl[now].cost=min(pl[now].cost+1,pl[now].maxcost);
+		int da=4*pl[now].buff[0];
+		if(da<pl[now].def) pl[now].def-=da;
+		else {
+			if(pl[now].def>0) Shake(3,1);
+			pl[now].hp-=da-pl[now].def,pl[now].def=0;
+		}
+	}
 	if(pl[now].buff[5])
 		pl[now].hp=min(pl[now].hp+30,pl[now].maxhp);
 	if(pl[now].buff[1])
@@ -595,13 +620,50 @@ int Ask(int now){
 				option_giveup=1;
 			}
 			else{
-				pl[now].used[curse]=1;
-				pl[now].rest--;
-				while(pl[now].used[curse] && curse<=pl[now].cardcnt+1 && pl[now].rest){
-					curse++;
-					if(curse>pl[now].cardcnt)curse=1;
+				if(pl[now].occ!=6){
+					pl[now].used[curse]=1;
+					pl[now].rest--;
+					while(pl[now].used[curse] && curse<=pl[now].cardcnt+1 && pl[now].rest){
+						curse++;
+						if(curse>pl[now].cardcnt)curse=1;
+					}
+					option_giveup=0;
 				}
-				option_giveup=0;
+				else{
+					if(pl[now].used[curse]){
+						SetPos(0,1);
+						printf("选中的牌不存在！                 ");
+					}
+					else if(pl[now].handcard[curse].func==29 || pl[now].handcard[curse].func==28){
+						pl[now].used[curse]=1;
+						pl[now].rest--;
+						while(pl[now].used[curse] && curse<=pl[now].cardcnt+1 && pl[now].rest){
+							curse++;
+							if(curse>pl[now].cardcnt) curse=1;
+						}
+						option_giveup=0;
+						pl[now].buff[0]++;
+						UI();
+					}
+					else if(pl[now].cost<pl[now].handcard[curse].cost){
+						SetPos(0,1);
+						printf("费用不足无法弃置此牌！                 ");
+					}
+					else{
+						pl[now].cost-=pl[now].handcard[curse].cost;
+						pl[now].used[curse]=1;
+						pl[now].rest--;
+						swap(pl[now].handcard[curse].ATK,pl[now].handcard[curse].HEAL);
+						pl[now].handcard[curse].Use(now,3-now);
+						while(pl[now].used[curse] && curse<=pl[now].cardcnt+1 && pl[now].rest){
+							curse++;
+							if(curse>pl[now].cardcnt)curse=1;
+						}
+						option_giveup=0;
+						pl[now].buff[0]++;
+						UI();
+					}
+				}
 			}
 		}
 		if(input==SPACE || input==ENTER) {//结束回合
@@ -644,7 +706,7 @@ int main(){
 		printf("P%d的职业是",now);
 		printf(occ_name(pl[now].occ));
 	}
-	for(int i=1;i<=2;i++) pl[i].cost=3;
+	for(int i=1;i<=2;i++) if(pl[i].occ!=6) pl[i].cost=3;
 	Sleep(1500);
 	system("cls");
 	for(int x=1;x<=2;x++) {
