@@ -23,14 +23,10 @@ struct player{
 	int cost,maxcost,rest,heapn,occ;
 	int hp,def,cardcnt,prehp;
 	int maxhp,maxdef;
-	Card handcard[10],heap[105];
-	int used[10];
+	Card handcard[15],heap[1005];
+	int used[15];
 	int buff[20];
 	//0-职业特性,1-燃烧,2-中毒,3-狂暴,4-虚弱,5-治疗
-	player(){
-		hp=maxhp=400;def=0;cardcnt=4;
-		maxdef=100;maxcost=6;
-	}
 	int hprate(){
 		return 10*hp/maxhp;
 	}
@@ -39,7 +35,7 @@ struct player{
 			buff[i]=max(0,buff[i]-1);
 		}
 	}
-}pl[105];
+}pl[15];
 
 //-------------------------------------------------
 int UI();
@@ -146,7 +142,7 @@ int Card::Special(int from,int to){
 		pl[from].used[pl[from].cardcnt]=1;
 	}
 	else if(func==9){
-		pl[from].maxhp+=80;
+		pl[from].maxhp+=40;
 	}
 	else if(func==10){
 		pl[from].maxcost--;
@@ -159,7 +155,7 @@ int Card::Special(int from,int to){
 		pl[from].buff[0]+=2;
 	}
 	else if(func==13){
-		pl[to].hp-=pl[to].hp*0.4;
+		pl[to].hp-=pl[to].hp*0.25;
 	}
 	else if(func==14){
 		pl[to].buff[3]=2;
@@ -170,7 +166,11 @@ int Card::Special(int from,int to){
 		if(pl[from].buff[0]) da=da*0.7;
 		pl[from].cost=0;
 		if(da<pl[to].def) pl[to].def-=da;
-		else pl[to].hp-=da-pl[to].def,pl[to].def=0;
+		else {
+			if(pl[to].def>0) Shake(3,1);
+    		pl[to].hp-=da-pl[to].def,pl[to].def=0;
+    		if(da-pl[to].def>=150) Shake(10,1);
+		}
 		pl[from].buff[0]=1;
 	}
 	else if(func==16){
@@ -221,11 +221,11 @@ string Card::Intro(){
 	else if(func==6)return "对方中毒3回合（每回合损失现有HP的20%）（职业为地精或击破护盾时才生效）";
 	else if(func==7)return "立刻补充你的手牌";
 	else if(func==8)return "手牌上限+1";
-	else if(func==9)return "HP上限+80";
+	else if(func==9)return "HP上限+40";
 	else if(func==10)return "-1◆上限";
 	else if(func==11)return "HP上限-60";
 	else if(func==12)return "下回合额外+2◆";
-	else if(func==13)return "对方损失现有HP的40%";
+	else if(func==13)return "对方损失现有HP的25%";
 	else if(func==14)return "对方下回合结束前 对方进入狂暴状态（造成的伤害变为原来的2倍）";
 	else if(func==15)return "消耗所有费用，造成（35*费用+25）的伤害";
 	else if(func==16)return "对方-3◆";
@@ -246,6 +246,7 @@ void init(int x){
 	int tot=libcnt[0];
 	for(int i=1;i<=tot;i++){
 		pl[x].heap[i]=lib[0][i];
+		if(pl[x].occ==3 && pl[x].heap[i].HEAL>=80) i--,tot--;
 		if(pl[x].occ==4 && pl[x].heap[i].HEAL>0) i--,tot--;
 		if(pl[x].occ==5) i--,tot--;
 	}
@@ -306,8 +307,10 @@ string occ_name(int x){
 // }
 
 void Choose(int now){
-	SetPos(0,5);
-	printf("◇选择P%d的职业◇",now);
+	SetPos(0,1);
+	printf("          ◇选择P%d ",now);
+	printf(pl[now].name);
+	printf("的职业◇");
 	int curse=1;
 	while(1){
 		for(int i=1;i<=6;i++){	
@@ -315,20 +318,20 @@ void Choose(int now){
 				SetColor(7,0);
 			else
 				SetColor(0,7);
-			SetPos(0,5+i);
+			SetPos(0,i+1);
 			printf("                                                             ");
-			SetPos(0,5+i);
-			printf("%d ",i);
+			SetPos(0,i+1);
+			printf("   %d ",i);
 			printf(occ_name(i));
 			printf(" | ");
 			printf(occ_intro(i));
 		}
-		SetPos(0,14);
+		SetPos(0,12);
 		occ_func(curse);
 		input=getch();
-		if(input==UP || input==LEFT)
+		if(input==UP || input==LEFT || input=='w' || input=='a')
 			curse--;
-		if(input==DOWN || input==RIGHT)
+		if(input==DOWN || input==RIGHT || input=='s' || input=='d')
 			curse++;
 		if(input>='1' && input<='6'){
 			if(input-'0'==curse){
@@ -364,25 +367,25 @@ int UI(){
 		int i;
 		//编号/名字/职业
 		SetColor(15);
-		SetPos(5,rnk*4);
+		SetPos(5,rnk*4-2);
 		printf("#%d ",rnk);
 		printf(pl[rnk].name);
-		SetPos(5,rnk*4+1);
+		SetPos(5,rnk*4+1-2);
 		printf("   ");
 		printf(occ_name(pl[rnk].occ));
 		
 		//buff0
 		if(pl[rnk].occ>=2){
 			SetColor(13);
-			SetPos(8,rnk*4+2);
+			SetPos(8,rnk*4+2-2);
 			printf("★%d   ",pl[rnk].buff[0]);
 		}
 
 		//费用绘制
 		SetColor(11);
-		SetPos(17,rnk*4);
+		SetPos(17,rnk*4-2);
 		printf("%d/%d ",pl[rnk].cost,pl[rnk].maxcost);
-		SetPos(26,rnk*4);
+		SetPos(26,rnk*4-2);
 		for(i=1;i<=pl[rnk].cost;i++)
 			printf("◆");
 		for(;i<=pl[rnk].maxcost;i++)
@@ -393,16 +396,16 @@ int UI(){
 		if(pl[rnk].hprate()>5)SetColor(10);
 		else if(pl[rnk].hprate()>2)SetColor(6);
 		else SetColor(12);
-		SetPos(17,rnk*4+1);
+		SetPos(17,rnk*4+1-2);
 		printf("%d/%d            ",pl[rnk].hp,pl[rnk].maxhp);
 
 		//护甲绘制
 		SetColor(15);
-		SetPos(17,rnk*4+2);
+		SetPos(17,rnk*4+2-2);
 		printf("[%d/%d]            ",pl[rnk].def,pl[rnk].maxdef);
 		
 		//Buff绘制
-		SetPos(26,rnk*4+2);
+		SetPos(26,rnk*4+2-2);
 		if(pl[rnk].buff[1])
 			SetColor(6),printf("燃烧 %d : ",pl[rnk].buff[1]);
 		if(pl[rnk].buff[2])
@@ -416,7 +419,7 @@ int UI(){
 		printf("                                                 ");
 		
 		//血条绘制
-		SetPos(26,rnk*4+1);
+		SetPos(26,rnk*4+1-2);
 		if(pl[rnk].hprate()>5)SetColor(10);
 		else if(pl[rnk].hprate()>2)SetColor(6);
 		else SetColor(12);
@@ -434,23 +437,14 @@ int UI(){
 		SetColor(7);
 		for(i=1;i<=pl[rnk].def/20;i++)
 			printf("■");
-		printf("                                                       ");
+		for(i=1;i<=30-pl[rnk].maxhp/40-pl[rnk].def/20;i++)
+		printf(" ");
 	}
 	return 0; 
 }
 
-int Sort(int now){//补充手牌
-	for(int i=1;i<=pl[now].cardcnt;i++){
-		if(pl[now].used[i]){
-			pl[now].handcard[i]=pl[now].heap[(rand()%pl[now].heapn)+1];
-			pl[now].used[i]=0;
-		}
-	}
-	return 0;
-}
-
 int Ask(int now){
-	int Row=13,option_use=0,option_giveup=0,option_over=0;
+	int Row=11,option_use=0,option_giveup=0,option_over=0;
 	if(pl[now].occ==3){
 		if(pl[now].buff[0]){
 			pl[now].cost=min(pl[now].maxcost,pl[now].cost+pl[now].buff[0]);
@@ -474,7 +468,13 @@ int Ask(int now){
 	if(Check(now))
 		return 0;
 	//buff前判
-	Sort(now);
+	for(int i=1;i<=pl[now].cardcnt;i++){
+		if(pl[now].used[i]){
+			pl[now].handcard[i]=pl[now].heap[(rand()%pl[now].heapn)+1];
+			pl[now].used[i]=0;
+		}
+	}
+	//补充手牌
 	pl[now].rest=pl[now].cardcnt;
 	SetColor(7);
 	int curse=1;
@@ -528,11 +528,9 @@ int Ask(int now){
 			printf("%d%%  ",pl[now].handcard[i].MISS);
 		}//显示手牌
 		SetColor(7);
-		SetPos(0,0);
-		printf("%d",curse);
-		SetPos(11,Row+7);
+		SetPos(11,Row+9);
 		printf("                                                                         ");
-		SetPos(11,Row+7);
+		SetPos(11,Row+9);
 		printf(pl[now].handcard[curse].Intro());
 		input=getch();
 		if(input>='1' && input<='9' ){
@@ -609,17 +607,17 @@ int Ask(int now){
 		if(input==SPACE || input==ENTER) {//结束回合
 			if(!option_over){
 				option_over=1;
-				SetPos(11,Row+9);
+				SetPos(11,Row+12);
 				printf("确定要结束回合吗？");
 			}else{
 				option_over=0;
-				SetPos(11,Row+9);
+				SetPos(11,Row+12);
 				printf("                    ");
 				break;
 			}
 		}
 		if(!option_over){
-			SetPos(11,Row+9);
+			SetPos(11,Row+12);
 			printf("                    ");
 		}
 		if(pl[now].rest<=0)//结束回合
@@ -638,6 +636,8 @@ int main(){
 		printf("请输入P%d的名字:",i);
 		cin>>pl[i].name;
 	}
+	Sleep(300);
+	system("cls");
 	for(int now=1;now<=2;now++){
 		Choose(now);//选择职业
 		SetPos(0,19+now);
@@ -647,7 +647,10 @@ int main(){
 	for(int i=1;i<=2;i++) pl[i].cost=3;
 	Sleep(1500);
 	system("cls");
-	for(int i=1;i<=2;i++) init(i);
+	for(int x=1;x<=2;x++) {
+		init(x);
+		for(int i=1;i<=pl[x].cardcnt;i++) pl[x].handcard[i]=pl[x].heap[(rand()%pl[x].heapn)+1];
+	}
 	int now=1;
 	adv(3-now);
 	while(!Check(now)){
