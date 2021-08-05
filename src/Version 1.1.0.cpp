@@ -92,6 +92,12 @@ void Card::Use(int from,int to){
 		pl[from].maxdef+=10;
 		pl[from].hp=min(pl[from].maxhp,pl[from].hp+20);
 	}
+	if(pl[from].occ==5 && flag==3){
+		pl[from].buff[0]+=2;
+		pl[from].maxhp+=30;
+		pl[from].maxdef+=20;
+		pl[from].hp=min(pl[from].maxhp,pl[from].hp+40);
+	}
 	UI();
 	Check(to);Check(from);
 }
@@ -239,7 +245,7 @@ int Card::Special(int from,int to){
 		}
 	}
 	else if(func==33){
-		pl[from].heap[++pl[from].heapn]=lib[6][2];
+		return 3;
 	}
 	return 0;
 }
@@ -278,6 +284,7 @@ string Card::Intro(){
 	else if(func==31)return "清空自身所有Buff，对方恢复20HP，刷1张[虚空垃圾]至牌库";
 	else if(func==32)return "清空手牌中[虚空垃圾]且每一张[虚空垃圾]使对方HP-50（不受Buff影响）";
 	else if(func==33)return "刷1张[清理虚空]至牌库";
+	else if(func==34)return "+2<★成长>标记";
 	return "";
 }
 
