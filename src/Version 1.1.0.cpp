@@ -59,8 +59,8 @@ void Card::Use(int from,int to){
 	}//失效判定
 	int damage=ATK,damage2=ATK,flag;
 	if(func) flag=Special(from,to);
-	if(pl[from].occ==2 && ATK>0) damage=damage2=ATK+5*pl[from].buff[0];
-	if(pl[from].occ==5 && ATK>0) damage=damage2=ATK+8*pl[from].buff[0];
+	if(pl[from].occ==2 && ATK>0) damage=damage2=ATK+6*pl[from].buff[0];
+	if(pl[from].occ==5 && ATK>0) damage=damage2=ATK+6*pl[from].buff[0];
 	if(pl[from].occ==4 && pl[from].buff[0]){
 		damage*=0.7;damage2*=0.7;
 	}
@@ -98,8 +98,8 @@ void Card::Use(int from,int to){
 
 int Card::Special(int from,int to){
 	int damage=ATK;
-	if(pl[from].occ==2 && ATK>0) damage=ATK+5*pl[from].buff[0];
-	if(pl[from].occ==5 && ATK>0) damage=ATK+8*pl[from].buff[0];
+	if(pl[from].occ==2 && ATK>0) damage=ATK+6*pl[from].buff[0];
+	if(pl[from].occ==5 && ATK>0) damage=ATK+6*pl[from].buff[0];
 	if(pl[from].occ==4 && pl[from].buff[0]){
 		damage*=0.7;
 	}
@@ -218,7 +218,7 @@ int Card::Special(int from,int to){
 		pl[from].heap[++pl[from].heapn]=lib[6][1];
 		pl[from].heap[++pl[from].heapn]=lib[6][1];
 		pl[from].heap[++pl[from].heapn]=lib[6][1];
-		pl[from].cost=max(pl[from].cost+4,pl[from].maxcost);
+		pl[from].cost=min(pl[from].cost+4,pl[from].maxcost);
 	}
 	else if(func==30){
 		pl[from].heap[++pl[from].heapn]=lib[6][1];
@@ -227,6 +227,19 @@ int Card::Special(int from,int to){
 		pl[from].heap[++pl[from].heapn]=lib[6][1];
 		pl[to].hp=min(pl[to].hp+20,pl[to].maxhp);
 		for(int i=1;i<=10;i++) pl[from].buff[i]=0;
+	}
+	else if(func==32){
+		for(int i=1;i<=pl[from].cardcnt;i++){
+			if(pl[from].used[i]) continue;
+			if(pl[from].handcard[i].name=="[虚空垃圾]"){
+				 pl[from].used[i]=1;
+				 pl[from].rest--;
+				 pl[to].hp-=50;
+			}
+		}
+	}
+	else if(func==33){
+		pl[from].heap[++pl[from].heapn]=lib[6][2];
 	}
 	return 0;
 }
@@ -263,6 +276,8 @@ string Card::Intro(){
 	else if(func==29)return "被弃置时不耗费不生效";
 	else if(func==30)return "刷1张[虚空垃圾]至牌库";
 	else if(func==31)return "清空自身所有Buff，对方恢复20HP，刷1张[虚空垃圾]至牌库";
+	else if(func==32)return "清空手牌中[虚空垃圾]且每一张[虚空垃圾]使对方HP-50（不受Buff影响）";
+	else if(func==33)return "刷1张[清理虚空]至牌库";
 	return "";
 }
 
