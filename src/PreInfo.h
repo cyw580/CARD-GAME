@@ -76,6 +76,10 @@ struct Card{
 	int cost,ATK,HEAL,DEF,MISS,func;
 	void Use(int from,int to);
 	int Special(int from,int to);
+	int cal_atk(int from,int to);
+	bool check_atk(int from,int to);
+	int cal_miss(int from,int to);
+	bool check_miss(int from,int to);
 	string Intro();
 }lib[11][1005];
 
@@ -84,6 +88,45 @@ int libcnt[11];
 struct spocc{
 	int maxhp,cardcnt,maxdef,maxcost;
 }job[11];
+
+string Card::Intro(){
+	if(func==1) return "+4◆";
+	else if(func==2)return "+1◆并+1◆上限";
+	else if(func==3)return "所有人+2◆";
+	else if(func==4)return "对方被点燃3回合（每回合损失40HP）（击破护盾时才生效）";
+	else if(func==5)return "自身进入狂暴状态至回合结束（造成的伤害变为原来的2倍）";
+	else if(func==6)return "对方中毒3回合（每回合损失现有HP的20%）（职业为地精或击破护盾时才生效）";
+	else if(func==7)return "立刻补充你的手牌";
+	else if(func==8)return "手牌上限+1";
+	else if(func==9)return "HP上限+40";
+	else if(func==10)return "-1◆上限";
+	else if(func==11)return "HP上限-60";
+	else if(func==12)return "下回合额外+2◆";
+	else if(func==13)return "对方损失现有HP的25%";
+	else if(func==14)return "对方下回合结束前 对方进入狂暴状态（造成的伤害变为原来的2倍）";
+	else if(func==15)return "消耗所有费用，造成（35*费用+25）的伤害";
+	else if(func==16)return "对方-3◆";
+	else if(func==17)return "你在本回合、对方在下回合都进入狂暴状态（造成的伤害变为原来的2倍）";
+	else if(func==18)return "+2◆";
+	else if(func==19)return "+1<★成长>标记";
+	else if(func==20)return "穿透护盾的真实伤害";
+	else if(func==21)return "对方获得50护甲";
+	else if(func==22)return "HP上限-20，+1<★牺牲>标记";
+	else if(func==23)return "接下去3回合 自己在每回合开始时恢复30HP";
+	else if(func==24)return "HP上限-80，仅清空<★牺牲>标记，恢复到满血";
+	else if(func==25)return "+2◆并清除<★疲惫>标记";
+	else if(func==26)return "不要太贪心！";
+	else if(func==27)return "刷2张[虚空垃圾]进入牌库";
+	else if(func==28)return "+4◆,刷3张[虚空垃圾]至牌库；被弃置时不耗费不生效";
+	else if(func==29)return "被弃置时不耗费不生效";
+	else if(func==30)return "刷1张[虚空垃圾]至牌库";
+	else if(func==31)return "清空自身所有Buff，对方恢复20HP，刷1张[虚空垃圾]至牌库";
+	else if(func==32)return "清空手牌中[虚空垃圾]且每一张[虚空垃圾]使对方HP-50（不受Buff影响）";
+	else if(func==33)return "刷1张[清理虚空]至牌库";
+	else if(func==34)return "+2<★成长>标记";
+	else if(func==35)return "接下去2回合 对方在每回合开始时恢复30HP";
+	return "";
+}
 
 void previous(){
 	//public
@@ -116,7 +159,7 @@ void previous(){
 	job[1]={420,4,120,6};
 	//caster
 	lib[2][1]={"[灵魂协同]",1,50,-30,0,0,0};
-	lib[2][2]={"[自我唤醒]",0,0,-25,0,0,0};
+	lib[2][2]={"[自我唤醒]",0,0,-20,0,0,0};
 	lib[2][3]={"[凝结]",2,0,-70,0,0,1};
 	lib[2][4]={"[点燃灵魂]",2,20,-45,0,0,4};
 	lib[2][5]={"[觉醒]",1,0,-50,0,0,5};
@@ -140,20 +183,23 @@ void previous(){
 	lib[3][8]={"[生命腐蚀]",2,0,0,0,0,13};
 	lib[3][9]={"[焕发活力]",2,0,40,0,0,12};
 	lib[3][10]={"[会神一击]",1,70,0,0,0,0};
-	libcnt[3]=10;
+	lib[3][11]={"[不稳定元素]",2,140,20,0,20,35};
+	lib[3][12]={"[会神一击]",1,70,0,0,0,0};
+	lib[3][13]={"[会神一击]",1,70,0,0,0,0};
+	libcnt[3]=11;
 	job[3]={320,4,120,7};
 	//warrior
 	lib[4][1]={"[坚守阵地]",2,0,0,95,0,0};
 	lib[4][2]={"[挑衅]",1,0,60,50,0,14};
 	lib[4][3]={"[挑衅]",1,0,60,50,0,14};
-	lib[4][4]={"[冲刺]",1,80,0,0,10,0};
-	lib[4][5]={"[莽撞]",2,130,0,0,20,0};
-	lib[4][6]={"[莽撞]",2,130,0,0,20,0};
+	lib[4][4]={"[冲刺]",1,75,0,0,10,0};
+	lib[4][5]={"[莽撞]",2,125,0,0,20,0};
+	lib[4][6]={"[莽撞]",2,125,0,0,20,0};
 	lib[4][7]={"[背水一战]",0,0,0,0,0,15};
 	lib[4][8]={"[持盾冲锋]",3,120,0,60,0,0};
-	lib[4][9]={"[抛掷燃木]",4,140,-30,0,0,4};
+	lib[4][9]={"[抛掷燃木]",4,125,-30,0,0,4};
 	lib[4][10]={"[停战协议]",2,0,10,10,0,16};
-	lib[4][11]={"[决斗]",4,230,0,0,0,0};
+	lib[4][11]={"[决斗]",4,225,0,0,0,0};
 	lib[4][12]={"[绝对防御]",3,0,0,160,0,0};
 	lib[4][13]={"[绝对防御]",3,0,0,160,0,0};
 	lib[4][14]={"[小型急救包]",2,0,60,30,0,0};
@@ -175,8 +221,8 @@ void previous(){
 	lib[5][11]={"[潜伏攻击]",1,10,0,0,0,20};
 	lib[5][12]={"[潜伏攻击]",1,10,0,0,0,20};
 	lib[5][13]={"[潜伏攻击]",1,10,0,0,0,20};
-	lib[5][14]={"[潜在危险]",3,70,0,0,0,20};
-	lib[5][15]={"[正面交锋]",2,60,0,0,0,0};
+	lib[5][14]={"[潜在危险]",3,75,0,0,0,20};
+	lib[5][15]={"[正面交锋]",2,65,0,0,0,0};
 	lib[5][16]={"[累赘]",4,0,0,0,0,26};
 	lib[5][17]={"[发育]",1,0,0,0,20,19};
 	lib[5][18]={"[快速发育]",3,0,0,0,0,34};
@@ -187,14 +233,14 @@ void previous(){
 	lib[6][2]={"[清理虚空]",2,0,0,0,0,32};
 	lib[6][3]={"[暗能累积]",2,65,20,0,10,0};
 	lib[6][4]={"[虚空魔法]",1,30,20,20,0,30};
-	lib[6][5]={"[暗影炸弹]",5,230,30,40,0,29};
+	lib[6][5]={"[暗影炸弹]",5,230,20,30,0,29};
 	lib[6][6]={"[虚空凝聚]",1,0,0,0,0,28};
 	lib[6][7]={"[虚空之力]",2,105,0,0,0,30};
-	lib[6][8]={"[虚空物质]",3,135,35,15,0,30};
+	lib[6][8]={"[虚空物质]",3,125,35,15,0,30};
 	lib[6][9]={"[黑暗气息]",0,20,0,0,0,0};
 	lib[6][10]={"[虚空能量]",4,180,40,0,0,30};
 	lib[6][11]={"[暗能涌动]",3,100,45,0,10,0};
-	lib[6][12]={"[暗能爆发]",4,125,35,0,10,29};
+	lib[6][12]={"[暗能爆发]",4,135,35,0,10,0};
 	lib[6][13]={"[虚空重生]",1,0,60,0,0,31};
 	lib[6][14]={"[暗影术]",1,50,0,0,10,0};
 	lib[6][15]={"[暗能累积]",2,65,20,0,10,0};
@@ -248,11 +294,11 @@ void occ_func(int x){
 		printf("\n\t 3.[装备精良] 每回合开始时若没有护甲 则护甲+40");printf("                 ");
 		printf("\n\t 4.[无畏] 无法抽到公共牌库中治疗牌");printf("  ");
 	}else if(x==5){
-		printf("HP 280   MAX_DEF 0   手牌上限3   ◆3");printf("   ");SetColor(13);
-		printf("\n\t<★成长>每个标记使你ATK+6 HP上限+15 MAX_DEF+10");printf("             ");SetColor(7);
+		printf("HP 270   MAX_DEF 0   手牌上限3   ◆3");printf("   ");SetColor(13);
+		printf("\n\t<★成长>每个标记使你ATK+7 HP上限+15 MAX_DEF+10");printf("             ");SetColor(7);
 		printf("\n\t 1.[贪婪] 回合开始时变为3◆，使用牌后有80%会抽牌");printf("           ");
 		printf("\n\t 2.[健康] 每当获得1个<★成长>标记时恢复20HP");printf("                  ");
-		printf("\n\t 3.[与世隔绝] 无法抽到公共牌库中的牌");printf("          ");
+		printf("\n\t 3.[与世隔绝] 无法抽到公共牌库中的牌");printf("            ");
 		printf("\n\t 4.[敏捷] 部分牌有穿透护盾攻击的能力");
 	}
 	else if(x==6){
@@ -272,4 +318,38 @@ void occ_func(int x){
 		printf("\n                                                                 ");
 	}
 	return;
+}
+
+int env_num=8;
+string env_name(int id){
+	if(id==1) return "血月";
+	else if(id==2) return "暴雨";
+	else if(id==3) return "大雾";
+	else if(id==4) return "晴天";
+	else if(id==5) return "彩虹";
+	else if(id==6) return "酸雨";
+	else if(id==7) return "满月";
+	return "阴天";
+}
+
+int env_color(int id){
+	if(id==1) return 12;
+	else if(id==2) return 15;
+	else if(id==3) return 8;
+	else if(id==4) return 11;
+	else if(id==5) return rand()%6+9;
+	else if(id==6) return 2;
+	else if(id==7) return 15;
+	return 7;
+}
+
+string env_brief(int id){
+	if(id==1)      return "双方的伤害增加20%          ";
+	else if(id==2) return "双方的伤害减少20%          ";
+	else if(id==3) return "双方失误率增加10%          ";
+	else if(id==4) return "双方失误率减少10%          ";
+	else if(id==5) return "双方每回合回复5%最大hp的hp ";
+	else if(id==6) return "双方每回合损失5%最大hp的hp ";
+	else if(id==7) return "双方每回合额外获得1点费用   ";
+	else           return "无特殊效果                 ";
 }
