@@ -369,7 +369,7 @@ int Card::Special(int from,int to){
 	else if(func==48){
 		for(int i=1;i<=pl[to].cardcnt;i++){
 			if(pl[to].used[i]) continue;
-			if(pl[to].handcard[i].name=="[神圣意志]") pl[to].used[i]=1,pl[to].buff[0]++;
+			if(pl[to].handcard[i].name=="[神圣意志]") pl[to].used[i]=1,pl[to].buff[0]++,pl[to].buff[10]--;
 		}
 	}
 	return 0;
@@ -602,7 +602,7 @@ int Ask(int now){
 	if(pl[now].occ==5) pl[now].cost=3;
 	if(pl[now].occ==6){
 		pl[now].cost=min(pl[now].cost+1,pl[now].maxcost);
-		int da=4*pl[now].buff[0];
+		int da=5*pl[now].buff[0];
 		if(da<pl[now].def) pl[now].def-=da;
 		else {
 			if(pl[now].def>0) Shake(3,1);
@@ -736,7 +736,7 @@ int Ask(int now){
 			printf("%-3d%%",pl[now].handcard[i].MISS);//MISS
 			if(pl[now].handcard[i].check_miss(now,3-now)){
 				SetColor(8);
-				printf("(%d%%)",pl[now].handcard[i].cal_miss(now,3-now));
+				printf("(%d%%)  ",pl[now].handcard[i].cal_miss(now,3-now));
 				SetColor(7);
 			}
 			else{
@@ -794,6 +794,7 @@ int Ask(int now){
 					pl[now].cost-=pl[now].handcard[cursor].cost;
 					pl[now].used[cursor]=1;
 					pl[now].rest--;
+					if(pl[now].handcard[cursor].name=="[神圣意志]") pl[now].buff[10]--;
 					if(pl[now].handcard[cursor].Use(now,3-now) && pl[now].handcard[cursor].func==40) {
 						pl[now].used[cursor]=0;
 						pl[now].rest++;
@@ -887,7 +888,7 @@ int Ask(int now){
 				printf("确定要结束回合吗？");
 			}else{
 				if(pl[now].occ==7 && pl[now].cost==0) {
-					if(++pl[now].buff[0]>=15) return 1;
+					if(++pl[now].buff[0]>=12) return 1;
 				}
 				option_over=0;
 				SetPos(11,Row+12);
@@ -1145,7 +1146,6 @@ int main(){
 			printf("                 ");
 			SetPos(50+14,Row+i);
 			printf("%-3d%%",pl[now].handcard[i].MISS);//MISS
-			printf("                 ");
 			if(pl[now].handcard[i].check_miss(now,3-now)){
 				SetColor(8);
 				printf("(%d%%)",pl[now].handcard[i].cal_miss(now,3-now));
