@@ -68,6 +68,8 @@ int Card::cal_atk(int from,int to){
 	//职业影响
 	if(pl[from].buff[3])//狂暴
 		damage*=2;
+	if(pl[from].buff[4])//虚弱
+		damage*=0.5;
 	//Buff影响
 	if(env_now==1)//血月
 		damage*=1.2;
@@ -82,7 +84,7 @@ bool Card::check_atk(int from,int to){
 	if(pl[from].occ==5 && ATK>0 && pl[from].buff[0]>0) return 1;
 	if(pl[from].occ==4 && (ATK>0 || func==15) && pl[from].buff[0]>0) return 1;
 	//职业影响
-	if(pl[from].buff[3])
+	if(pl[from].buff[3] || pl[from].buff[4])
 		return 1;
 	//Buff影响
 	if(env_now==1 || env_now==2)
@@ -183,6 +185,7 @@ int Card::Special(int from,int to){
 	}
 	else if(func==5){
 		pl[from].buff[3]=1;
+		pl[from].buff[4]=0;
 	}
 	else if(func==6){
 		if(damage>=pl[to].def||pl[from].occ==5)
@@ -219,32 +222,15 @@ int Card::Special(int from,int to){
 	}
 	else if(func==14){
 		pl[to].buff[3]=2;
+		pl[to].buff[4]=0;
 	}
-	// else if(func==15){
-	// 	int da=25+35*pl[from].cost;
-	// 	if(pl[from].buff[3]) da=da*2;
-	// 	if(pl[from].buff[0]) da=da*0.7;
-	// 	pl[from].cost=0;
-	// 	if(da<pl[to].def) pl[to].def-=da;
-	// 	else {
-	// 		if(pl[to].def>0) Shake(3,1);
-    // 		pl[to].hp-=da-pl[to].def,pl[to].def=0;
-    // 		if(da-pl[to].def>=150) {//重击动画
-	// 			system("color 47");
-	// 			Shake(10,1);
-	// 			system("color 07");
-	// 			system("cls");
-	// 			UI();
-	// 		}
-	// 	}
-	// 	pl[from].buff[0]=1;
-	// }
 	else if(func==16){
 		pl[to].cost=max(0,pl[to].cost-3);
 	}
 	else if(func==17){
 		pl[from].buff[3]=1;
 		pl[to].buff[3]=2;
+		pl[from].buff[4]=pl[to].buff[4]=0;
 	}
 	else if(func==18){
 		pl[from].cost=min(pl[from].maxcost,pl[from].cost+2);
@@ -273,7 +259,7 @@ int Card::Special(int from,int to){
 	}
 	else if(func==25){
 		pl[from].buff[0]=0;
-		pl[from].cost+=2;
+		pl[from].cost=min(pl[from].cost+2,pl[from].maxcost);
 	}
 	else if(func==27){
 		pl[from].heap[++pl[from].heapn]=lib[6][1];
@@ -371,6 +357,10 @@ int Card::Special(int from,int to){
 			if(pl[to].used[i]) continue;
 			if(pl[to].handcard[i].name=="[神圣意志]") pl[to].used[i]=1,pl[to].buff[0]++,pl[to].buff[10]--;
 		}
+	}
+	else if(func==49){
+		pl[to].buff[4]=2;
+		pl[to].buff[3]=0;
 	}
 	return 0;
 }
@@ -544,7 +534,7 @@ int UI(){
 		if(pl[rnk].buff[3])
 			SetColor(4),printf("狂暴 %d : ",pl[rnk].buff[3]);
 		if(pl[rnk].buff[4])
-			SetColor(4),printf("XX %d : ",pl[rnk].buff[4]);
+			SetColor(11),printf("虚弱 %d : ",pl[rnk].buff[4]);
 		if(pl[rnk].buff[5])
 			SetColor(10),printf("治疗 %d : ",pl[rnk].buff[5]);
 		printf("                                                 ");
@@ -813,7 +803,7 @@ int Ask(int now){
 					if(pl[now].occ==7){
 						for(int i=1;i<=pl[now].cardcnt;i++){
 							if(pl[now].used[i]) continue;
-							if(pl[now].handcard[i].name=="[意识反馈]") pl[now].handcard[i].ATK+=8;
+							if(pl[now].handcard[i].name=="[意识反馈]") pl[now].handcard[i].ATK+=9;
 						}
 					}//[意识反馈]
 					while(pl[now].used[cursor] && cursor<=pl[now].cardcnt+1 && pl[now].rest){
@@ -888,7 +878,10 @@ int Ask(int now){
 				printf("确定要结束回合吗？");
 			}else{
 				if(pl[now].occ==7 && pl[now].cost==0) {
-					if(++pl[now].buff[0]>=12) return 1;
+					if(++pl[now].buff[0]>=12) {
+						winner=now;
+						return 1;
+					}
 				}
 				option_over=0;
 				SetPos(11,Row+12);
