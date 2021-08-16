@@ -5,7 +5,6 @@
 using namespace std;
 
 #include"PreInfo.h"
-
 #define UP 72
 #define DOWN 80
 #define LEFT 75
@@ -51,6 +50,7 @@ struct player{
 	}
 }pl[15];
 
+#include"CARDGAMEsocket.hpp"
 //-------------------------------------------------
 int UI();
 int Sort(int now);
@@ -1306,28 +1306,48 @@ int main(){
 	SetConsoleTitle("CARD GAME:v1.3.0");
 	srand(time(NULL));
 	previous();//获得公共牌库和职业牌库
-	printf("WELCOME!!\n");
-	for(int i=1;i<=2;i++){
-		printf("请输入P%d的名字:",i);
-		cin>>pl[i].name;
-	}//输入姓名
-	Sleep(200);
-	while(_kbhit()) getch();
-	system("cls");//清屏并切换到Option界面
-
-	SetConsoleTitle("CARD GAME:Options");
-	Options();
-	SetColor(0,7);
-	system("color 07");
-	system("cls");//清屏并切换到Choose界面
-
-	SetConsoleTitle("CARD GAME:Choose Your Identity.");
-	for(int now=1;now<=2;now++){
-		Choose(now);//选择职业
-		SetPos(0,19+now);
-		printf("P%d的职业是",now);
-		printf(occ_name(pl[now].occ));
+	printf("建立服务端(1)\n连接到已有的服务端(2)\n");
+	int server_mode;
+	scanf("%d",&server_mode);
+	if(server_mode==2) printf("输入服务端ip地址:");
+	else system("cls"),printf("等待玩家连入...\n");
+	printf("%d\n",TCP_initialize(server_mode));
+	// printf("WELCOME!!\n");
+	// for(int i=1;i<=2;i++){
+	// 	printf("请输入P%d的名字:",i);
+	// 	cin>>pl[i].name;
+	// }//输入姓名
+	// Sleep(200);
+	// while(_kbhit()) getch();
+	// system("cls");//清屏并切换到Option界面
+	if(server_mode==1){
+		system("cls");
+		SetConsoleTitle("CARD GAME:Options");
+		Options();
+		SetColor(0,7);
+		system("color 07");
+		system("cls");//清屏并切换到Choose界面
+		char msg[3]={'2','5','5'};
+		send_message(msg);
 	}
+	else {
+		system("cls");
+		printf("正在等待服务端设定游戏模式...\n");
+		recv_message();
+	}
+	system("cls");
+	SetConsoleTitle("CARD GAME:Choose Your Identity.");
+	Choose(server_mode);//选择职业
+	SetPos(0,20);
+	printf("P%d的职业是",server_mode);
+	printf(occ_name(pl[server_mode].occ));
+	send_message("2 1 ");
+	send_message((char*)&pl[server_mode]);
+	printf("sent\n");
+	recv_message();
+	printf("recv\n");
+	printf("I got the other one's identity...\n");
+	Sleep(1000);
 	SetConsoleTitle("Here we go...");
 	Sleep(1500);
 	while(_kbhit()) getch();
