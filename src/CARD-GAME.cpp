@@ -1327,8 +1327,7 @@ int main(){
 		SetColor(0,7);
 		system("color 07");
 		system("cls");//清屏并切换到Choose界面
-		char msg[3]={'2','5','5'};
-		send_message(msg);
+		send_message("255 ");
 	}
 	else {
 		system("cls");
@@ -1342,11 +1341,13 @@ int main(){
 	printf("P%d的职业是",server_mode);
 	printf(occ_name(pl[server_mode].occ));
 	send_message("2 1 ");
+	//system("pause");
 	send_message((char*)&pl[server_mode]);
 	printf("sent\n");
 	recv_message();
 	printf("recv\n");
 	printf("I got the other one's identity...\n");
+	system("pause");
 	Sleep(1000);
 	SetConsoleTitle("Here we go...");
 	Sleep(1500);

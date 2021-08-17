@@ -38,7 +38,8 @@ char* player_to_char(player pl){
     return charmsg;
 }
 int send_message(char* msg_to_client){
-    int sendval=send(Client,msg_to_client,sizeof(msg_to_client),0);
+    memcpy(charmsg,msg_to_client,sizeof(charmsg));
+    int sendval=send(Client,charmsg,strlen(charmsg),0);
     if(sendval<0){
         closesocket(Client); return -1;
     }
@@ -69,7 +70,7 @@ int recv_message(){
     char msg_from_client[1010];
     return_val+=recv(Client,msg_from_client,4,0);
     int command;
-    sprintf(msg_from_client,"%d",command);
+    sscanf(msg_from_client,"%d",&command);
     if(command==2){
         return_val+=recv(Client,msg_from_client,1010,0);
         int pl_num;
