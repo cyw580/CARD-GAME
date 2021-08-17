@@ -95,7 +95,7 @@ iv init()
 	srand(time(NULL));
 	mouse(0);
 	
-	cardlong=17;
+	cardlong=19;
 	cardname[1]="惩罚";
 	cardname[2]="附带弃置";
 	cardname[3]="埋伏";
@@ -110,10 +110,11 @@ iv init()
 	cardname[12]="1919810";
 	cardname[13]="一心同体";
 	cardname[14]="万心同体"; 
-	cardname[15]="赞美太阳";
+	cardname[15]="赞美太阳"; 
 	cardname[16]="时间流逝";
 	cardname[17]="绯红之王";
 	cardname[18]="公平竞争";
+	cardname[19]="变本加厉";
 	
 	//牌面 
 	explanation[1]="令对手从牌库中抽一张牌";
@@ -134,6 +135,7 @@ iv init()
 	explanation[16]="时间切换到下一个阶段";
 	explanation[17]="随机调整时间";
 	explanation[18]="（打出此牌后）手牌多的一方弃一张牌";
+	explanation[19]="（打出此牌后）手牌多的一方摸一张牌";
 	
 	theskill[1].set_up("自由意志",40,1,1);
 	theskill[2].set_up("命运指针",70,1,2);

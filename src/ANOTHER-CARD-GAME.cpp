@@ -22,7 +22,7 @@ int mana1,mana2,manamax1,manamax2;
 int handcardmax1,handcardmax2;
 int turn;
 int firsthand=1;
-int timemode=0,tim=0,twelveam=0;
+int timemode=0,tim=0,twelveam=0,timrate=0;
 iv addcard(int kind,card t) //往牌堆里加牌 
 {
 	if(cardheap.size()==0)
@@ -57,6 +57,7 @@ iv dealcard() //发牌
 	REP(8) addcard(1,card("一心同体",2,13));
 	REP(3) addcard(1,card("万心同体",1,14));
 	REP(3) addcard(1,card("公平竞争",2,18));
+	REP(3) addcard(1,card("变本加厉",2,19));
 	addcard(1,card("阻碍",3,0));
 	if(timemode)
 	{
@@ -85,7 +86,7 @@ iv startgame() //开始游戏
 	handcardmax1=handcardmax2=10;
 	if(firsthand!=3) turn=firsthand;
 	else turn=ran(1,2);
-	if(firsthand==1) cost2++;
+	if(turn==1) cost2++;
 	else cost1++;
 	if(timemode) tim=ran(1,4);
 }
@@ -397,7 +398,7 @@ iv usecard(card t,int pos)
 		for(int i=0;i<(cardmine->size());i++)
 			if((*cardmine)[i].name!="一心同体")
 				cywakioi.push_back(i);
-		if(cywakioi.size()) (*cardmine)[cywakioi[ran(0,cywakioi.size()-1)]]=card("一心同体",1,13);
+		if(cywakioi.size()) (*cardmine)[cywakioi[ran(0,cywakioi.size()-1)]]=card("一心同体",2,13);
 	}
 	if(t.effect==15)
 		twelveam=min(twelveam+1,10);
@@ -405,14 +406,23 @@ iv usecard(card t,int pos)
 	{
 		tim++;
 		if(tim==5) tim=1;
+		timrate=0;
 	}
 	if(t.effect==17)
+	{
 		tim=ran(1,4);
+		timrate=0;
+	}
 	if(t.effect==18)
 	{
 		if(handcard1.size()>handcard2.size()) throwcard(&handcard1,ran(1,handcard1.size()));
 		else if(handcard2.size()>handcard1.size()) throwcard(&handcard2,ran(1,handcard2.size()));
 	} 
+	if(t.effect==19)
+	{
+		if(handcard1.size()>handcard2.size()) addhandcard(&handcard1,drawcard(),&handcardmax1);
+		else if(handcard2.size()>handcard1.size()) addhandcard(&handcard2,drawcard(),&handcardmax2);
+	}
 }
 iv usemagic(skill t)
 {
@@ -668,6 +678,16 @@ iv game()
 	}
 	ending();
 	turn=3-turn;
+	if(timemode)
+	{
+		if(ran(1,10)<=timrate)
+		{
+			tim++;
+			if(tim==5) tim=1;
+			timrate=0;
+		}
+		else timrate=min(timrate+1,10);
+	}
 	game();
 }
 iv choosesoul()
