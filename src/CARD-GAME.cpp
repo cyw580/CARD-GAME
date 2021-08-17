@@ -580,7 +580,7 @@ void init(int x){
 bool gettre[5];
 void treasure(int now){//竞技模式：宝藏牌
 	if(gettre[now]) return;
-	if(pl[now].occ==1 && (pl[now].cost==0 && pl[now].hp<=210)){
+	if(pl[now].occ==1 && (pl[now].cost<=2 && pl[now].hp<=210)){
 		for(int i=1;i<=pl[now].cardcnt;i++){
 			if(pl[now].used[i]) {
 				pl[now].used[i]=0;
@@ -917,7 +917,7 @@ void start_turn(int now){
 int Ask(int now){
 	int option_use=0,option_giveup=0,option_over=0;
 	start_turn(now);
-	if(mode==1)treasure(now);
+	if(mode==1) treasure(now);
 	UI();
 	if(Check(now)) return 0;
 	//死亡判断
@@ -1278,11 +1278,11 @@ void Options(){
 		//游戏模式设定
 		
 		input=getch();
-		if(input==UP || input==LEFT) cursor--;
-		if(input==DOWN || input==RIGHT) cursor++;
+		if(input==UP || input==LEFT || input=='w' || input=='a') cursor--;
+		if(input==DOWN || input==RIGHT || input=='s' || input=='d') cursor++;
 		if(cursor>3) cursor=1;
 		if(cursor<1) cursor=3;
-		if(input=='z' || input=='x'){
+		if(input=='z' || input=='+'){
 			if(cursor==1){
 				env_on^=1;
 			}
@@ -1303,7 +1303,7 @@ void Options(){
 int main(){
 	SetConsoleOutputCP(65001);
 	mouse(0);
-	SetConsoleTitle("CARD GAME:v1.3.0");
+	SetConsoleTitle("CARD GAME:v2.0.0");
 	srand(time(NULL));
 	previous();//获得公共牌库和职业牌库
 	printf("WELCOME!!\n");
