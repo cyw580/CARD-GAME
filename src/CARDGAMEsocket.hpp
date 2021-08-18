@@ -30,13 +30,13 @@ int TCP_initialize(int server_mode){
     }
     return 0;
 }
-char charmsg[10000];
+char charmsg[15000];
 char* player_to_char(player pl){
     memset(charmsg,0,sizeof(charmsg));
     memcpy(charmsg,&pl,sizeof(player));
     return charmsg;
 }
-int send_message(char* msg_to_client,int len){
+int send_message(const char* msg_to_client,int len){
     memset(charmsg,0,sizeof(charmsg));
     memcpy(charmsg,msg_to_client,len);
     int sendval=send(Client,charmsg,len,0);
@@ -46,8 +46,8 @@ int send_message(char* msg_to_client,int len){
     return 0;
 }
 player precv_message(int &return_val){
-    char msg_from_client[10000]={0};
-    int recvval=recv(Client,msg_from_client,10000,0);
+    char msg_from_client[15000]={0};
+    int recvval=recv(Client,msg_from_client,15000,0);
     if(recvval<0){
         closesocket(Client); return_val+=-1;
     }
@@ -56,8 +56,8 @@ player precv_message(int &return_val){
     return pl;
 }
 Card crecv_message(int &return_val){
-    char msg_from_client[10000]={0};
-    int recvval=recv(Client,msg_from_client,10000,0);
+    char msg_from_client[15000]={0};
+    int recvval=recv(Client,msg_from_client,15000,0);
     if(recvval<0){
         closesocket(Client); return_val+=-1;
     }
@@ -67,7 +67,7 @@ Card crecv_message(int &return_val){
 }
 int recv_message(){
     int return_val=0;
-    char msg_from_client[10000]={0};
+    char msg_from_client[15000]={0};
     if(recv(Client,msg_from_client,4,0)<0) return -1;
     int command;
     sscanf(msg_from_client,"%d",&command);
@@ -100,11 +100,11 @@ inline int recv_gaming(){
 inline int send_gaming(Card use_card){
     int return_val=0;
     if(send_message("2 1 ",4)<0) return -1;
-    if(send_message((char*)&pl[1],10000)<0) return -1;
+    if(send_message((char*)&pl[1],15000)<0) return -1;
     if(send_message("2 2 ",4)<0) return -1;
-    if(send_message((char*)&pl[2],10000)<0) return -1;
+    if(send_message((char*)&pl[2],15000)<0) return -1;
     if(send_message("3   ",4)<0) return -1;
-    if(send_message((char*)&use_card,10000)) return -1;
+    if(send_message((char*)&use_card,15000)<0) return -1;
     if(now==1) {if(send_message("4 1 ",4)<0) return -1;}
     else if(send_message("4 2 ",4)<0) return -1;
     char msg_of_weather[1010]={0};

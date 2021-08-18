@@ -52,6 +52,7 @@ struct player{
 		}
 	}
 }pl[15];
+Card void_card=(Card){"x",0,0,0,0,0,-2};
 
 #include"CARDGAMEsocket.hpp"
 //-------------------------------------------------
@@ -89,22 +90,6 @@ int Card::cal_atk(int from,int to){//计算实际攻击力
 	return damage;
 }
 
-bool Card::check_atk(int from,int to){//是否显示实际攻击力
-	if(func==15) return 0;//[背水一战]无视buff
-	if(pl[from].occ==2 && ATK>0 && pl[from].buff[0]>0) return 1;
-	if(pl[from].occ==5 && ATK>0 && pl[from].buff[0]>0) return 1;
-	if(pl[from].occ==4 && (ATK>0 && func!=15) && pl[from].buff[0]>0) return 1;
-	//职业影响
-	if(pl[from].buff[3] || pl[from].buff[4])
-		return 1;
-	//Buff影响
-	if(env_now==1 || env_now==2)
-		return 1;
-	//天气影响
-	if(mode==2) return 1;
-	return 0;
-}
-
 int Card::cal_heal(int from,int to){//计算实际恢复量
 	int heal=HEAL;
 	if(heal>0 && pl[from].buff[4])//虚弱
@@ -114,25 +99,11 @@ int Card::cal_heal(int from,int to){//计算实际恢复量
 	return heal;
 }
 
-bool Card::check_heal(int from,int to){//是否显示实际恢复量
-	if(pl[from].buff[4])
-		return 1;
-	if(mode==2) //欢乐模式：随机buff
-		return 1;
-	return 0;
-}
-
 int Card::cal_def(int from,int to){//计算实际叠盾
 	int def=DEF;
 	if(mode==2) //欢乐模式：随机buff
 		def*=0.7;
 	return def;
-}
-
-bool Card::check_def(int from,int to){//是否显示实际叠盾
-	if(mode==2) //欢乐模式：随机buff
-		return 1;
-	return 0;
 }
 
 int Card::cal_miss(int from,int to){
@@ -147,16 +118,6 @@ int Card::cal_miss(int from,int to){
 	if(miss>100) miss=100;
 	if(miss<0) miss=0;
 	return miss;
-}
-bool Card::check_miss(int from,int to){
-	if(env_now==3)
-		return 1;
-	if(env_now==4)
-		return 1;
-	//天气对失误率的影响
-	if(pl[from].buff[6])//迷惑
-		return 1;
-	return 0;
 }
 
 Card use_card;
@@ -873,6 +834,7 @@ int UI(){
 }
 
 void UI_other(){
+	printf("                                                                                              %d\n",appcnt);
 	SetColor(7);
 	SetPos(0,Row-1);
 	printf("P%d",now); 
@@ -1020,9 +982,8 @@ int Ask(int now){
 			}
 		}
 	}
-	//补充手牌
 	pl[now].rest=pl[now].cardcnt;
-
+	//补充手牌
 	int cursor=1;
 	SetColor(7);
 	while(!winner){
@@ -1082,46 +1043,50 @@ int Ask(int now){
 			printf("               ");
 			SetPos(20+14,Row+i);
 			printf("%-3d",pl[now].handcard[i].ATK);
-			if(pl[now].handcard[i].ATK>0 && pl[now].handcard[i].check_atk(now,3-now)){
+			if(pl[now].handcard[i].ATK>0){
 				int atk=pl[now].handcard[i].cal_atk(now,3-now);
-				if(pl[now].handcard[i].ATK < atk)SetColor(12);
-				else if(pl[now].handcard[i].ATK == atk)SetColor(7);
-				else SetColor(8);
-				printf("(%d)   ",atk);
-				SetColor(7);
+				if(pl[now].handcard[i].ATK!=atk){
+					if(pl[now].handcard[i].ATK < atk)SetColor(12);
+					else SetColor(8);
+					printf("(%d)   ",atk);
+					SetColor(7);
+				}
 			}
 			else{
 				printf("     ");
 			}//ATK
 			SetPos(30+14,Row+i);
 			printf("%-3d",pl[now].handcard[i].HEAL);
-			if(pl[now].handcard[i].HEAL>0 && pl[now].handcard[i].check_heal(now,3-now)){
+			if(pl[now].handcard[i].HEAL>0){
 				int heal=pl[now].handcard[i].cal_heal(now,3-now);
-				if(pl[now].handcard[i].HEAL < heal)SetColor(10);
-				else if(pl[now].handcard[i].HEAL == heal)SetColor(7);
-				else SetColor(8);
-				printf("(%d)   ",heal);
-				SetColor(7);
+				if(pl[now].handcard[i].HEAL!=heal){
+					if(pl[now].handcard[i].HEAL < heal)SetColor(10);
+					else SetColor(8);
+					printf("(%d)   ",heal);
+					SetColor(7);
+				}
 			}
 			else{
 				printf("      ");
 			}//HEAL
 			SetPos(40+14,Row+i);
 			printf("%-3d",pl[now].handcard[i].DEF);
-			if(pl[now].handcard[i].DEF>0 && pl[now].handcard[i].check_def(now,3-now)){
+			if(pl[now].handcard[i].DEF>0){
 				int def=pl[now].handcard[i].cal_def(now,3-now);
-				if(pl[now].handcard[i].DEF < def)SetColor(15);
-				else if(pl[now].handcard[i].DEF == def)SetColor(7);
-				else SetColor(8);
-				printf("(%d)   ",def);
-				SetColor(7);
+				if(pl[now].handcard[i].DEF!=def){
+					if(pl[now].handcard[i].DEF < def)SetColor(15);
+					else SetColor(8);
+					printf("(%d)   ",def);
+					SetColor(7);
+				}
 			}
 			else{
 				printf("      ");
 			}//DEF
 			SetPos(50+14,Row+i);
 			printf("%-3d%%",pl[now].handcard[i].MISS);//MISS
-			if(pl[now].handcard[i].check_miss(now,3-now)){
+			int miss=pl[now].handcard[i].cal_miss(now,3-now);
+			if(pl[now].handcard[i].MISS!=miss){
 				SetColor(8);
 				printf("(%d%%)  ",pl[now].handcard[i].cal_miss(now,3-now));
 				SetColor(7);
@@ -1274,6 +1239,7 @@ int Ask(int now){
 						UI();
 					}
 				}
+				if(send_gaming(void_card)<0) another_player_quit(server_mode);
 			}
 		}
 		if(input==SPACE || input==ENTER) {//结束回合
@@ -1456,7 +1422,6 @@ int main(){
 	env_now=0;
 
 	char title[]="CARD GAME:Turn of P1";
-	Card void_card=(Card){"x",0,0,0,0,-2};
 	if(server_mode==1){
 		if(send_gaming(void_card)<0) another_player_quit(server_mode);
 	}
@@ -1476,7 +1441,7 @@ int main(){
 			pl[now].UpdateBuff(2);
 			system("cls");
 			now++;
-			if(now>2)now=1;
+			if(now>2) now=1;
 
 			//环境变动
 			if(env_on){
@@ -1495,6 +1460,7 @@ int main(){
 				}
 				env_cnt++;
 			}			//origin copy
+			// pl[now].rest=pl[now].cardcnt;
 			if(send_gaming(void_card)<0) another_player_quit(server_mode);
 		}
 		else{
@@ -1529,31 +1495,12 @@ int main(){
 			SetPos(20+14,Row+i);
 			printf("%-3d",pl[now].handcard[i].ATK);
 			//ATK
-			if(pl[now].handcard[i].ATK>0 && pl[now].handcard[i].check_atk(now,3-now)){
-				int atk=pl[now].handcard[i].cal_atk(now,3-now);
-				if(pl[now].handcard[i].ATK < atk)SetColor(12);
-				else if(pl[now].handcard[i].ATK == atk)SetColor(7);
-				else SetColor(8);
-				printf("(%d)",atk);
-				SetColor(7);
-			}
-			else{
-				printf("     ");
-			}
 			SetPos(30+14,Row+i);
 			printf("%-3d",pl[now].handcard[i].HEAL);//HEAL
 			SetPos(40+14,Row+i);
 			printf("%-3d",pl[now].handcard[i].DEF);//DEF
 			SetPos(50+14,Row+i);
 			printf("%-3d%%",pl[now].handcard[i].MISS);//MISS
-			if(pl[now].handcard[i].check_miss(now,3-now)){
-				SetColor(8);
-				printf("(%d%%)",pl[now].handcard[i].cal_miss(now,3-now));
-				SetColor(7);
-			}
-			else{
-				printf("         ");
-			}
 	}
 	Row+=5;
 	now=2;
@@ -1581,17 +1528,6 @@ int main(){
 			printf("%-3d",pl[now].handcard[i].ATK);
 			printf("                 ");
 			//ATK
-			if(pl[now].handcard[i].ATK>0 && pl[now].handcard[i].check_atk(now,3-now)){
-				int atk=pl[now].handcard[i].cal_atk(now,3-now);
-				if(pl[now].handcard[i].ATK < atk)SetColor(12);
-				else if(pl[now].handcard[i].ATK == atk)SetColor(7);
-				else SetColor(8);
-				printf("(%d)",atk);
-				SetColor(7);
-			}
-			else{
-				printf("     ");
-			}
 			SetPos(30+14,Row+i);
 			printf("%-3d",pl[now].handcard[i].HEAL);//HEAL
 			printf("                 ");
@@ -1600,14 +1536,6 @@ int main(){
 			printf("                 ");
 			SetPos(50+14,Row+i);
 			printf("%-3d%%",pl[now].handcard[i].MISS);//MISS
-			if(pl[now].handcard[i].check_miss(now,3-now)){
-				SetColor(8);
-				printf("(%d%%)",pl[now].handcard[i].cal_miss(now,3-now));
-				SetColor(7);
-			}
-			else{
-				printf("         ");
-			}
 
 	}
 			//debug

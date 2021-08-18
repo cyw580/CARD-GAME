@@ -29,29 +29,28 @@ struct player{
 		}
 	}
 }pl[15];
+int appcnt,now,env_now;
+Card appcard[55];
 #include"CARDGAMEsocket.hpp"
 Card xsd;
 int main(){
 	SetConsoleOutputCP(65001);
-    // int server;
-    // scanf("%d",&server);
-    // TCP_initialize(server);
-    // if(server==2){
-    //     pl[1].name="下十点十下 "; pl[1].hp=500;
-	// 	cout<<pl[1].name<<endl;
-    //     send_message("2 1 ",4);
-	// 	send_message((char*)&pl[1],10000);
-	// 	closesocket(Client);
-    // }
-	// else{
-	// 	int return_val=0;
-	// 	recv_message();
-	// 	printf("%d\n",pl[1].hp);
-	// 	cout<<pl[1].name<<endl;
-	// }
-	xsd=(Card){"[虚空垃圾]",0x7fffffff,0x7fffffff,0x7fffffff,0x7fffffff,0x7fffffff,0x7fffffff};
-	for(int i=1;i<=15;i++) pl[1].handcard[i]=xsd;
-	for(int i=1;i<=65;i++) pl[1].heap[i]=xsd;
+    int server;
+    scanf("%d",&server);
+    TCP_initialize(server);
+    if(server==2){
+		cout<<pl[1].name<<endl;
+        send_message("3   ",4);
+		xsd=(Card){"x",0,0,0,0,0,-2};
+		for(int i=1;i<=15;i++) pl[1].handcard[i]=xsd;
+		for(int i=1;i<=65;i++) pl[1].heap[i]=xsd;
+		send_message((char*)&xsd,9999);
+		closesocket(Client);
+    }
+	else{
+		int return_val=0;
+		recv_message();
+	}
 	system("pause");
 	return 0;
 }

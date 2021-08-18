@@ -86,13 +86,9 @@ struct Card{
 	int Use(int from,int to);
 	int Special(int from,int to);
 	int cal_atk(int from,int to);
-	bool check_atk(int from,int to);
 	int cal_heal(int from,int to);
-	bool check_heal(int from,int to);
 	int cal_def(int from,int to);
-	bool check_def(int from,int to);
 	int cal_miss(int from,int to);
-	bool check_miss(int from,int to);
 	string Intro();
 }lib[11][1005],fun[11][11][105];//fun[mode][occ][card]
 
