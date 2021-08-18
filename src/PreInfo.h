@@ -169,7 +169,7 @@ string Card::Intro(){
 	else if(func==64)return "(宝藏)+3<★信仰>,向牌库中刷入[神圣意志][精神控制]各2张";
 	else if(func==65)return "随机选对手牌库一张牌,清除特效和MISS后视为你打出且不耗费";
 	else if(func==66)return "25% +1<★法力>,牌库中所有[法力成长] +15ATK";
-	return "";
+	return "                                        ";
 }
 
 void previous(){

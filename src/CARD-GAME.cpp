@@ -35,7 +35,7 @@ struct player{
 	Card handcard[11],heap[65];
 	int used[11];
 	int buff[11];
-	//0-职业特性,1-燃烧,2-中毒,3-狂暴,4-虚弱,5-治疗,6-迷惑
+	//0-职业特性,1-燃烧,2-中毒,3-狂暴,4-虚弱,5-治疗,6-迷惑,10-神圣意志
 	int hprate(){
 		return 10*hp/maxhp;
 	}
@@ -872,6 +872,65 @@ int UI(){
 	return 0; 
 }
 
+void UI_other(){
+	SetColor(7);
+	SetPos(0,Row-1);
+	printf("P%d",now); 
+	SetPos(5,Row-1);
+	printf("  剩余手牌:%d/%d",pl[3-server_mode].rest,pl[3-server_mode].cardcnt); 
+	if(pl[3-server_mode].occ==7){
+		SetColor(6);
+		SetPos(30,Row-1);
+		printf("  [神圣意志]:%d/%d",pl[3-server_mode].buff[10],pl[3-server_mode].cardcnt); 
+	}
+	SetColor(7);
+	SetPos(5,Row);
+	printf("  #"); 
+	SetPos(11,Row);SetColor(11);
+	printf("◆");
+	SetPos(20+14,Row);SetColor(7);
+	printf("ATK");
+	SetPos(30+14,Row);
+	printf("HEAL");
+	SetPos(40+14,Row);
+	printf("DEF");
+	SetPos(50+14,Row);
+	printf("MISS");
+	for(int i=1;i<=min(appcnt,6);i++) {
+		int x=i+max(0,appcnt-6);
+		if(appcard[x].func==-2) {
+			appcnt=0;
+			break;
+		}
+		if(min(appcnt,6)==i) SetColor(0,7);
+		else SetColor(7,0);
+		SetColor(11);
+		SetPos(11,Row+i);
+		printf("%d",appcard[x].cost);//费用
+		SetColor(7);
+		SetPos(14,Row+i);
+		printf(appcard[x].name);//牌名
+		printf("               ");
+		SetPos(20+14,Row+i);
+		printf("%-3d",appcard[x].ATK);
+		SetPos(30+14,Row+i);
+		printf("%-3d",appcard[x].HEAL);
+		SetPos(40+14,Row+i);
+		printf("%-3d",appcard[x].DEF);
+		SetPos(50+14,Row+i);
+		if(appcard[x].func==-1) {
+			printf("YES");//MISS
+			SetPos(11,Row+9);
+			printf("                                                 ");
+		}
+		else {
+			printf("NO");
+			SetPos(11,Row+9);
+			printf(appcard[x].Intro());
+		}
+	}
+}
+
 void start_turn(int now){
 	for(int i=1;i<=2;i++) pl[i].prehp=pl[i].hp;//记录回合开始血量
 	if(pl[now].cost==0 && pl[now].occ==1)  pl[now].cost=1;//浪人[拾荒]
@@ -968,6 +1027,8 @@ int Ask(int now){
 	SetColor(7);
 	while(!winner){
 		SetColor(7);
+		SetPos(0,Row-1);
+		printf("                                                                   "); 
 		SetPos(0,Row);
 		printf("P%d",now); 
 		SetPos(5,Row);
@@ -1408,9 +1469,9 @@ int main(){
 			
 			if(Ask(now)==1) break;			//origin copy
 			if(pl[now].occ==7){
-				bool ssyz=1;
-				for(int i=1;i<=pl[now].cardcnt;i++) if(pl[now].used[i] || pl[now].handcard[i].name!="[神圣意志]") ssyz=0;
-				if(ssyz) winner=now;
+				pl[now].buff[10]=0;
+				for(int i=1;i<=pl[now].cardcnt;i++) if(pl[now].used[i] || pl[now].handcard[i].name!="[神圣意志]") pl[now].buff[10]++;
+				if(pl[now].buff[10]==pl[now].cardcnt) winner=now;
 			}//牧师检索[神圣意志]
 			pl[now].UpdateBuff(2);
 			system("cls");
@@ -1438,6 +1499,7 @@ int main(){
 		}
 		else{
 			UI();
+			UI_other();
 			if(recv_gaming()<0) another_player_quit(server_mode);
 		}
 	}
