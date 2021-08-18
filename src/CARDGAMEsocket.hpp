@@ -75,9 +75,12 @@ int recv_message(){
         int pl_num;
         sscanf(msg_from_client,"%d %d",&command,&pl_num);
         pl[pl_num]=precv_message(return_val);
+        if(return_val<0) return -1;
     }
     if(command==3){
-        
+        appcard[++appcnt]=crecv_message(return_val);
+        printf(appcard[appcnt].name);
+        if(return_val<0) return -1;
     }
     if(command==4){
         sscanf(msg_from_client,"%d %d",&command,&now);
@@ -91,15 +94,17 @@ int recv_message(){
 
 */
 inline int recv_gaming(){
-    for(int i=1;i<=4;i++) if(recv_message()<0) return -1;
+    for(int i=1;i<=5;i++) if(recv_message()<0) return -1;
     return 0;
 }
-inline int send_gaming(){
+inline int send_gaming(Card use_card){
     int return_val=0;
     if(send_message("2 1 ",4)<0) return -1;
     if(send_message((char*)&pl[1],10000)<0) return -1;
     if(send_message("2 2 ",4)<0) return -1;
     if(send_message((char*)&pl[2],10000)<0) return -1;
+    if(send_message("3   ",4)<0) return -1;
+    if(send_message((char*)&use_card,10000)) return -1;
     if(now==1) {if(send_message("4 1 ",4)<0) return -1;}
     else if(send_message("4 2 ",4)<0) return -1;
     char msg_of_weather[1010]={0};

@@ -12,6 +12,7 @@ using namespace std;
 #define RIGHT 77
 #define SPACE 32
 #define ENTER 13
+#define MAXAPCARDNUM 55
 //ASCII 
 
 char input;
@@ -24,7 +25,8 @@ int env_on;
 int cost_bgn=3;
 int player_bgn=1;
 int mode;
-
+Card appcard[MAXAPCARDNUM];
+int appcnt;
 struct player{
 	string name;
 	int cost,maxcost,rest,heapn,occ;
@@ -157,19 +159,24 @@ bool Card::check_miss(int from,int to){
 	return 0;
 }
 
+Card use_card;
+
 int Card::Use(int from,int to){
 	int miss=cal_miss(from,to);
+	strcpy(use_card.name,name);
+	use_card.cost=cost;
 	if(rand()%100<miss){
 		SetPos(0,1);
 		printf("操作失误了!");
 		if(pl[from].occ==4 && ATK>0) pl[from].buff[0]+=2;
 		UI();
+		use_card.func=-1;
 		return 0;
 	}//失效判定
 	int damage,damage2,flag=0;
-	if(func) flag=Special(from,to);
+	if(func) use_card.func=func,flag=Special(from,to);
 	if(flag==4) return 0;
-	damage=damage2=cal_atk(from,to);
+	damage=damage2=use_card.ATK=cal_atk(from,to);
 	//护盾抵消
 	if(pl[to].def>0 && flag!=1){
 		damage=max(0,damage-pl[to].def);
@@ -190,8 +197,10 @@ int Card::Use(int from,int to){
 	}
 	//进攻
 	int heal=cal_heal(from,to);
+	use_card.HEAL=heal;
 	pl[from].hp=min(pl[from].maxhp,pl[from].hp+heal);
 	int def=cal_def(from,to);
+	use_card.DEF=def;
 	pl[from].def=min(pl[from].maxdef,pl[from].def+def);
 	//套盾与回血
 	if(HEAL<0 && pl[from].occ==2) pl[from].buff[0]++;
@@ -1147,7 +1156,7 @@ int Ask(int now){
 						cursor++;
 						if(cursor>pl[now].cardcnt) cursor=1;
 					}
-					if(send_gaming()<0) another_player_quit(server_mode);
+					if(send_gaming(use_card)<0) another_player_quit(server_mode);
 				}
 				option_use=0;
 			}
@@ -1386,14 +1395,17 @@ int main(){
 	env_now=0;
 
 	char title[]="CARD GAME:Turn of P1";
+	Card void_card=(Card){"x",0,0,0,0,-2};
 	if(server_mode==1){
-		if(send_gaming()<0) another_player_quit(server_mode);
+		if(send_gaming(void_card)<0) another_player_quit(server_mode);
 	}
 	else if(recv_gaming()<0) another_player_quit(server_mode);
 	while(!winner && !Check(now)){
 		title[19]=now+'0';
 		SetConsoleTitle(title);
 		if(now==server_mode){
+			appcnt=0;
+			
 			if(Ask(now)==1) break;			//origin copy
 			if(pl[now].occ==7){
 				bool ssyz=1;
@@ -1422,7 +1434,7 @@ int main(){
 				}
 				env_cnt++;
 			}			//origin copy
-			if(send_gaming()<0) another_player_quit(server_mode);
+			if(send_gaming(void_card)<0) another_player_quit(server_mode);
 		}
 		else{
 			UI();

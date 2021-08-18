@@ -9,7 +9,7 @@ struct player{
 	int cost,maxcost,rest,heapn,occ;
 	int hp,def,cardcnt,prehp;
 	int maxhp,maxdef;
-	Card handcard[15],heap[1005];
+	Card handcard[15],heap[65];
 	int used[15];
 	int buff[20];
 	//0-职业特性,1-燃烧,2-中毒,3-狂暴,4-虚弱,5-治疗,6-迷惑
@@ -49,9 +49,9 @@ int main(){
 	// 	printf("%d\n",pl[1].hp);
 	// 	cout<<pl[1].name<<endl;
 	// }
-	xsd=(Card){"[虚空垃圾]",1,0,0,0,0,27};
-	printf("%d\n",strcpy(xsd.name,"[下十点是]"));
-	printf("%s\n",xsd.name);
+	xsd=(Card){"[虚空垃圾]",0x7fffffff,0x7fffffff,0x7fffffff,0x7fffffff,0x7fffffff,0x7fffffff};
+	for(int i=1;i<=15;i++) pl[1].handcard[i]=xsd;
+	for(int i=1;i<=65;i++) pl[1].heap[i]=xsd;
 	system("pause");
 	return 0;
 }
