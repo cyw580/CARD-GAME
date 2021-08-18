@@ -30,24 +30,24 @@ int TCP_initialize(int server_mode){
     }
     return 0;
 }
-char charmsg[1010];
+char charmsg[10000];
 char* player_to_char(player pl){
-    printf("msg transform start.\n");
+    memset(charmsg,0,sizeof(charmsg));
     memcpy(charmsg,&pl,sizeof(player));
-    printf("msg transform ok.\n");
     return charmsg;
 }
-int send_message(char* msg_to_client){
-    memcpy(charmsg,msg_to_client,sizeof(charmsg));
-    int sendval=send(Client,charmsg,strlen(charmsg),0);
+int send_message(char* msg_to_client,int len){
+    memset(charmsg,0,sizeof(charmsg));
+    memcpy(charmsg,msg_to_client,len);
+    int sendval=send(Client,charmsg,len,0);
     if(sendval<0){
         closesocket(Client); return -1;
     }
     return 0;
 }
 player precv_message(int &return_val){
-    char msg_from_client[1010];
-    int recvval=recv(Client,msg_from_client,1010,0);
+    char msg_from_client[10000]={0};
+    int recvval=recv(Client,msg_from_client,10000,0);
     if(recvval<0){
         closesocket(Client); return_val+=-1;
     }
@@ -56,8 +56,8 @@ player precv_message(int &return_val){
     return pl;
 }
 Card crecv_message(int &return_val){
-    char msg_from_client[1010];
-    int recvval=recv(Client,msg_from_client,1010,0);
+    char msg_from_client[10000]={0};
+    int recvval=recv(Client,msg_from_client,10000,0);
     if(recvval<0){
         closesocket(Client); return_val+=-1;
     }
@@ -67,12 +67,11 @@ Card crecv_message(int &return_val){
 }
 int recv_message(){
     int return_val=0;
-    char msg_from_client[1010];
-    return_val+=recv(Client,msg_from_client,4,0);
+    char msg_from_client[10000]={0};
+    if(recv(Client,msg_from_client,4,0)<0) return -1;
     int command;
     sscanf(msg_from_client,"%d",&command);
     if(command==2){
-        return_val+=recv(Client,msg_from_client,1010,0);
         int pl_num;
         sscanf(msg_from_client,"%d %d",&command,&pl_num);
         pl[pl_num]=precv_message(return_val);
@@ -80,8 +79,31 @@ int recv_message(){
     if(command==3){
         
     }
+    if(command==4){
+        sscanf(msg_from_client,"%d %d",&command,&now);
+    }
+    if(command==5){
+        sscanf(msg_from_client,"%d %d",&command,&env_now);
+    }
     return return_val<0?-1:0;
 }
 /*
 
 */
+inline int recv_gaming(){
+    for(int i=1;i<=4;i++) if(recv_message()<0) return -1;
+    return 0;
+}
+inline int send_gaming(){
+    int return_val=0;
+    if(send_message("2 1 ",4)<0) return -1;
+    if(send_message((char*)&pl[1],10000)<0) return -1;
+    if(send_message("2 2 ",4)<0) return -1;
+    if(send_message((char*)&pl[2],10000)<0) return -1;
+    if(now==1) {if(send_message("4 1 ",4)<0) return -1;}
+    else if(send_message("4 2 ",4)<0) return -1;
+    char msg_of_weather[1010]={0};
+    sprintf(msg_of_weather,"5 %d ",env_now);
+    if(send_message(msg_of_weather,4)<0) return -1;
+    return 0;
+}

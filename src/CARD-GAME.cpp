@@ -2,6 +2,7 @@
 #include<windows.h>
 #include<conio.h> 
 #include<iostream>
+#include<cstdio>
 using namespace std;
 
 #include"PreInfo.h"
@@ -14,10 +15,10 @@ using namespace std;
 //ASCII 
 
 char input;
-
+int server_mode;
 int winner;
 int Row=11;
-
+int now;
 int env_now,env_cnt,env_rate;
 int env_on;
 int cost_bgn=3;
@@ -29,9 +30,9 @@ struct player{
 	int cost,maxcost,rest,heapn,occ;
 	int hp,def,cardcnt,prehp;
 	int maxhp,maxdef;
-	Card handcard[15],heap[1005];
-	int used[15];
-	int buff[20];
+	Card handcard[11],heap[65];
+	int used[11];
+	int buff[11];
 	//0-职业特性,1-燃烧,2-中毒,3-狂暴,4-虚弱,5-治疗,6-迷惑
 	int hprate(){
 		return 10*hp/maxhp;
@@ -328,7 +329,7 @@ int Card::Special(int from,int to){
 	else if(func==32){
 		for(int i=1;i<=pl[from].cardcnt;i++){
 			if(pl[from].used[i]) continue;
-			if(pl[from].handcard[i].name=="[虚空垃圾]"){
+			if(!strcmp(pl[from].handcard[i].name,"[虚空垃圾]")){
 				 pl[from].used[i]=1;
 				 pl[from].rest--;
 			}
@@ -393,7 +394,7 @@ int Card::Special(int from,int to){
 	else if(func==48){
 		for(int i=1;i<=pl[to].cardcnt;i++){
 			if(pl[to].used[i]) continue;
-			if(pl[to].handcard[i].name=="[神圣意志]") pl[to].used[i]=1,pl[to].buff[0]+=2;
+			if(!strcmp(pl[to].handcard[i].name,"[神圣意志]")) pl[to].used[i]=1,pl[to].buff[0]+=2;
 		}
 	}
 	else if(func==49){
@@ -448,7 +449,7 @@ int Card::Special(int from,int to){
 		pl[to].maxhp-=80;
 		pl[to].hp=min(pl[to].hp,pl[to].maxhp);
 		for(int i=1;i<=pl[from].heapn;i++){
-			while(pl[from].heap[i].name=="[虚空垃圾]" && i<=pl[from].heapn){
+			while(!strcmp(pl[from].heap[i].name,"[虚空垃圾]") && i<=pl[from].heapn){
 				pl[from].heap[i]=pl[from].heap[pl[from].heapn--];
 			}
 		}
@@ -457,21 +458,21 @@ int Card::Special(int from,int to){
 		pl[from].cost=min(pl[from].cost+2,pl[from].maxcost);
 		pl[from].used[++pl[from].cardcnt]=1;
 		for(int i=1;i<=pl[from].heapn;i++){
-			if(pl[from].heap[i].name=="[冲锋号令]") {
-				pl[from].heap[i].name="[冲锋号令II]";
+			if(!strcmp(pl[from].heap[i].name,"[冲锋号令]")) {
+				strcpy(pl[from].heap[i].name,"[冲锋号令II]");
 				pl[from].heap[i].cost=2;
 				pl[from].heap[i].ATK=40;
 			}
-			if(pl[from].heap[i].name=="[有能狂怒]") {
-				pl[from].heap[i].name="[有能狂怒II]";
+			if(!strcmp(pl[from].heap[i].name,"[有能狂怒]")) {
+				strcpy(pl[from].heap[i].name,"[有能狂怒II]");
 				pl[from].heap[i].ATK=20;
 			}
-			if(pl[from].heap[i].name=="[生命果]") {
-				pl[from].heap[i].name="[生命果II]";
+			if(!strcmp(pl[from].heap[i].name,"[生命果]")) {
+				strcpy(pl[from].heap[i].name,"[生命果II]");
 				pl[from].heap[i].HEAL=80;
 			}
-			if(pl[from].heap[i].name=="[互惠共赢]") {
-				pl[from].heap[i].name="[互惠共赢II]";
+			if(!strcmp(pl[from].heap[i].name,"[互惠共赢]")) {
+				strcpy(pl[from].heap[i].name,"[互惠共赢II]");
 				pl[from].heap[i].cost=0;
 			}
 		}
@@ -488,7 +489,7 @@ int Card::Special(int from,int to){
 	}
 	else if(func==63){
 		for(int i=1;i<=pl[from].heapn;i++){
-			while(pl[from].heap[i].name=="[累赘]" && i<=pl[from].heapn){
+			while(!strcmp(pl[from].heap[i].name,"[累赘]") && i<=pl[from].heapn){
 				pl[to].heap[++pl[to].heapn]=pl[from].heap[i];
 				pl[from].heap[i]=pl[from].heap[pl[from].heapn--];
 			}
@@ -507,7 +508,7 @@ int Card::Special(int from,int to){
 			pl[from].buff[0]+=1;
 		}
 		for(int i=1;i<=pl[from].heapn;i++){
-			if(pl[from].heap[i].name=="[法力成长]") pl[from].heap[i].ATK+=15;
+			if(!strcmp(pl[from].heap[i].name,"[法力成长]")) pl[from].heap[i].ATK+=15;
 		}
 	}
 	else if(func==67){
@@ -914,6 +915,24 @@ void start_turn(int now){
 	//环境判断
 }
 
+void another_player_quit(int server_mode){
+	printf("对方退出了游戏，他也许是投降了...\n");
+	Sleep(1500);
+	system("cls");
+	winner=server_mode;
+	printf("#%d ",winner);
+	printf(pl[winner].name);
+	printf("获得了胜利!!");
+	Shake(10,1);
+	while(1){
+		SetColor(rand()%16);
+		SetPos(rand()%100,rand()%30);
+		printf("#%d ",winner);
+		printf(pl[winner].name);
+		printf("获得了胜利!!");
+		Sleep(10);
+	}
+}
 int Ask(int now){
 	int option_use=0,option_giveup=0,option_over=0;
 	start_turn(now);
@@ -980,7 +999,7 @@ int Ask(int now){
 				int da=0;
 				for(int i=1;i<=pl[now].cardcnt;i++){
 					if(pl[now].used[i]) continue;
-					if(pl[now].handcard[i].name=="[虚空垃圾]") da+=60;
+					if(!strcmp(pl[now].handcard[i].name,"[虚空垃圾]")) da+=60;
 				}
 				pl[now].handcard[i].ATK=da;
 			}
@@ -1128,6 +1147,7 @@ int Ask(int now){
 						cursor++;
 						if(cursor>pl[now].cardcnt) cursor=1;
 					}
+					if(send_gaming()<0) another_player_quit(server_mode);
 				}
 				option_use=0;
 			}
@@ -1307,7 +1327,6 @@ int main(){
 	srand(time(NULL));
 	previous();//获得公共牌库和职业牌库
 	printf("建立服务端(1)\n连接到已有的服务端(2)\n");
-	int server_mode;
 	scanf("%d",&server_mode);
 	if(server_mode==2) printf("输入服务端ip地址:");
 	else system("cls"),printf("等待玩家连入...\n");
@@ -1327,7 +1346,7 @@ int main(){
 		SetColor(0,7);
 		system("color 07");
 		system("cls");//清屏并切换到Choose界面
-		send_message("255 ");
+		send_message("255 ",4);
 	}
 	else {
 		system("cls");
@@ -1340,70 +1359,74 @@ int main(){
 	SetPos(0,20);
 	printf("P%d的职业是",server_mode);
 	printf(occ_name(pl[server_mode].occ));
-	send_message("2 1 ");
-	//system("pause");
-	send_message((char*)&pl[server_mode]);
-	printf("sent\n");
+
+	if(pl[server_mode].occ!=6) pl[server_mode].cost=3;//初始费用设置
+	init(server_mode);//获得相应牌形成牌库
+	for(int i=1;i<=pl[server_mode].cardcnt;i++) {
+		pl[server_mode].handcard[i]=pl[server_mode].heap[(rand()%pl[server_mode].heapn)+1];
+	}
+	//初始发牌
+
+	if(server_mode==1) send_message("2 1 ",4);
+	else send_message("2 2 ",4);
+	send_message((char*)&pl[server_mode],10000);
 	recv_message();
-	printf("recv\n");
-	printf("I got the other one's identity...\n");
-	system("pause");
-	Sleep(1000);
 	SetConsoleTitle("Here we go...");
 	Sleep(1500);
 	while(_kbhit()) getch();
 	system("cls");//清屏并开始游戏
-
-	for(int i=1;i<=2;i++) if(pl[i].occ!=6) pl[i].cost=3;//初始费用设置
-	for(int x=1;x<=2;x++) {
-		init(x);//获得相应牌形成牌库
-		for(int i=1;i<=pl[x].cardcnt;i++) {
-			pl[x].handcard[i]=pl[x].heap[(rand()%pl[x].heapn)+1];
-		}
-	}//初始发牌
-
-	if(!player_bgn){
-		player_bgn=rand()%2+1;
-	}//随机先手
-	int now=player_bgn;
-
-	adv(3-player_bgn);//后手补偿
+	if(server_mode==1){
+		if(!player_bgn){
+			player_bgn=rand()%2+1;
+		}//随机先手
+		now=player_bgn;
+		adv(3-player_bgn);//后手补偿
+	}
 
 	env_now=0;
 
 	char title[]="CARD GAME:Turn of P1";
-
+	if(server_mode==1){
+		if(send_gaming()<0) another_player_quit(server_mode);
+	}
+	else if(recv_gaming()<0) another_player_quit(server_mode);
 	while(!winner && !Check(now)){
 		title[19]=now+'0';
 		SetConsoleTitle(title);
-		UI();
-		if(Ask(now)==1) break;
-		if(pl[now].occ==7){
-			bool ssyz=1;
-			for(int i=1;i<=pl[now].cardcnt;i++) if(pl[now].used[i] || pl[now].handcard[i].name!="[神圣意志]") ssyz=0;
-			if(ssyz) winner=now;
-		}//牧师检索[神圣意志]
-		pl[now].UpdateBuff(2);
-		system("cls");
-		now++;
-		if(now>2)now=1;
+		if(now==server_mode){
+			if(Ask(now)==1) break;			//origin copy
+			if(pl[now].occ==7){
+				bool ssyz=1;
+				for(int i=1;i<=pl[now].cardcnt;i++) if(pl[now].used[i] || pl[now].handcard[i].name!="[神圣意志]") ssyz=0;
+				if(ssyz) winner=now;
+			}//牧师检索[神圣意志]
+			pl[now].UpdateBuff(2);
+			system("cls");
+			now++;
+			if(now>2)now=1;
 
-		//环境变动
-		if(env_on){
-			if(env_cnt>=2){
-				env_rate+=25;
-				if(rand()%100 < env_rate){
-					int _p=0;
-					while((_p=rand()%env_num)==env_now);
-					env_now=_p;
-					env_cnt=-1;
+			//环境变动
+			if(env_on){
+				if(env_cnt>=2){
+					env_rate+=25;
+					if(rand()%100 < env_rate){
+						int _p=0;
+						while((_p=rand()%env_num)==env_now);
+						env_now=_p;
+						env_cnt=-1;
+						env_rate=0;
+					}
+				}
+				else{
 					env_rate=0;
 				}
-			}
-			else{
-				env_rate=0;
-			}
-			env_cnt++;
+				env_cnt++;
+			}			//origin copy
+			if(send_gaming()<0) another_player_quit(server_mode);
+		}
+		else{
+			UI();
+			if(recv_gaming()<0) another_player_quit(server_mode);
 		}
 	}
 	UI();
