@@ -23,6 +23,22 @@ int handcardmax1,handcardmax2;
 int turn;
 int firsthand=1;
 int timemode=0,tim=0,twelveam=0,timrate=0;
+bool foundfavour(card a)
+{
+	if(found(a.speffect,"浪人的恩赐") or found(a.speffect,"术士的恩赐") or found(a.speffect,"法师的恩赐") or found(a.speffect,"战士的恩赐") or found(a.speffect,"恶魔的恩赐") or found(a.speffect,"地精的恩赐") or found(a.speffect,"牧师的恩赐")) return true;
+	else return false;
+}
+iv addfavour(card &a,string favour)
+{
+	if(found(a.speffect,"浪人的恩赐")) a.speffect[founds(a.speffect,"浪人的恩赐")]=favour;
+	else if(found(a.speffect,"术士的恩赐")) a.speffect[founds(a.speffect,"术士的恩赐")]=favour;
+	else if(found(a.speffect,"法师的恩赐")) a.speffect[founds(a.speffect,"法师的恩赐")]=favour;
+	else if(found(a.speffect,"战士的恩赐")) a.speffect[founds(a.speffect,"战士的恩赐")]=favour;
+	else if(found(a.speffect,"恶魔的恩赐")) a.speffect[founds(a.speffect,"恶魔的恩赐")]=favour;
+	else if(found(a.speffect,"地精的恩赐")) a.speffect[founds(a.speffect,"地精的恩赐")]=favour;
+	else if(found(a.speffect,"牧师的恩赐")) a.speffect[founds(a.speffect,"牧师的恩赐")]=favour;
+	else a.speffect.push_back(favour); 
+}
 iv addcard(int kind,card t) //往牌堆里加牌 
 {
 	if(cardheap.size()==0)
@@ -42,14 +58,14 @@ iv addcard(int kind,card t) //往牌堆里加牌
 iv dealcard() //发牌
 {
 	cardheap.clear();
-	REP(15) addcard(1,card("惩罚",1,1));
+	REP(20) addcard(1,card("惩罚",1,1));
 	REP(5) addcard(1,card("附带弃置",2,2));
 	REP(3) addcard(1,card("埋伏",1,3));
 	REP(5) addcard(1,card("微小法力",1,4));
 	REP(3) addcard(1,card("合作共赢",1,5)); 
 	REP(4) addcard(1,card("中等法力",2,6));
 	REP(4) addcard(1,card("意志摧毁",2,7));
-	REP(4) addcard(1,card("天道轮回",1,8));
+	REP(6) addcard(1,card("天道轮回",1,8));
 	REP(2) addcard(1,card("终极惩戒",2,9));
 	REP(3) addcard(1,card("魔幻把戏",1,10));
 	REP(4) addcard(1,card("可持久化",1,11));
@@ -57,7 +73,15 @@ iv dealcard() //发牌
 	REP(8) addcard(1,card("一心同体",2,13));
 	REP(3) addcard(1,card("万心同体",1,14));
 	REP(3) addcard(1,card("公平竞争",2,18));
-	REP(3) addcard(1,card("变本加厉",2,19));
+	REP(4) addcard(1,card("变本加厉",2,19));
+	REP(3) addcard(1,card("浪人的恩赐",1,20));
+	REP(5) addcard(1,card("术士的恩赐",1,21));
+	REP(3) addcard(1,card("法师的恩赐",2,22));
+	REP(6) addcard(1,card("战士的恩赐",2,23));
+	REP(6) addcard(1,card("地精的恩赐",1,24));
+	REP(3) addcard(1,card("恶魔的恩赐",2,25));
+	REP(5) addcard(1,card("牧师的恩赐",1,26));
+	REP(3) addcard(1,card("随缘的恩赐",1,27));
 	addcard(1,card("阻碍",3,0));
 	if(timemode)
 	{
@@ -100,6 +124,7 @@ int Choose=1,sure_to_use=0,sure_to_magic=0,sure_to_end=0;
 int handkind=1;
 iv printground()
 {
+	//system("cls");
 	if(timemode)
 	{
 		moveto(10,0);print(string(50,' '));
@@ -125,6 +150,9 @@ iv printground()
 	{
 		if(i) print(" | ");
 		if(buff1[i].name=="持久") cyan("持久 "+change(buff1[i].tim));
+		if(buff1[i].name=="法师的恩赐") blue("法师的恩赐");
+		if(buff1[i].name=="恶魔的恩赐") purple("恶魔的恩赐");
+		if(buff1[i].name=="地精的恩赐") green("地精的恩赐 "+change(buff1[i].tim)); 
 	}
 
 	moveto(6,6);print("#2");
@@ -143,6 +171,9 @@ iv printground()
 	{
 		if(i) print(" | ");
 		if(buff2[i].name=="持久") cyan("持久 "+change(buff2[i].tim));
+		if(buff2[i].name=="法师的恩赐") blue("法师的恩赐");
+		if(buff2[i].name=="恶魔的恩赐") purple("恶魔的恩赐");
+		if(buff2[i].name=="地精的恩赐") green("地精的恩赐 "+change(buff2[i].tim)); 
 	}
 	
 	moveto(0,11);print("P"+change(turn));
@@ -181,6 +212,18 @@ iv printhandcard(int choose)
 		moveto(10,24);print(string(50,' '));
 		moveto(10,24);
 		if((*cardmine)[choose-1].effect) print(explanation[(*cardmine)[choose-1].effect]);
+		moveto(10,23);print(string(50,' '));moveto(10,23);
+		if((*cardmine)[choose-1].effect==8)
+		{
+			if(recardheap.size()==0) print("当前弃牌堆没有牌，使用这张牌没有任何效果");
+			else print("当前牌堆顶的牌为【"+recardheap[recardheap.size()-1].name+"】");
+		}
+		moveto(10,25);print(string(60,' '));moveto(10,26);print(string(60,' '));
+		for(int i=0;i<((*cardmine)[choose-1].speffect.size());i++)
+		{
+			moveto(10,25+i);
+			print("["+((*cardmine)[choose-1].speffect[i])+"]:"+speffectexplanation[(*cardmine)[choose-1].speffect[i]]);
+		}
 	}
 	if(handkind==2)
 	{
@@ -233,11 +276,17 @@ iv choosechanged(int lastchoose,int choose)
 		moveto(10,24);print(string(50,' '));
 		moveto(10,24);
 		if((*cardmine)[choose-1].effect) print(explanation[(*cardmine)[choose-1].effect]);
-		moveto(10,25);print(string(50,' '));moveto(10,25);
+		moveto(10,23);print(string(50,' '));moveto(10,23);
 		if((*cardmine)[choose-1].effect==8)
 		{
 			if(recardheap.size()==0) print("当前弃牌堆没有牌，使用这张牌没有任何效果");
 			else print("当前牌堆顶的牌为【"+recardheap[recardheap.size()-1].name+"】");
+		}
+		moveto(10,25);print(string(75,' '));moveto(10,26);print(string(75,' '));
+		for(int i=0;i<((*cardmine)[choose-1].speffect.size());i++)
+		{
+			moveto(10,25+i);
+			print("["+((*cardmine)[choose-1].speffect[i])+"]:"+speffectexplanation[(*cardmine)[choose-1].speffect[i]]);
 		}
 	}
 	if(handkind==2)
@@ -309,10 +358,34 @@ iv addhandcard(vector<card> *t,card t2,int *handcardmax)
 }
 iv usecard(card t,int pos)
 {
+	if(found(t.speffect,"地精的恩赐"))
+	{
+		if(foundbuff(buffmine,"地精的恩赐")==-1)
+		{
+			buff s;s.set_up("地精的恩赐",0);
+			buffmine->push_back(s);
+		}
+		(*buffmine)[foundbuff(buffmine,"地精的恩赐")].tim+=2;
+		if((*buffmine)[foundbuff(buffmine,"地精的恩赐")].tim>=5)
+		{
+			(*buffmine)[foundbuff(buffmine,"地精的恩赐")].tim-=5,increasecost(costmine,costmaxmine,1);
+			if((*buffmine)[foundbuff(buffmine,"地精的恩赐")].tim==0) buffmine->erase((buffmine->begin())+foundbuff(buffmine,"地精的恩赐"));
+		}
+	}
+	if(found(t.speffect,"术士的恩赐"));
+		increasemana(manamine,manamaxmine,15);
 	if(t.name!="114514")
 		throwcard(cardmine,pos);
 	if(t.effect==1) 
+	{
+		for(int i=0;i<(cardhis->size());i++)
+			if(found((*cardhis)[i].speffect,"战士的恩赐"))
+			{
+				(*cardhis)[i].speffect.erase((*cardhis)[i].speffect.begin()+i);
+				return;
+			}
 		addhandcard(cardhis,drawcard(),handcardmaxhis);
+	}
 	if(t.effect==2)
 	{
 		int pp=ran(1,(cardmine->size()));
@@ -423,6 +496,92 @@ iv usecard(card t,int pos)
 		if(handcard1.size()>handcard2.size()) addhandcard(&handcard1,drawcard(),&handcardmax1);
 		else if(handcard2.size()>handcard1.size()) addhandcard(&handcard2,drawcard(),&handcardmax2);
 	}
+	if(t.effect==20)
+	{
+		vector<int> cywakioi;cywakioi.clear();
+		for(int i=0;i<(cardmine->size());i++)
+			if(!found((*cardmine)[i].speffect,"浪人的恩赐"))
+				cywakioi.push_back(i);
+		if(cywakioi.size()) addfavour((*cardmine)[cywakioi[ran(0,cywakioi.size()-1)]],"浪人的恩赐");
+	}
+	if(t.effect==21)
+	{
+		vector<int> cywakioi;cywakioi.clear();
+		for(int i=0;i<(cardmine->size());i++)
+			if(!found((*cardmine)[i].speffect,"术士的恩赐"))
+				cywakioi.push_back(i);
+		if(cywakioi.size())
+		{
+			int cywaknoi=ran(0,cywakioi.size()-1);
+			addfavour((*cardmine)[cywakioi[cywaknoi]],"术士的恩赐");
+			cywakioi.erase(cywakioi.begin()+cywaknoi);
+			if(cywakioi.size()) addfavour((*cardmine)[cywakioi[ran(0,cywakioi.size()-1)]],"术士的恩赐");
+		}
+	} 
+	if(t.effect==22)
+	{
+		vector<int> cywakioi;cywakioi.clear();
+		for(int i=0;i<(cardmine->size());i++)
+			if(!found((*cardmine)[i].speffect,"法师的恩赐"))
+				cywakioi.push_back(i);
+		if(cywakioi.size())
+		{
+			int cywaknoi=ran(0,cywakioi.size()-1);
+			addfavour((*cardmine)[cywakioi[cywaknoi]],"法师的恩赐");
+			cywakioi.erase(cywakioi.begin()+cywaknoi);
+			if(cywakioi.size()) addfavour((*cardmine)[cywakioi[ran(0,cywakioi.size()-1)]],"法师的恩赐");
+		}
+	} 
+	if(t.effect==23)
+	{
+		vector<int> cywakioi;cywakioi.clear();
+		for(int i=0;i<(cardmine->size());i++)
+			if(!found((*cardmine)[i].speffect,"战士的恩赐"))
+				cywakioi.push_back(i);
+		if(cywakioi.size()) addfavour((*cardmine)[cywakioi[ran(0,cywakioi.size()-1)]],"战士的恩赐");
+	}
+	if(t.effect==24)
+	{
+		vector<int> cywakioi;cywakioi.clear();
+		for(int i=0;i<(cardmine->size());i++)
+			if(!found((*cardmine)[i].speffect,"地精的恩赐"))
+				cywakioi.push_back(i);
+		if(cywakioi.size())
+		{
+			int cywaknoi=ran(0,cywakioi.size()-1);
+			addfavour((*cardmine)[cywakioi[cywaknoi]],"地精的恩赐");
+			cywakioi.erase(cywakioi.begin()+cywaknoi);
+			if(cywakioi.size()) addfavour((*cardmine)[cywakioi[ran(0,cywakioi.size()-1)]],"地精的恩赐");
+		}
+	}
+	if(t.effect==25)
+	{
+		vector<int> cywakioi;cywakioi.clear();
+		for(int i=0;i<(cardmine->size());i++)
+			if(!found((*cardmine)[i].speffect,"恶魔的恩赐"))
+				cywakioi.push_back(i);
+		if(cywakioi.size())
+		{
+			int cywaknoi=ran(0,cywakioi.size()-1);
+			addfavour((*cardmine)[cywakioi[cywaknoi]],"恶魔的恩赐");
+			cywakioi.erase(cywakioi.begin()+cywaknoi);
+			if(cywakioi.size()) addfavour((*cardmine)[cywakioi[ran(0,cywakioi.size()-1)]],"恶魔的恩赐");
+		}
+	}
+	if(t.effect==26)
+	{
+		vector<int> cywakioi;cywakioi.clear();
+		for(int i=0;i<(cardmine->size());i++)
+			if(!found((*cardmine)[i].speffect,"牧师的恩赐"))
+				cywakioi.push_back(i);
+		if(cywakioi.size()) addfavour((*cardmine)[cywakioi[ran(0,cywakioi.size()-1)]],"牧师的恩赐");
+	}
+	if(t.effect==27)
+	{
+		int s=ran(20,26);
+		usecard(card("114514",0,s),pos);
+		moveto(0,1);print("你使用了【"+cardname[s]+"】");
+	}
 }
 iv usemagic(skill t)
 {
@@ -499,6 +658,46 @@ iv ending()
 			}
 		}
 }
+iv recheck()
+{
+	//浪人
+	while(1)
+	{
+		bool flagk=0;
+		for(int i=0;i<(cardmine->size());i++)
+			if(found((*cardmine)[i].speffect,"浪人的恩赐"))
+			{
+				flagk=1;
+				break;	
+			}
+		if(!flagk) break;
+		int langren=0;
+		for(int i=0;i<(cardmine->size());i++)
+			if(foundfavour((*cardmine)[i]))
+				langren++;
+		if(langren>4)
+			for(int i=0;i<(cardmine->size());i++)
+			{
+				if(found((*cardmine)[i].speffect,"浪人的恩赐"))
+					throwcard(cardmine,i+1);
+				break;
+			}	
+		else break;
+	}
+	//牧师 
+	bool flagm=0;
+	for(int i=0;i<(cardmine->size());i++)
+		if(!found((*cardmine)[i].speffect,"牧师的恩赐"))
+		{
+			flagm=1;
+			break;
+		}
+	if(!flagm)
+	{
+		cardmine->clear();
+		win();
+	}
+}
 iv game()
 {
 	if(turn==1)
@@ -566,6 +765,26 @@ iv game()
 		if(eee) increasecost(costmine,costmaxmine,1);
 	}
 	if(tim==1) increasecost(costmine,costmaxmine,1);
+	int fashi=0;
+	for(int i=0;i<(cardmine->size());i++)
+		if(found((*cardmine)[i].speffect,"法师的恩赐"))
+			fashi++;
+	if(ran(1,10)<=fashi)
+	{
+		increasecost(costmine,costmaxmine,1);
+		buff s;s.set_up("法师的恩赐",1);
+		buffmine->push_back(s);
+	}
+	int emo=0;
+	for(int i=0;i<(cardmine->size());i++)
+		if(found((*cardmine)[i].speffect,"恶魔的恩赐"))
+			emo++;
+	if(ran(1,10)<=emo)
+	{
+		throwcard(cardmine,ran(1,cardmine->size()));
+		buff s;s.set_up("恶魔的恩赐",1);
+		buffmine->push_back(s);
+	}
 	sure_to_use=0;sure_to_magic=0;sure_to_end=0;
 	handkind=1;
 	memset(visskill,0,sizeof(visskill));
@@ -599,11 +818,12 @@ iv game()
 					print(string(24,' '));
 					*costmine-=(*cardmine)[Choose-1].cost;
 					usecard((*cardmine)[Choose-1],Choose);
-					if(Choose>=(cardmine->size())) Choose=cardmine->size();
-					lastchoose=Choose;
 					if(tim==2)
 						if(ran(1,10)<=twelveam)
 							increasecost(costmine,costmaxmine,1);
+					recheck();
+					if(Choose>=(cardmine->size())) Choose=cardmine->size();
+					lastchoose=Choose;
 					printground();
 				}
 				sure_to_use=0;
@@ -782,6 +1002,7 @@ void option()
 }
 int main()
 {
+	SetConsoleTitle("ANOTHER-CARD-GAME v1.1.4514");
 	//init_introduce();
 	init();
 	option();

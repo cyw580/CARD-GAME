@@ -1,6 +1,9 @@
 #include<bits/stdc++.h>
+#include<ext/pb_ds/assoc_container.hpp>
+#include<ext/pb_ds/hash_policy.hpp>
 #define iv inline void
 using namespace std;
+using namespace __gnu_pbds;
 iv moveto(int a,int b) //列 行 
 {
 	HANDLE hConsole=GetStdHandle(STD_OUTPUT_HANDLE);
@@ -24,6 +27,12 @@ bool found(vector<string> &t,string a)
 	vector<string>::iterator it=find(t.begin(),t.end(),a);
     if(it!=t.end()) return true;
     else return false;
+}
+int founds(vector<string> &t,string a)
+{
+	for(int i=0;i<t.size();i++)
+		if(t[i]==a)
+			return i;
 }
 void SetColor(short x);
 #define Set SetColor(7)
@@ -90,12 +99,13 @@ string soullist[114];int soullong,cardlong;
 string soulexplanation[514];
 string cardname[1919];
 vector<skill> soulskill[114];
+gp_hash_table<string,string> speffectexplanation;
 iv init()
 {
 	srand(time(NULL));
 	mouse(0);
 	
-	cardlong=19;
+	cardlong=27;
 	cardname[1]="惩罚";
 	cardname[2]="附带弃置";
 	cardname[3]="埋伏";
@@ -115,6 +125,14 @@ iv init()
 	cardname[17]="绯红之王";
 	cardname[18]="公平竞争";
 	cardname[19]="变本加厉";
+	cardname[20]="浪人的恩赐";
+	cardname[21]="术士的恩赐";
+	cardname[22]="法师的恩赐";
+	cardname[23]="战士的恩赐";
+	cardname[24]="地精的恩赐";
+	cardname[25]="恶魔的恩赐";
+	cardname[26]="牧师的恩赐";
+	cardname[27]="随缘的恩赐";
 	
 	//牌面 
 	explanation[1]="令对手从牌库中抽一张牌";
@@ -136,6 +154,14 @@ iv init()
 	explanation[17]="随机调整时间";
 	explanation[18]="（打出此牌后）手牌多的一方弃一张牌";
 	explanation[19]="（打出此牌后）手牌多的一方摸一张牌";
+	explanation[20]="你的随机一张无【浪人的恩赐】手牌得到【浪人的恩赐】";
+	explanation[21]="你的随机两张无【术士的恩赐】手牌得到【术士的恩赐】";
+	explanation[22]="你的随机两张无【法师的恩赐】手牌得到【法师的恩赐】";
+	explanation[23]="你的随机一张无【战士的恩赐】手牌得到【战士的恩赐】";
+	explanation[24]="你的随机两张无【地精的恩赐】手牌得到【地精的恩赐】";
+	explanation[25]="你的随机两张无【恶魔的恩赐】手牌得到【恶魔的恩赐】";
+	explanation[26]="你的随机一张无【牧师的恩赐】手牌得到【牧师的恩赐】";
+	explanation[27]="随机使用一张恩赐牌";
 	
 	theskill[1].set_up("自由意志",40,1,1);
 	theskill[2].set_up("命运指针",70,1,2);
@@ -188,6 +214,15 @@ iv init()
 	soulexplanation[5]="比较靠运气，能快速积攒费用";
 	soullist[6]="rand";
 	soulexplanation[6]="？？？";
+	
+	speffectexplanation["加边！加边！加边！"]="使用【并查集查询】时此牌将被弃置";
+	speffectexplanation["浪人的恩赐"]="当你拥有恩赐的手牌总数>4时这张牌将被弃置";
+	speffectexplanation["术士的恩赐"]="打出这张牌时+15■";
+	speffectexplanation["法师的恩赐"]="回合开始时有带有【法师的恩赐】的手牌数量*10%的概率+1◆";
+	speffectexplanation["战士的恩赐"]="受到【惩罚】时免疫效果且你的这张牌的【战士的恩赐】消失";
+	speffectexplanation["地精的恩赐"]="使【地精的恩赐】buff加2回合，【地精的恩赐】为5回合时转化为1◆";
+	speffectexplanation["恶魔的恩赐"]="回合开始时有带有【恶魔的恩赐】的手牌数量*10%的概率弃一张牌";
+	speffectexplanation["牧师的恩赐"]="当你的所有手牌都带有【牧师的恩赐】时直接获胜";
 }
 
 //From PreInfo.h
