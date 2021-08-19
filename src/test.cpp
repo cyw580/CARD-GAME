@@ -2,6 +2,7 @@
 #include<windows.h>
 #include<conio.h> 
 #include<iostream>
+#include<cstdio>
 using namespace std;
 #include"PreInfo.h"
 struct player{
@@ -32,24 +33,22 @@ struct player{
 int appcnt,now,env_now;
 Card appcard[55];
 #include"CARDGAMEsocket.hpp"
-Card xsd;
+Card xsd=(Card){"x",0,0,0,0,0,-2};
 int main(){
 	SetConsoleOutputCP(65001);
-    int server;
+    int server,a;
     scanf("%d",&server);
     TCP_initialize(server);
-    if(server==2){
-		cout<<pl[1].name<<endl;
-        send_message("3   ",4);
-		xsd=(Card){"x",0,0,0,0,0,-2};
-		for(int i=1;i<=15;i++) pl[1].handcard[i]=xsd;
-		for(int i=1;i<=65;i++) pl[1].heap[i]=xsd;
-		send_message((char*)&xsd,9999);
+    if(server==1){
+		for(int i=1;i<=100;i++) send_char("255 ");
 		closesocket(Client);
     }
 	else{
-		int return_val=0;
-		recv_message();
+		for(int i=1;i<=100;i++){
+			char c[50];
+			recv_char(c);
+			printf("%s\n",c);
+		}
 	}
 	system("pause");
 	return 0;

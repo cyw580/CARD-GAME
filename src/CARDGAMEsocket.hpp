@@ -31,19 +31,72 @@ int TCP_initialize(int server_mode){
     return 0;
 }
 char charmsg[15000];
-char* player_to_char(player pl){
-    memset(charmsg,0,sizeof(charmsg));
-    memcpy(charmsg,&pl,sizeof(player));
-    return charmsg;
+// char* player_to_char(player pl){
+//     memset(charmsg,0,sizeof(charmsg));
+//     memcpy(charmsg,&pl,sizeof(player));
+//     return charmsg;
+// }
+// int send_message(const char* msg_to_client,int len){
+//     memset(charmsg,0,sizeof(charmsg));
+//     memcpy(charmsg,msg_to_client,len);
+//     int sendval=send(Client,charmsg,len,0);
+//     if(sendval<0){
+//         closesocket(Client); return -1;
+//     }
+//     return 0;
+// }
+int send_int(int s){
+    return send(Client,(char*)&s,4,0)<0?-1:0;
 }
-int send_message(const char* msg_to_client,int len){
-    memset(charmsg,0,sizeof(charmsg));
-    memcpy(charmsg,msg_to_client,len);
-    int sendval=send(Client,charmsg,len,0);
-    if(sendval<0){
-        closesocket(Client); return -1;
-    }
-    return 0;
+int send_char(const char msg[]){
+    char ch[21]={0};
+    strcpy(ch,msg);
+    return send(Client,ch,21,0)<0?-1:0;
+}
+int recv_char(char val[]){
+    return recv(Client,val,21,0)<0?-1:0;
+}
+int recv_int(int &val){
+    char msg_from_client[4]={0};
+    return recv(Client,(char*)&val,4,0)<0?-1:0;
+}
+int send_card(Card cr){
+    int return_value=0;
+    return_value+=send_char(cr.name);
+    return_value+=send_int(cr.cost)+send_int(cr.ATK)+send_int(cr.HEAL)+send_int(cr.DEF);
+    return_value+=send_int(cr.MISS)+send_int(cr.func);
+    return return_value<0?-1:0;
+}
+int send_player(player pl){
+    int return_value=0;
+    return_value+=send_int(pl.cost)+send_int(pl.maxcost)+send_int(pl.rest);
+    return_value+=send_int(pl.heapn)+send_int(pl.occ)+send_int(pl.hp)+send_int(pl.def);
+    return_value+=send_int(pl.cardcnt)+send_int(pl.prehp);
+    return_value+=send_int(pl.maxhp)+send_int(pl.maxdef);
+    for(int i=0;i<11;i++) return_value+=send_card(pl.handcard[i]);
+    for(int i=0;i<65;i++) return_value+=send_card(pl.heap[i]);
+    for(int i=0;i<11;i++) return_value+=send_int(pl.used[i]);
+    for(int i=1;i<11;i++) return_value+=send_int(pl.buff[i]);
+    return return_value<0?-1:0;
+}
+int recv_card(Card &cr){
+    int return_value=0;
+    return_value+=recv_char(cr.name);
+    return_value+=recv_int(cr.cost)+recv_int(cr.ATK)+recv_int(cr.HEAL);
+    return_value+=recv_int(cr.DEF)+recv_int(cr.MISS)+recv_int(cr.func);
+    return return_value<0?-1:0;
+}
+int recv_player(player &pl){
+    int return_value=0;
+    return_value+=recv_int(pl.cost)+recv_int(pl.maxcost)+recv_int(pl.rest);
+    return_value+=recv_int(pl.heapn)+recv_int(pl.occ)+recv_int(pl.hp)+recv_int(pl.def);
+    return_value+=recv_int(pl.cardcnt)+recv_int(pl.prehp);
+    return_value+=recv_int(pl.maxhp)+recv_int(pl.maxdef);
+    for(int i=0;i<11;i++) return_value+=recv_card(pl.handcard[i]);
+    for(int i=0;i<65;i++) return_value+=recv_card(pl.heap[i]);
+    for(int i=0;i<11;i++) return_value+=recv_int(pl.used[i]);
+    for(int i=1;i<11;i++) return_value+=recv_int(pl.buff[i]);
+    return return_value<0?-1:0;
 }
 player precv_message(int &return_val){
     char msg_from_client[15000]={0};
@@ -68,25 +121,20 @@ Card crecv_message(int &return_val){
 int recv_message(){
     int return_val=0;
     char msg_from_client[15000]={0};
-    if(recv(Client,msg_from_client,4,0)<0) return -1;
     int command;
-    sscanf(msg_from_client,"%d",&command);
-    if(command==2){
-        int pl_num;
-        sscanf(msg_from_client,"%d %d",&command,&pl_num);
-        pl[pl_num]=precv_message(return_val);
-        if(return_val<0) return -1;
+    if(recv_int(command)<0) return -1;
+    if(command/1000==2){
+        int pl_num=command%100/10;
+        if(recv_player(pl[pl_num])<0) return -1;
     }
-    if(command==3){
-        appcard[++appcnt]=crecv_message(return_val);
-        printf(appcard[appcnt].name);
-        if(return_val<0) return -1;
+    if(command/1000==3){
+        if(recv_card(appcard[++appcnt])<0) return -1;
     }
-    if(command==4){
-        sscanf(msg_from_client,"%d %d",&command,&now);
+    if(command/1000==4){
+        now=command%100/10;
     }
-    if(command==5){
-        sscanf(msg_from_client,"%d %d",&command,&env_now);
+    if(command/1000==5){
+        env_now=command%100/10;
     }
     return return_val<0?-1:0;
 }
@@ -99,16 +147,14 @@ inline int recv_gaming(){
 }
 inline int send_gaming(Card use_card){
     int return_val=0;
-    if(send_message("2 1 ",4)<0) return -1;
-    if(send_message((char*)&pl[1],15000)<0) return -1;
-    if(send_message("2 2 ",4)<0) return -1;
-    if(send_message((char*)&pl[2],15000)<0) return -1;
-    if(send_message("3   ",4)<0) return -1;
-    if(send_message((char*)&use_card,15000)<0) return -1;
-    if(now==1) {if(send_message("4 1 ",4)<0) return -1;}
-    else if(send_message("4 2 ",4)<0) return -1;
-    char msg_of_weather[1010]={0};
-    sprintf(msg_of_weather,"5 %d ",env_now);
-    if(send_message(msg_of_weather,4)<0) return -1;
+    if(send_int(2010)<0) return -1;
+    if(send_player(pl[1])<0) return -1;
+    if(send_int(2020)<0) return -1;
+    if(send_player(pl[2])<0) return -1;
+    if(send_int(3000)<0) return -1;
+    if(send_card(use_card)<0) return -1;
+    if(now==1) {if(send_int(4010)<0) return -1;}
+    else if(send_int(4020)<0) return -1;
+    if(send_int(5000+env_now*10)<0) return -1;
     return 0;
 }

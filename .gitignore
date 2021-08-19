@@ -32,5 +32,5 @@
 *.app
 
 .vscode
-src/test.cpp
-src/test.exe
+/src/test.cpp
+/src/test.exe

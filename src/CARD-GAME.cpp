@@ -55,6 +55,7 @@ struct player{
 Card void_card=(Card){"x",0,0,0,0,0,-2};
 
 #include"CARDGAMEsocket.hpp"
+
 //-------------------------------------------------
 int UI();
 int Sort(int now);
@@ -124,6 +125,7 @@ Card use_card;
 
 int Card::Use(int from,int to){
 	int miss=cal_miss(from,to);
+	use_card=(Card){"x",0,0,0,0,0,0};
 	strcpy(use_card.name,name);
 	use_card.cost=cost;
 	if(rand()%100<miss){
@@ -984,6 +986,8 @@ int Ask(int now){
 	}
 	pl[now].rest=pl[now].cardcnt;
 	//补充手牌
+	use_card=(Card){"x",0,0,0,0,0,-2};
+	if(send_gaming(use_card)<0) another_player_quit(server_mode);
 	int cursor=1;
 	SetColor(7);
 	while(!winner){
@@ -1382,7 +1386,7 @@ int main(){
 		SetColor(0,7);
 		system("color 07");
 		system("cls");//清屏并切换到Choose界面
-		send_message("255 ",4);
+		send_int(255);
 	}
 	else {
 		system("cls");
@@ -1403,9 +1407,9 @@ int main(){
 	}
 	//初始发牌
 
-	if(server_mode==1) send_message("2 1 ",4);
-	else send_message("2 2 ",4);
-	send_message((char*)&pl[server_mode],10000);
+	if(server_mode==1) send_int(2010);
+	else send_int(2020);
+	send_player(pl[server_mode]);
 	recv_message();
 	SetConsoleTitle("Here we go...");
 	Sleep(1500);
@@ -1431,11 +1435,11 @@ int main(){
 		SetConsoleTitle(title);
 		if(now==server_mode){
 			appcnt=0;
-			
+			system("cls");
 			if(Ask(now)==1) break;			//origin copy
 			if(pl[now].occ==7){
 				pl[now].buff[10]=0;
-				for(int i=1;i<=pl[now].cardcnt;i++) if(pl[now].used[i] || pl[now].handcard[i].name!="[神圣意志]") pl[now].buff[10]++;
+				for(int i=1;i<=pl[now].cardcnt;i++) if(!pl[now].used[i] && pl[now].handcard[i].name=="[神圣意志]") pl[now].buff[10]++;
 				if(pl[now].buff[10]==pl[now].cardcnt) winner=now;
 			}//牧师检索[神圣意志]
 			pl[now].UpdateBuff(2);
