@@ -100,6 +100,10 @@ string soulexplanation[514];
 string cardname[1919];
 vector<skill> soulskill[114];
 gp_hash_table<string,string> speffectexplanation;
+string cardsyst[19],cardsystexplanation[19];
+int cardsystlong;
+bool thecardsyst[19];
+string gamemodename[19],gamemodeexplanation[19];int gamemodelong;
 iv init()
 {
 	srand(time(NULL));
@@ -172,9 +176,10 @@ iv init()
 	theskill[7].set_up("这是l，这是r",0,0,7);
 	theskill[8].set_up("这些边我不加",0,0,8);
 	theskill[9].set_up("并查集查询",70,1,9);
-	theskill[10].set_up("因为太强了所以要削",0,0,10);
+	theskill[10].set_up("不稳定存在",0,0,10);
 	theskill[11].set_up("不明所以",0,0,11); 
 	theskill[12].set_up("不知所措",20,1,12);
+	theskill[13].set_up("燃烧怒火",80,1,13);
 	
 	skillexplanation[1]="将牌堆顶的牌的费用化为0并加入手牌";
 	skillexplanation[2]="将自己的随机一张牌给予对方";
@@ -185,9 +190,10 @@ iv init()
 	skillexplanation[7]="回合初60%你的一张无此效果的手牌得到【加边！加边！加边！】";
 	skillexplanation[8]="回合初你没有带【加边！加边！加边！】的牌则+1◆";
 	skillexplanation[9]="弃置你所有带有【加边！加边！加边！】的牌";
-	skillexplanation[10]="开局时多摸两张牌";
+	skillexplanation[10]="开局时多摸一张牌";
 	skillexplanation[11]="每回合初得到的◆为1~3";
 	skillexplanation[12]="+1◆,摸1张牌";
+	skillexplanation[13]="获得2回合【愤怒】buff：因对方手牌效果获得的手牌被弃置";
 	
 	soullong=6;
 	soullist[1]="自由";
@@ -202,6 +208,7 @@ iv init()
 	soullist[3]="暴戾";
 	soulskill[3].push_back(theskill[5]);
 	soulskill[3].push_back(theskill[6]);
+	soulskill[3].push_back(theskill[13]);
 	soulexplanation[3]="积累费用，稳健进攻";
 	soullist[4]="谔谔";
 	soulskill[4].push_back(theskill[7]);
@@ -216,13 +223,31 @@ iv init()
 	soulexplanation[6]="？？？";
 	
 	speffectexplanation["加边！加边！加边！"]="使用【并查集查询】时此牌将被弃置";
-	speffectexplanation["浪人的恩赐"]="当你拥有恩赐的手牌总数>4时这张牌将被弃置";
+	speffectexplanation["浪人的恩赐"]="当你拥有恩赐的手牌总数>3时这张牌将被弃置";
 	speffectexplanation["术士的恩赐"]="打出这张牌时+15■";
 	speffectexplanation["法师的恩赐"]="回合开始时有带有【法师的恩赐】的手牌数量*10%的概率+1◆";
 	speffectexplanation["战士的恩赐"]="受到【惩罚】时免疫效果且你的这张牌的【战士的恩赐】消失";
-	speffectexplanation["地精的恩赐"]="使【地精的恩赐】buff加2回合，【地精的恩赐】为5回合时转化为1◆";
+	speffectexplanation["地精的恩赐"]="使【地精的恩赐】buff加2回合，【地精的恩赐】为3回合时转化为1◆";
 	speffectexplanation["恶魔的恩赐"]="回合开始时有带有【恶魔的恩赐】的手牌数量*10%的概率弃一张牌";
 	speffectexplanation["牧师的恩赐"]="当你的所有手牌都带有【牧师的恩赐】时直接获胜";
+	
+	cardsystlong=3;
+	cardsyst[1]="基础套牌";
+	cardsyst[2]="时间套牌";
+	cardsyst[3]="恩赐套牌";
+	
+	cardsystexplanation[1]="最为基础的牌型，不可关闭";
+	cardsystexplanation[2]="需要打开时间模式才能打开";
+	cardsystexplanation[3]="来自 CARD-GAME 各职业人物的恩赐";
+	
+	thecardsyst[1]=thecardsyst[2]=thecardsyst[3]=1;
+	
+	gamemodelong=2;
+	gamemodename[1]="经典模式";
+	gamemodename[2]="计时模式";
+	
+	gamemodeexplanation[1]="最经典的游戏模式";
+	gamemodeexplanation[2]="每回合开局多摸1张牌，在20回合后手牌数量少的人获胜";
 }
 
 //From PreInfo.h
@@ -274,4 +299,3 @@ void Shake(int power,int time){
     }
     return;
 }
-
