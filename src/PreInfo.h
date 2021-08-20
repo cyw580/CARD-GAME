@@ -106,7 +106,7 @@ string Card::Intro(){
 	else if(func==5)return "自身[狂暴]至回合结束";
 	else if(func==6)return "对手[中毒]3回合（职业为地精或击破护盾时才生效）";
 	else if(func==7)return "立刻补充你的手牌";
-	else if(func==8)return "手牌上限+1";
+	else if(func==8)return "手牌上限+1(最大为6)";
 	else if(func==9)return "HP上限+40";
 	else if(func==10)return "-1◆上限";
 	else if(func==11)return "HP上限-60";
@@ -509,7 +509,7 @@ void occ_func(int x){
 		printf("HP 280   MAX_DEF 0   手牌上限3   ◆3");printf("   ");SetColor(13);
 		printf("\n\t<★成长>每个标记使你ATK+8%% HP上限+10 MAX_DEF+10");printf("             ");SetColor(7);
 		printf("\n\t 1.[贪婪] 回合开始时变为3◆,使用牌后有80%会抽牌");printf("           ");
-		printf("\n\t 2.[健康] 每当获得1个<★成长>时恢复20HP");printf("                    ");
+		printf("\n\t 2.[健康] 每当获得1个<★成长>时恢复10HP");printf("                    ");
 		printf("\n\t 3.[与世隔绝] 无法抽到公共牌库中的牌");printf("            ");
 		printf("\n\t 4.[敏捷] 部分牌有穿透护盾攻击的能力");printf("      ");
 	}

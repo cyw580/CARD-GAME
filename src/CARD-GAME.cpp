@@ -172,13 +172,13 @@ int Card::Use(int from,int to){
 		pl[from].buff[0]++;
 		pl[from].maxhp+=10;
 		pl[from].maxdef+=10;
-		pl[from].hp=min(pl[from].maxhp,pl[from].hp+20);
+		pl[from].hp=min(pl[from].maxhp,pl[from].hp+10);
 	}
 	if(pl[from].occ==5 && flag==3){
 		pl[from].buff[0]+=2;
 		pl[from].maxhp+=20;
 		pl[from].maxdef+=20;
-		pl[from].hp=min(pl[from].maxhp,pl[from].hp+40);
+		pl[from].hp=min(pl[from].maxhp,pl[from].hp+20);
 	}
 	UI();
 	if(Check(to)){
@@ -223,8 +223,10 @@ int Card::Special(int from,int to){
 		return 4;
 	}
 	else if(func==8){
-		pl[from].cardcnt++;
-		pl[from].used[pl[from].cardcnt]=1;
+		if(pl[from].cardcnt<6){
+			pl[from].cardcnt++;
+			pl[from].used[pl[from].cardcnt]=1;
+		}
 	}
 	else if(func==9){
 		pl[from].maxhp+=40;
@@ -867,27 +869,40 @@ void UI_other(){
 			break;
 		}
 		if(i==min(appcnt,6)) {
-			SetColor(11.0);
+			SetColor(11,0);
 			SetPos(11,Row+i);
 			printf("%d",appcard[x].cost);//费用
-			SetColor(0,7);
-			SetPos(14,Row+i);
-			printf(appcard[x].Name());//牌名
-			printf("                 ");
-			SetPos(20+14,Row+i);
-			printf("%-3d         ",appcard[x].ATK);
-			SetPos(30+14,Row+i);
-			printf("%-3d         ",appcard[x].HEAL);
-			SetPos(40+14,Row+i);
-			printf("%-3d         ",appcard[x].DEF);
-			SetPos(50+14,Row+i);
 			if(appcard[x].func==-1) {
+				SetColor(0,8);
+				SetPos(14,Row+i);
+				printf(appcard[x].Name());//牌名
+				printf("                 ");
+				SetPos(20+14,Row+i);
+				printf("%-3d         ",appcard[x].ATK);
+				SetPos(30+14,Row+i);
+				printf("%-3d         ",appcard[x].HEAL);
+				SetPos(40+14,Row+i);
+				printf("%-3d         ",appcard[x].DEF);
+				SetPos(50+14,Row+i);
+				SetColor(10,8);
 				printf("YES");//MISS
 				SetPos(11,Row+9);
 				SetColor(7,0);
 				printf("                                                 ");
 			}
 			else {
+				SetColor(0,8);
+				SetPos(14,Row+i);
+				printf(appcard[x].Name());//牌名
+				printf("                 ");
+				SetPos(20+14,Row+i);
+				printf("%-3d         ",appcard[x].ATK);
+				SetPos(30+14,Row+i);
+				printf("%-3d         ",appcard[x].HEAL);
+				SetPos(40+14,Row+i);
+				printf("%-3d         ",appcard[x].DEF);
+				SetPos(50+14,Row+i);
+				SetColor(4,8);
 				printf("NO");
 				SetPos(11,Row+9);
 				SetColor(7,0);
@@ -899,7 +914,7 @@ void UI_other(){
 			SetColor(11);
 			SetPos(11,Row+i);
 			printf("%d",appcard[x].cost);//费用
-			SetColor(7,0);
+			SetColor(7);
 			SetPos(14,Row+i);
 			printf(appcard[x].Name());//牌名
 			printf("               ");
@@ -911,13 +926,17 @@ void UI_other(){
 			printf("%-3d         ",appcard[x].DEF);
 			SetPos(50+14,Row+i);
 			if(appcard[x].func==-1) {
+				SetColor(10);
 				printf("YES");//MISS
 				SetPos(11,Row+9);
+				SetColor(7);
 				printf("                                                 ");
 			}
 			else {
+				SetColor(4);
 				printf("NO");
 				SetPos(11,Row+9);
+				SetColor(7);
 				printf(appcard[x].Intro());
 			}
 		}
@@ -977,6 +996,8 @@ void start_turn(int now){
 }
 
 void another_player_quit(int server_mode){
+	system("cls");
+	SetPos(11,0);
 	printf("对方退出了游戏，他也许是投降了...\n");
 	Sleep(1500);
 	system("cls");
@@ -997,9 +1018,10 @@ void another_player_quit(int server_mode){
 int Ask(int now){
 	int option_use=0,option_giveup=0,option_over=0;
 	start_turn(now);
+
 	if(mode==1)treasure(now);
 	UI();
-	if(Check(now)) return 0;
+	if(Check(now)){send_gaming(void_card); return 0;}
 	//死亡判断
 
 	for(int i=1;i<=pl[now].cardcnt;i++){
@@ -1317,6 +1339,15 @@ int Ask(int now){
 		if(pl[now].rest<=0){//结束回合
 			SetPos(0,1);
 			printf("                ");
+			for(int i=1;i<=pl[now].cardcnt;i++){
+				SetColor(8);
+				SetPos(0,Row+i);
+				printf("                                                                        ");
+				SetPos(14,Row+i);
+				printf("[Used.]");
+			}
+			SetPos(11,Row+9);
+			printf("                                                                        ");
 			if(pl[now].occ==7 && pl[now].cost==0) {
 				++pl[now].buff[0];
 			}
@@ -1333,6 +1364,7 @@ void Options(){
 	SetPos(0,0);
 	printf("※ 设置 Options ※");
 	int cursor=1;
+	system("cls");
 	while(1){
 
 		SetPos(1,3);
@@ -1383,25 +1415,40 @@ void Options(){
 			printf("\n\t");
 		}
 		//游戏模式设定
-		
-		input=getch();
-		if(input==UP || input==LEFT || input=='w' || input=='a') cursor--;
-		if(input==DOWN || input==RIGHT || input=='s' || input=='d') cursor++;
-		if(cursor>3) cursor=1;
-		if(cursor<1) cursor=3;
-		if(input=='z' || input=='x'){
-			if(cursor==1){
-				env_on^=1;
+		if(server_mode==1){
+			input=getch();
+			if(input==UP || input==LEFT || input=='w' || input=='a') cursor--;
+			if(input==DOWN || input==RIGHT || input=='s' || input=='d') cursor++;
+			if(cursor>3) cursor=1;
+			if(cursor<1) cursor=3;
+			if(input=='z' || input=='x'){
+				if(cursor==1){
+					env_on^=1;
+				}
+				if(cursor==2){
+					player_bgn=(player_bgn+1)%3;
+				}
+				if(cursor==3){
+					mode=(mode+1)%3;
+				}
 			}
-			if(cursor==2){
-				player_bgn=(player_bgn+1)%3;
+			if(input==SPACE || input==ENTER){
+				send_int(8255); break;
 			}
-			if(cursor==3){
-				mode=(mode+1)%3;
-			}
+			if(send_int(6000+env_on)<0) another_player_quit(server_mode);
+			if(send_int(6100+mode)<0) another_player_quit(server_mode);
+			if(send_int(6200+player_bgn)<0) another_player_quit(server_mode);
 		}
-		if(input==SPACE || input==ENTER){
-			break;
+		else{
+			bool quit_option=0;
+			for(int i=1;i<=3;i++){
+				int recv_val=recv_message();
+				if(recv_val<0) another_player_quit(server_mode);
+				if(recv_val==8255){
+					quit_option=1; break;
+				}
+			}
+			if(quit_option) break;
 		}
 	}
 	return;
@@ -1438,19 +1485,27 @@ int main(){
 	SetConsoleTitle("CARD GAME:v2.0.0");
 	srand(time(NULL));
 	previous();//获得公共牌库和职业牌库
-	Connect();
-	SetColor(7,0);
-	if(server_mode==2) printf("\n输入服务端ip地址:");
-	else system("cls"),printf("等待玩家连入...\n");
-	printf("%d\n",TCP_initialize(server_mode));
-	// printf("WELCOME!!\n");
-	// for(int i=1;i<=2;i++){
-	// 	printf("请输入P%d的名字:",i);
-	// 	cin>>pl[i].name;
-	// }//输入姓名
-	// Sleep(200);
-	// while(_kbhit()) getch();
-	// system("cls");//清屏并切换到Option界面
+	bool connect_established=0;
+	while(!connect_established){
+		connect_established=1;
+		system("cls");
+		Connect();
+		SetColor(7,0);
+		if(server_mode==2) printf("\n输入服务端ip地址:");
+		else system("cls"),printf("等待玩家连入...\n");
+		if(TCP_initialize(server_mode)!=0){
+			connect_established=0;
+			system("cls");
+			if(server_mode==1){
+				printf("无法设立服务端...请检查是否有同一程序正在运行...\n");
+				getch();
+			}
+			else{
+				printf("无法连接至服务器...请检查网络状况及服务器是否正常启动...\n");
+				getch();
+			}
+		}
+	}
 	if(server_mode==1){
 		system("cls");
 		SetConsoleTitle("CARD GAME:Options");
@@ -1458,13 +1513,15 @@ int main(){
 		SetColor(0,7);
 		system("color 07");
 		system("cls");//清屏并切换到Choose界面
-		send_int(255);
+		if(send_int(6000+env_on)<0) another_player_quit(server_mode);
+		if(send_int(6100+mode)<0) another_player_quit(server_mode);
 	}
 	else {
-		system("cls");
-		printf("正在等待服务端设定游戏模式...\n");
-		recv_message();
+		// system("cls");
+		// printf("正在等待服务端设定游戏模式...\n");
+		Options();
 	}
+	while(_kbhit()) getch();
 	system("cls");
 	SetConsoleTitle("CARD GAME:Choose Your Identity.");
 	Choose(server_mode);//选择职业
@@ -1507,9 +1564,10 @@ int main(){
 		title[19]=now+'0';
 		SetConsoleTitle(title);
 		if(now==server_mode){
-			SetPos(11,Row+10);
+			SetPos(11,Row+13);
 			printf("即将轮到你的回合......");
 			Sleep(1500);
+			while(_kbhit()) getch();
 			appcnt=0;
 			system("cls");
 			if(Ask(now)==1) break;			//origin copy
@@ -1542,7 +1600,10 @@ int main(){
 			}			//origin copy
 			// pl[now].rest=pl[now].cardcnt;
 			if(send_gaming(void_card)<0) another_player_quit(server_mode);
+			SetPos(11,Row+13);
+			printf("你的回合即将结束......");
 			Sleep(1500);
+			while(_kbhit()) getch();
 			system("cls");
 		}
 		else{
@@ -1551,6 +1612,7 @@ int main(){
 			if(recv_gaming()<0) another_player_quit(server_mode);
 		}
 	}
+	Sleep(1500);
 	UI();
 	now=1;
 	SetPos(0,Row);

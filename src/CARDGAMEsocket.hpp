@@ -31,20 +31,6 @@ int TCP_initialize(int server_mode){
     return 0;
 }
 char charmsg[15000];
-// char* player_to_char(player pl){
-//     memset(charmsg,0,sizeof(charmsg));
-//     memcpy(charmsg,&pl,sizeof(player));
-//     return charmsg;
-// }
-// int send_message(const char* msg_to_client,int len){
-//     memset(charmsg,0,sizeof(charmsg));
-//     memcpy(charmsg,msg_to_client,len);
-//     int sendval=send(Client,charmsg,len,0);
-//     if(sendval<0){
-//         closesocket(Client); return -1;
-//     }
-//     return 0;
-// }
 int send_int(int s){
     return send(Client,(char*)&s,4,0)<0?-1:0;
 }
@@ -134,7 +120,17 @@ int recv_message(){
         now=command%100/10;
     }
     if(command/1000==5){
-        env_now=command%100/10;
+        if(command/100==50) env_now=command%100/10;
+        else if(command/100==51) env_cnt=command%100;
+        else recv_int(env_rate);
+    }
+    if(command/1000==6){
+        if(command/100==60) env_on=command%100;
+        else if(command/100==61) mode=command%100;
+        else player_bgn=command%100;
+    }
+    if(command==8255){
+        return 8255;
     }
     return return_val<0?-1:0;
 }
@@ -142,7 +138,7 @@ int recv_message(){
 
 */
 inline int recv_gaming(){
-    for(int i=1;i<=5;i++) if(recv_message()<0) return -1;
+    for(int i=1;i<=7;i++) if(recv_message()<0) return -1;
     return 0;
 }
 inline int send_gaming(Card use_card){
@@ -156,5 +152,14 @@ inline int send_gaming(Card use_card){
     if(now==1) {if(send_int(4010)<0) return -1;}
     else if(send_int(4020)<0) return -1;
     if(send_int(5000+env_now*10)<0) return -1;
+    if(send_int(5100+env_cnt)<0) return -1;
+    if(send_int(5200)<0) return -1;
+    if(send_int(env_rate)<0) return -1;
     return 0;
 }
+// inline int send_option(){
+//     send_int(6000+)
+// }
+// inline int recv_option(){
+
+// }
