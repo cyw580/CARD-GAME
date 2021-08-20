@@ -62,7 +62,7 @@ int recv_int(int &val){
 }
 int send_card(Card cr){
     int return_value=0;
-    return_value+=send_char(cr.name);
+    return_value+=send_int(cr.id);
     return_value+=send_int(cr.cost)+send_int(cr.ATK)+send_int(cr.HEAL)+send_int(cr.DEF);
     return_value+=send_int(cr.MISS)+send_int(cr.func);
     return return_value<0?-1:0;
@@ -76,12 +76,12 @@ int send_player(player pl){
     for(int i=0;i<11;i++) return_value+=send_card(pl.handcard[i]);
     for(int i=0;i<65;i++) return_value+=send_card(pl.heap[i]);
     for(int i=0;i<11;i++) return_value+=send_int(pl.used[i]);
-    for(int i=1;i<11;i++) return_value+=send_int(pl.buff[i]);
+    for(int i=0;i<11;i++) return_value+=send_int(pl.buff[i]);
     return return_value<0?-1:0;
 }
 int recv_card(Card &cr){
     int return_value=0;
-    return_value+=recv_char(cr.name);
+    return_value+=recv_int(cr.id);
     return_value+=recv_int(cr.cost)+recv_int(cr.ATK)+recv_int(cr.HEAL);
     return_value+=recv_int(cr.DEF)+recv_int(cr.MISS)+recv_int(cr.func);
     return return_value<0?-1:0;
@@ -95,7 +95,7 @@ int recv_player(player &pl){
     for(int i=0;i<11;i++) return_value+=recv_card(pl.handcard[i]);
     for(int i=0;i<65;i++) return_value+=recv_card(pl.heap[i]);
     for(int i=0;i<11;i++) return_value+=recv_int(pl.used[i]);
-    for(int i=1;i<11;i++) return_value+=recv_int(pl.buff[i]);
+    for(int i=0;i<11;i++) return_value+=recv_int(pl.buff[i]);
     return return_value<0?-1:0;
 }
 player precv_message(int &return_val){
