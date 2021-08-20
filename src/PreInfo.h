@@ -542,7 +542,7 @@ void occ_func(int x){
 void occ_treasure(int x){
 	SetColor(7,0);
 	if(x==1){
-		printf("宝藏获取条件:回合开始时◆为0且HP≤210");printf("            ");
+		printf("宝藏获取条件:回合开始时◆≤2且HP≤210");printf("            ");
 	}
 	else if(x==2){
 		printf("宝藏获取条件:回合开始时最大HP≤500");printf("              ");

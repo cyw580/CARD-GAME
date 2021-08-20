@@ -555,7 +555,7 @@ void init(int x){
 bool gettre[5];
 void treasure(int now){//竞技模式：宝藏牌
 	if(gettre[now]) return;
-	if(pl[now].occ==1 && (pl[now].cost==0 && pl[now].hp<=210)){
+	if(pl[now].occ==1 && (pl[now].cost<=2 && pl[now].hp<=210)){
 		for(int i=1;i<=pl[now].cardcnt;i++){
 			if(pl[now].used[i]) {
 				pl[now].used[i]=0;
@@ -1018,8 +1018,7 @@ void another_player_quit(int server_mode){
 int Ask(int now){
 	int option_use=0,option_giveup=0,option_over=0;
 	start_turn(now);
-
-	if(mode==1)treasure(now);
+	if(mode==1) treasure(now);
 	UI();
 	if(Check(now)){send_gaming(void_card); return 0;}
 	//死亡判断
