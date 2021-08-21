@@ -13,6 +13,7 @@ using namespace __gnu_pbds;
 iv printhandcard(int choose);
 iv title();
 iv cardsystem();
+iv addhandcard(vector<card> *t,card t2,int *handcardmax,vector<buff> *thebuff);
 vector<card> cardheap,recardheap;
 vector<card> handcard1,handcard2;
 vector<skill> skills1,skills2,simpleskills1,simpleskills2;
@@ -106,19 +107,21 @@ card drawcard() //≥È≈∆
 iv startgame() //ø™ º”Œœ∑ 
 {
 	dealcard();
-	REP(4) handcard1.push_back(drawcard());
-	REP(4) handcard2.push_back(drawcard());
-	if(soul1=="ªÏ„Á") handcard1.push_back(drawcard());
-	if(soul2=="ªÏ„Á") handcard2.push_back(drawcard());
 	cost1=cost2=0;
 	costmax1=costmax2=5;
 	mana1=mana2=manamax1=manamax2=100;
 	handcardmax1=handcardmax2=10;
+	if(soul1=="¿‰æ≤") handcardmax1-=2;
+	if(soul2=="¿‰æ≤") handcardmax2-=2;
 	if(firsthand!=3) turn=firsthand;
 	else turn=ran(1,2);
 	if(turn==1) cost2++;
 	else cost1++;
 	if(timemode) tim=ran(1,4);
+	REP(4) addhandcard(&handcard1,drawcard(),&handcardmax1,&buff1);
+	REP(4) addhandcard(&handcard2,drawcard(),&handcardmax2,&buff2);
+	if(soul1=="ªÏ„Á") addhandcard(&handcard1,drawcard(),&handcardmax1,&buff1);
+	if(soul2=="ªÏ„Á") addhandcard(&handcard2,drawcard(),&handcardmax2,&buff2);
 }
 vector<card> *cardmine,*cardhis;
 int *costmine,*costmaxmine,*costhis,*costmaxhis,*manamine,*manahis,*manamaxmine,*manamaxhis;
@@ -368,7 +371,25 @@ iv increasemana(int *man,int *manmax,int delta)
 iv addhandcard(vector<card> *t,card t2,int *handcardmax,vector<buff> *thebuff)  
 {
 	t->push_back(t2);
-	if(t->size()>*handcardmax or foundbuff(thebuff,"∑ﬂ≈≠")!=-1)
+	if(handcard1.size()>handcardmax1 and soul1=="¿‰æ≤")
+	{
+		if(ran(1,2)==1)
+		{
+			t->erase(t->begin()+t->size()-1);	
+			addhandcard(&handcard2,t2,&handcardmax2,&buff2);
+		}
+		else throwcard(t,t->size()); 
+	}
+	else if(handcard2.size()>handcardmax2 and soul2=="¿‰æ≤")
+	{
+		if(ran(1,2)==1)
+		{
+			t->erase(t->begin()+t->size()-1);	
+			addhandcard(&handcard1,t2,&handcardmax1,&buff1);
+		}
+		else throwcard(t,t->size()); 
+	}
+	else if(t->size()>*handcardmax or foundbuff(thebuff,"∑ﬂ≈≠")!=-1)
 		throwcard(t,t->size());
 }
 iv usecard(card t,int pos)
@@ -403,6 +424,7 @@ iv usecard(card t,int pos)
 	}
 	if(t.effect==2)
 	{
+		Shake(5,1);
 		int pp=ran(1,(cardmine->size()));
 		throwcard(cardmine,pp);
 	}
@@ -412,6 +434,7 @@ iv usecard(card t,int pos)
 		increasemana(manamine,manamaxmine,20);
 	if(t.effect==5)
 	{
+		Shake(5,1);
 		int pp=ran(1,(cardmine->size()));
 		throwcard(cardmine,pp);
 		pp=ran(1,(cardhis->size()));
@@ -669,6 +692,11 @@ iv usemagic(skill t)
 			del=1;
 		}
 		(*buffmine)[foundbuff(buffmine,"∑ﬂ≈≠")].tim+=2+del;
+	}
+	if(t.effect==16)
+	{
+		if(cardmine->size()==*handcardmaxmine) throwcard(cardmine,*handcardmaxmine);
+		(*handcardmaxmine)--;
 	}
 }
 iv ending()
@@ -1184,7 +1212,7 @@ iv title()
 }
 int main()
 {
-	SetConsoleTitle("ANOTHER-CARD-GAME v1.1.5");
+	SetConsoleTitle("ANOTHER-CARD-GAME v1.1.6");
 	//init_introduce();
 	init();
 	title();

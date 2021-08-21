@@ -180,6 +180,9 @@ iv init()
 	theskill[11].set_up("不明所以",0,0,11); 
 	theskill[12].set_up("不知所措",20,1,12);
 	theskill[13].set_up("燃烧怒火",80,1,13);
+	theskill[14].set_up("底线",0,0,14);
+	theskill[15].set_up("偿还",0,0,15);
+	theskill[16].set_up("坠落",100,1,16);
 	
 	skillexplanation[1]="将牌堆顶的牌的费用化为0并加入手牌";
 	skillexplanation[2]="将自己的随机一张牌给予对方";
@@ -194,8 +197,11 @@ iv init()
 	skillexplanation[11]="每回合初得到的◆为1~3";
 	skillexplanation[12]="+1◆,摸1张牌";
 	skillexplanation[13]="获得2回合【愤怒】buff：因对方手牌效果获得的手牌被弃置";
+	skillexplanation[14]="初始时手牌上限-2";
+	skillexplanation[15]="因超过手牌上限而被弃掉的牌50%概率交给对手";
+	skillexplanation[16]="手牌上限-1";
 	
-	soullong=6;
+	soullong=7;
 	soullist[1]="自由";
 	soulskill[1].push_back(theskill[1]);
 	soulskill[1].push_back(theskill[2]);
@@ -219,8 +225,13 @@ iv init()
 	soulskill[5].push_back(theskill[11]);
 	soulskill[5].push_back(theskill[12]);
 	soulexplanation[5]="比较靠运气，能快速积攒费用";
-	soullist[6]="rand";
-	soulexplanation[6]="？？？";
+	soullist[6]="冷静";
+	soulskill[6].push_back(theskill[14]);
+	soulskill[6].push_back(theskill[15]);
+	soulskill[6].push_back(theskill[16]);
+	soulexplanation[6]="逐渐减少手牌上限";
+	soullist[7]="rand";
+	soulexplanation[7]="？？？";
 	
 	speffectexplanation["加边！加边！加边！"]="使用【并查集查询】时此牌将被弃置";
 	speffectexplanation["浪人的恩赐"]="当你拥有恩赐的手牌总数>3时这张牌将被弃置";
@@ -235,6 +246,7 @@ iv init()
 	cardsyst[1]="基础套牌";
 	cardsyst[2]="时间套牌";
 	cardsyst[3]="恩赐套牌";
+	//cardsyst[4]="";
 	
 	cardsystexplanation[1]="最为基础的牌型，不可关闭";
 	cardsystexplanation[2]="需要打开时间模式才能打开";
@@ -258,18 +270,6 @@ void SetColor(short x)
   else
     SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 7);
 }
-
-void SetColor(short x,short y)
-{
-    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), x+16*y);
-}
-
-void SetSize(short x,short y){
-	HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-	SMALL_RECT rc = {1,1,x,y};
-	SetConsoleWindowInfo(hOut ,true ,&rc);
-}
-
 
 void Shake(int power,int time){
 	int shake_time = 25;
