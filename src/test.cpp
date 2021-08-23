@@ -30,25 +30,23 @@ struct player{
 		}
 	}
 }pl[15];
-int appcnt,now,env_now;
+int appcnt,now,env_now,env_rate,env_cnt,player_bgn,mode,env_on;
 Card appcard[55];
 #include"CARDGAMEsocket.hpp"
-Card xsd=(Card){"x",0,0,0,0,0,-2};
+Card xsd=(Card){1,1,1,1,1,1,1};
 int main(){
 	SetConsoleOutputCP(65001);
-    int server,a;
-    scanf("%d",&server);
-    TCP_initialize(server);
-    if(server==1){
-		for(int i=1;i<=100;i++) send_char("255 ");
+	int s;
+	scanf("%d",&s);
+	if(s==1) {
+		TCP_initialize(s);
+		send_card(xsd);
 		closesocket(Client);
-    }
-	else{
-		for(int i=1;i<=100;i++){
-			char c[50];
-			recv_char(c);
-			printf("%s\n",c);
-		}
+	}
+	else {
+		TCP_initialize(s);
+		recv_card(xsd);
+		closesocket(Client),printf("%d",xsd.ATK);
 	}
 	system("pause");
 	return 0;

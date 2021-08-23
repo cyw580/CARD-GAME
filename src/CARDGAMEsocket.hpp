@@ -31,38 +31,50 @@ int TCP_initialize(int server_mode){
     return 0;
 }
 char charmsg[15000];
+inline void stradd_int(char dst[],int src,int &num){
+    char tmp[4]={0};
+    strcpy(tmp,(char*)&src);
+    for(int i=num*4;i<num*4+4;i++) dst[i]=tmp[i-num*4];
+    num++;
+    return;
+}
+inline void stradd_card(char dst[],Card src,int &num){
+    stradd_int(dst,src.id,num);
+    stradd_int(dst,src.cost,num),stradd_int(dst,src.ATK,num),stradd_int(dst,src.HEAL,num),stradd_int(dst,src.DEF,num);
+    stradd_int(dst,src.MISS,num),stradd_int(dst,src.func,num);
+    return;
+}
 int send_int(int s){
     return send(Client,(char*)&s,4,0)<0?-1:0;
 }
-int send_char(const char msg[]){
-    char ch[21]={0};
-    strcpy(ch,msg);
-    return send(Client,ch,21,0)<0?-1:0;
+int send_char(const char msg[],int len){
+    return send(Client,msg,len,0)<0?-1:0;
 }
 int recv_char(char val[]){
     return recv(Client,val,21,0)<0?-1:0;
 }
 int recv_int(int &val){
-    char msg_from_client[4]={0};
-    return recv(Client,(char*)&val,4,0)<0?-1:0;
+     return recv(Client,(char*)&val,4,0)<0?-1:0;
 }
 int send_card(Card cr){
-    int return_value=0;
-    return_value+=send_int(cr.id);
-    return_value+=send_int(cr.cost)+send_int(cr.ATK)+send_int(cr.HEAL)+send_int(cr.DEF);
-    return_value+=send_int(cr.MISS)+send_int(cr.func);
+    int return_value=0,num=0;
+    char msg[480]={0};
+    stradd_card(msg,cr,num);
+    return_value=send_char(msg,num*4);
     return return_value<0?-1:0;
 }
 int send_player(player pl){
-    int return_value=0;
-    return_value+=send_int(pl.cost)+send_int(pl.maxcost)+send_int(pl.rest);
-    return_value+=send_int(pl.heapn)+send_int(pl.occ)+send_int(pl.hp)+send_int(pl.def);
-    return_value+=send_int(pl.cardcnt)+send_int(pl.prehp);
-    return_value+=send_int(pl.maxhp)+send_int(pl.maxdef);
-    for(int i=0;i<11;i++) return_value+=send_card(pl.handcard[i]);
-    for(int i=0;i<65;i++) return_value+=send_card(pl.heap[i]);
-    for(int i=0;i<11;i++) return_value+=send_int(pl.used[i]);
-    for(int i=0;i<11;i++) return_value+=send_int(pl.buff[i]);
+    int return_value=0,num=0;
+    char msg[2800]={0};
+    stradd_int(msg,pl.cost,num),stradd_int(msg,pl.maxcost,num),stradd_int(msg,pl.rest,num);
+    stradd_int(msg,pl.heapn,num),stradd_int(msg,pl.occ,num),stradd_int(msg,pl.hp,num),stradd_int(msg,pl.def,num);
+    stradd_int(msg,pl.cardcnt,num),stradd_int(msg,pl.prehp,num);
+    stradd_int(msg,pl.maxhp,num),stradd_int(msg,pl.maxdef,num);
+    for(int i=0;i<11;i++) stradd_card(msg,pl.handcard[i],num);
+    for(int i=0;i<65;i++) stradd_card(msg,pl.heap[i],num);
+    for(int i=0;i<11;i++) stradd_int(msg,pl.used[i],num);
+    for(int i=0;i<11;i++) stradd_int(msg,pl.buff[i],num);
+    return_value=send_char(msg,num*4);
     return return_value<0?-1:0;
 }
 int recv_card(Card &cr){
@@ -83,26 +95,6 @@ int recv_player(player &pl){
     for(int i=0;i<11;i++) return_value+=recv_int(pl.used[i]);
     for(int i=0;i<11;i++) return_value+=recv_int(pl.buff[i]);
     return return_value<0?-1:0;
-}
-player precv_message(int &return_val){
-    char msg_from_client[15000]={0};
-    int recvval=recv(Client,msg_from_client,15000,0);
-    if(recvval<0){
-        closesocket(Client); return_val+=-1;
-    }
-    player pl;
-    memcpy(&pl,msg_from_client,sizeof(pl));
-    return pl;
-}
-Card crecv_message(int &return_val){
-    char msg_from_client[15000]={0};
-    int recvval=recv(Client,msg_from_client,15000,0);
-    if(recvval<0){
-        closesocket(Client); return_val+=-1;
-    }
-    Card card;
-    memcpy(&card,msg_from_client,sizeof(card));
-    return card;
 }
 int recv_message(){
     int return_val=0;

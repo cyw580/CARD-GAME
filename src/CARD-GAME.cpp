@@ -1465,7 +1465,7 @@ void Connect(){
 }
 
 int main(){
-//	SetConsoleOutputCP(65001);
+	SetConsoleOutputCP(65001);
 	mouse(0);
 	SetConsoleTitle("CARD GAME:v2.0.0");
 	srand(time(NULL));
@@ -1498,8 +1498,8 @@ int main(){
 		SetColor(0,7);
 		system("color 07");
 		system("cls");//清屏并切换到Choose界面
-		if(send_int(6000+env_on)<0) another_player_quit(server_mode);
-		if(send_int(6100+mode)<0) another_player_quit(server_mode);
+		// if(send_int(6000+env_on)<0) another_player_quit(server_mode);
+		// if(send_int(6100+mode)<0) another_player_quit(server_mode);
 	}
 	else {
 		// system("cls");
@@ -1513,14 +1513,13 @@ int main(){
 	SetPos(0,20);
 	printf("P%d的职业是",server_mode);
 	printf(occ_name(pl[server_mode].occ));
-
-	if(pl[server_mode].occ!=6) pl[server_mode].cost=3;//初始费用设置
-	init(server_mode);//获得相应牌形成牌库
-	
 	if(server_mode==1) send_int(2010);
 	else send_int(2020);
 	send_player(pl[server_mode]);
 	recv_message();
+
+	if(pl[server_mode].occ!=6) pl[server_mode].cost=3;//初始费用设置
+	init(server_mode);//获得相应牌形成牌库
 
 	if(pl[3-server_mode].occ==7 && pl[server_mode].occ!=7) {//获得[亵渎] //从init里面拿出
 		pl[server_mode].heap[++pl[server_mode].heapn]=lib[7][libcnt[7]+2];
@@ -1537,6 +1536,10 @@ int main(){
 	// if(server_mode==1) send_int(2010);
 	// else send_int(2020);
 	// send_player(pl[server_mode]);//尝试再次发送信息
+	if(server_mode==1) send_int(2010);
+	else send_int(2020);
+	send_player(pl[server_mode]);
+	recv_message();
 
 	SetConsoleTitle("Here we go...");
 	Sleep(1500);
@@ -1554,9 +1557,9 @@ int main(){
 
 	char title[]="CARD GAME:Turn of P1";
 	if(server_mode==1){
-		if(send_gaming(void_card)<0) another_player_quit(server_mode);
+		send_int(4000+now*10);
 	}
-	else if(recv_gaming()<0) another_player_quit(server_mode);
+	else if(recv_message()<0) another_player_quit(server_mode);
 	if(server_mode!=now) Sleep(1500);
 	while(!winner && !Check(now)){
 		if(pl[3-now].occ==7 && pl[3-now].buff[10]==pl[3-now].cardcnt) {
