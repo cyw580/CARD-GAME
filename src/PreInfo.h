@@ -91,13 +91,13 @@ struct Card{
 	int cal_miss(int from,int to);
 	string Name();
 	string Intro();
-}lib[11][1005],fun[11][11][105];//fun[mode][occ][card]
+}lib[105][1005],fun[105][105][105];//fun[mode][occ][card]
 
-int libcnt[11],funcnt[11][11];//funcnt[mode][occ]
+int libcnt[105],funcnt[105][105];//funcnt[mode][occ]
 
 struct spocc{
 	int maxhp,cardcnt,maxdef,maxcost;
-}job[11];
+}job[105];
 
 string Card::Intro(){
 	if(func==1) return "+4◆";
@@ -167,6 +167,14 @@ string Card::Intro(){
 	else if(func==65)return "随机选对手牌库一张牌,清除特效和MISS后视为你打出且不耗费";
 	else if(func==66)return "25% +1<★法力>,牌库中所有[法力成长] +15ATK";
 	else if(func==67)return "自身[狂暴]至回合结束,抽一张牌";
+	else if(func==68)return "随机+(2-5个)<★防御>";
+	else if(func==69)return "本局剩余时间内,自己回合开始时+1<★防御>";
+	else if(func==70)return "[蓄力之击]+15ATK";
+	else if(func==71)return "[蓄力之击]+25ATK";
+	else if(func==72)return "本局剩余时间内,自己回合开始时[蓄力之击]+5ATK";
+	else if(func==73)return "本局剩余时间内,自己回合开始时+2<★防御>";
+	else if(func==74)return "本局剩余时间内,自己回合开始时[蓄力之击]+15ATK";
+	else if(func==75)return "自身[狂暴]至回合结束,抽一张牌";
 	return "                                                     ";
 }
 
@@ -335,7 +343,19 @@ void previous(){
 	fun[1][7][2]=(Card){0,0,0,0,30,65,118};
 	funcnt[1][7]=2;
 	job[7]={450,4,150,6};
-
+	//攻守之战
+	lib[20][1]=(Card){1,0,10,10,0,68,120};//+(2-5)<★防御>
+	lib[20][2]=(Card){3,0,40,20,0,69,121};//本局剩余时间内,自己回合开始时+1<★防御>
+	lib[20][3]=(Card){1,60,0,0,10,70,122};//[蓄力之击]+15ATK
+	lib[20][4]=(Card){2,105,0,0,0,71,123};//[蓄力之击]+25ATK
+	lib[20][5]=(Card){3,130,0,0,0,72,124};//本局剩余时间内,自己回合开始时[蓄力之击]+5ATK
+	lib[20][6]=(Card){4,110,90,0,0,68,125};
+	lib[20][7]=(Card){2,30,30,30,0,70,126};
+	lib[20][8]=(Card){6,50,200,50,0,73,127};//本局剩余时间内,自己回合开始时+2<★防御>
+	lib[20][9]=(Card){5,180,0,20,0,74,128};//本局剩余时间内,自己回合开始时[蓄力之击]+15ATK
+	lib[20][10]=(Card){2,90,0,0,0,72,129};
+	libcnt[20]=10;
+	job[20]={600,5,150,8};
 }
 
 string Card::Name(){
@@ -461,6 +481,17 @@ string Card::Name(){
 	if(id==116) return "[激活思维]";
 	if(id==117) return "[坚守信念]";
 	if(id==118) return "[精神控制]";
+	if(id==119) return "[蓄力之击]";
+	if(id==120) return "[建立防线]";
+	if(id==121) return "[武装I]";
+	if(id==122) return "[进击I]";
+	if(id==123) return "[进击III]";
+	if(id==124) return "[力量II]";
+	if(id==125) return "[坚守]";
+	if(id==126) return "[进击II]";
+	if(id==127) return "[武装II]";
+	if(id==128) return "[力量积累]";
+	if(id==129) return "[力量I]";
 	else return "[未命名]";
 }
 
