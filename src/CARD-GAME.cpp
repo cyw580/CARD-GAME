@@ -32,7 +32,7 @@ struct player{
 	int cost,maxcost,rest,heapn,occ;
 	int hp,def,cardcnt,prehp;
 	int maxhp,maxdef;
-	Card handcard[11],heap[65];
+	Card handcard[11],heap[95];
 	int used[11];
 	int buff[11];
 	//0-职业特性,1-燃烧,2-中毒,3-狂暴,4-虚弱,5-治疗,6-迷惑,10-神圣意志
@@ -75,7 +75,7 @@ int Card::cal_atk(int from,int to){//计算实际攻击力
 	if(pl[from].occ==5 && ATK>0) damage=ATK+ATK*pl[from].buff[0]*0.09;//地精
 	if(pl[from].occ==4 && pl[from].buff[0])//战士
 		damage-=0.04*damage*pl[from].buff[0];
-	if(pl[to].occ==20 && pl[to].buff[0]) damage-=0.01*damage*pl[to].buff[0];
+	if(pl[to].occ==20 && pl[to].buff[0]) damage-=0.03*damage*pl[to].buff[0];
 	//职业影响
 	if(pl[from].buff[3])//狂暴
 		damage*=2;
@@ -491,27 +491,36 @@ int Card::Special(int from,int to){
 		pl[from].buff[3]=max(pl[from].buff[3],1);
 	}
 	else if(func==68){
-		pl[from].buff[0]+=rand()%4+2;
+		pl[from].buff[0]+=rand()%3+1;
 	}
 	else if(func==69){
 		pl[from].buff[8]++;
 	}
 	else if(func==70){
-		if(pl[from].handcard[pl[from].cardcnt].id==119) pl[from].handcard[pl[from].cardcnt].ATK+=15;
+		if(pl[from].handcard[pl[from].cardcnt].id==119) pl[from].handcard[pl[from].cardcnt].ATK+=6;
 	}
 	else if(func==71){
-		if(pl[from].handcard[pl[from].cardcnt].id==119) pl[from].handcard[pl[from].cardcnt].ATK+=25;
+		if(pl[from].handcard[pl[from].cardcnt].id==119) pl[from].handcard[pl[from].cardcnt].ATK+=10;
 	}
 	else if(func==72){
 		pl[from].buff[7]++;
 	}
 	else if(func==73){
-		pl[from].buff[8]+=2;
+		pl[from].buff[8]+=3;
 	}
 	else if(func==74){
 		pl[from].buff[7]+=3;
 	}
-
+	else if(func==76){
+		pl[from].buff[0]+=rand()%4+4;
+	}
+	else if(func==77){
+		pl[to].buff[4]=max(pl[to].buff[4],1);
+	}
+	else if(func==78){
+		pl[from].cost=min(pl[from].maxcost,pl[from].cost+4);
+		pl[from].buff[0]++;
+	}
 	return 0;
 }
 
@@ -647,7 +656,7 @@ void treasure(int now){//竞技模式：宝藏牌
 }
 
 void adv(int x){
-	if(pl[x].occ==1){
+	if(pl[x].occ==1 || pl[x].occ==20){
 		pl[x].def=40;
 	}
 	else if(pl[x].occ==2 || pl[x].occ==6){
@@ -691,15 +700,15 @@ void Choose(int now){
 		SetPos(0,0);
 		printf("请仔细阅读游戏规则：");
 		SetPos(0,2);
-		printf("1.攻防之战可以通过杀死对方或积累40个<★防御>标记获得胜利");
+		printf("1.攻防之战可以通过杀死对方或积累33个<★防御>标记获得胜利");
 		SetPos(0,4);
 		printf("2.游戏开始时每个人手上都有一张[蓄力之击],每局对战有且只有这么一张(无论是否弃置)");
 		SetPos(0,6);
-		printf("3.每个<★防御>标记减少你受到的1%伤害");
+		printf("3.每个<★防御>标记减少你受到的3%伤害");
 		SetPos(0,8);
 		printf("4.每回合稳定+1◆,并另有50%额外+1◆");
 		SetPos(0,10);
-		printf("5.玩家信息:HP 600   MAX_DEF 150   手牌上限5   ◆8");
+		printf("5.玩家信息:HP 640   MAX_DEF 120   手牌上限5   ◆8");
 		SetPos(0,12);
 		printf("6.按下空格或Enter进入游戏");
 		while(1){
@@ -801,6 +810,10 @@ int UI(){
 		
 		//Buff绘制
 		SetPos(26,rnk*4+2-2);
+		if(mode==3){
+			SetColor(12),printf("蓄力+%dATK  ",pl[rnk].buff[7]*5);
+			SetColor(9),printf("<★防御>+%d ",pl[rnk].buff[8]);
+		}
 		if(pl[rnk].buff[1])
 			SetColor(6),printf("燃烧 %d : ",pl[rnk].buff[1]);
 		if(pl[rnk].buff[2])
@@ -813,10 +826,6 @@ int UI(){
 			SetColor(10),printf("治疗 %d : ",pl[rnk].buff[5]);
 		if(pl[rnk].buff[6])
 			SetColor(5),printf("迷惑 %d : ",pl[rnk].buff[6]);
-		if(pl[rnk].buff[7])
-			SetColor(12),printf("蓄力 %d : ",pl[rnk].buff[7]);
-		if(pl[rnk].buff[8])
-			SetColor(9),printf("防御 %d : ",pl[rnk].buff[8]);
 		printf("                                                 ");
 		
 		//血条绘制
@@ -1257,7 +1266,8 @@ int Ask(int now){
 					for(int i=1;i<=pl[now].cardcnt;i++){
 						if(pl[now].used[i]) continue;
 						if(pl[now].handcard[i].func==41) pl[now].handcard[i].ATK+=10;
-					}//func 41 增加ATK
+						if(pl[now].handcard[i].func==75) pl[now].handcard[i].ATK+=3;
+					}//func 41 75 增加ATK
 					while(pl[now].used[cursor] && cursor<=pl[now].cardcnt+1 && pl[now].rest){
 						cursor++;
 						if(cursor>pl[now].cardcnt) cursor=1;
@@ -1594,7 +1604,8 @@ int Ask_same(int now){
 					for(int i=1;i<=pl[now].cardcnt;i++){
 						if(pl[now].used[i]) continue;
 						if(pl[now].handcard[i].func==41) pl[now].handcard[i].ATK+=10;
-					}//func 41 增加ATK
+						if(pl[now].handcard[i].func==75) pl[now].handcard[i].ATK+=3;
+					}//func 41 75 增加ATK
 					while(pl[now].used[cursor] && cursor<=pl[now].cardcnt+1 && pl[now].rest){
 						cursor++;
 						if(cursor>pl[now].cardcnt) cursor=1;
@@ -1965,7 +1976,7 @@ int main(){
 			pl[server_mode].handcard[i]=pl[server_mode].heap[(rand()%pl[server_mode].heapn)+1];
 		}
 		if(mode==3){
-			pl[1].handcard[5]=pl[2].handcard[5]=(Card){0,60,0,0,0,41,119};
+			pl[1].handcard[5]=pl[2].handcard[5]=(Card){0,30,0,0,0,75,119};
 		}
 		//初始发牌
 		if(server_mode==1) send_int(2010);
@@ -1982,9 +1993,8 @@ int main(){
 				player_bgn=rand()%2+1;
 			}//随机先手
 			now=player_bgn;
-			adv(3-player_bgn);//后手补偿
 		}
-
+		adv(3-player_bgn);//后手补偿
 		env_now=0;
 
 		char title[]="CARD GAME:Turn of P1";
@@ -2003,7 +2013,7 @@ int main(){
 				winner=3-now;
 				break;
 			}
-			if(mode==3 && pl[3-now].buff[0]>=40) {
+			if(mode==3 && pl[3-now].buff[0]>=33) {
 				system("cls");
 				SetPos(13,0);
 				SetColor(14);
@@ -2029,7 +2039,7 @@ int main(){
 					if(pl[now].buff[10]==pl[now].cardcnt)  winner=now;
 				}//牧师检索[神圣意志]
 				pl[now].UpdateBuff(2);
-				if(mode==3 && pl[now].buff[0]>=40) winner=now;
+				if(mode==3 && pl[now].buff[0]>=33) winner=now;
 				//环境变动
 				if(env_on){
 					if(env_cnt>=2){
@@ -2066,7 +2076,7 @@ int main(){
 					if(send_gaming(void_card)<0) another_player_quit(server_mode);
 					Sleep(500);
 				}
-				else if(mode==3 && pl[now].buff[0]>=40){ 
+				else if(mode==3 && pl[now].buff[0]>=33){ 
 					system("cls");
 					SetPos(11,0);
 					SetColor(6);
@@ -2128,7 +2138,11 @@ int main(){
 			for(int i=1;i<=pl[x].cardcnt;i++) {
 				pl[x].handcard[i]=pl[x].heap[(rand()%pl[x].heapn)+1];
 			}
-		}//初始发牌
+		}
+		if(mode==3){
+			pl[1].handcard[5]=pl[2].handcard[5]=(Card){0,30,0,0,0,75,119};
+		}
+		//初始发牌
 
 		if(!player_bgn){
 			player_bgn=rand()%2+1;
@@ -2151,6 +2165,7 @@ int main(){
 				for(int i=1;i<=pl[now].cardcnt;i++) if(pl[now].used[i] || pl[now].handcard[i].id!=114) ssyz=0;
 				if(ssyz) winner=now;
 			}//牧师检索[神圣意志]
+			if(pl[now].occ==20 && pl[now].buff[0]>=33) winner=now;
 			pl[now].UpdateBuff(2);
 			system("cls");
 			now++;
