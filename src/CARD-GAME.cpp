@@ -1910,7 +1910,7 @@ void Connect(){
 int main(){
 	SetConsoleOutputCP(65001);
 	mouse(0);
-	SetConsoleTitle("CARD GAME:v2.0.2");
+	SetConsoleTitle("CARD GAME:v2.2.0");
 	srand(time(NULL));
 	previous();//获得公共牌库和职业牌库
 	bool connect_established=0;
