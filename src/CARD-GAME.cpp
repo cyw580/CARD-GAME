@@ -57,7 +57,7 @@ int Card::cal_heal(int from,int to){//计算实际恢复量
 	int heal=HEAL;
 	if(heal>0 && pl[from].buff[4])//虚弱
 		heal*=0.7;
-	if(pl[to].occ==20 && pl[to].buff[0]) heal-=0.01*heal*pl[to].buff[0];
+	if(pl[from].occ==20 && pl[from].buff[0]) heal-=0.01*heal*pl[from].buff[0];
 	if(mode==2) //欢乐模式：随机buff
 		heal*=0.7;
 	return heal;
