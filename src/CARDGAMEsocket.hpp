@@ -1,4 +1,10 @@
+#include<bits/stdc++.h>
+#include<windows.h>
+#include<conio.h> 
+#include<iostream>
+#include<cstdio>
 #include<winsock.h>
+#include"PreInfo.h"
 SOCKADDR_IN addrServer,addrClient;
 SOCKET Client;
 
@@ -33,7 +39,8 @@ int TCP_initialize(int server_mode){
 char charmsg[15000];
 inline void stradd_int(char dst[],int src,int &num){
     char tmp[4]={0};
-    strcpy(tmp,(char*)&src);
+    memcpy(tmp, (char*)&src, 4);
+    // strcpy(tmp,(char*)&src);
     for(int i=num*4;i<num*4+4;i++) dst[i]=tmp[i-num*4];
     num++;
     return;
@@ -54,7 +61,7 @@ int recv_char(char val[]){
     return recv(Client,val,21,0)<0?-1:0;
 }
 int recv_int(int &val){
-     return recv(Client,(char*)&val,4,0)<0?-1:0;
+    return recv(Client,(char*)&val,4,0)<0?-1:0;
 }
 int send_card(Card cr){
     int return_value=0,num=0;

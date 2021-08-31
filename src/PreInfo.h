@@ -11,6 +11,11 @@ void SetPos(int x, int y)
         SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
 };
 
+int rand(int x){
+	while((x=rand())>=32000);
+	return x;
+}
+
 void mouse(int a)
 {
 	HANDLE handle=GetStdHandle(STD_OUTPUT_HANDLE);
@@ -93,6 +98,48 @@ struct Card{
 	string Intro();
 }lib[105][1005],fun[25][105][105];//fun[mode][occ][card]
 
+struct player{
+	string name;
+	int cost,maxcost,rest,heapn,occ;
+	int hp,def,cardcnt,prehp;
+	int maxhp,maxdef;
+	Card handcard[11],heap[305];
+	int used[11];
+	int buff[11];
+	//0-职业特性,1-燃烧,2-中毒,3-狂暴,4-虚弱,5-治疗,6-迷惑,7-[蓄力],8-[防御],10-神圣意志
+	int hprate(){
+		return 10*hp/maxhp;
+	}
+	void UpdateBuff(int x){
+		if(x==1) {//回合开始更新
+			buff[1]=max(0,buff[1]-1);//燃烧
+			buff[2]=max(0,buff[2]-1);//中毒
+			buff[5]=max(0,buff[5]-1);//治疗
+		}
+		if(x==2) {//回合结束更新
+			buff[3]=max(0,buff[3]-1);//狂暴
+			buff[4]=max(0,buff[4]-1);//虚弱
+			buff[6]=max(0,buff[6]-1);//迷惑
+		}
+	}
+}pl[5];
+
+char input;
+int server_mode;
+int winner;
+int Row=11;
+int now;
+int env_now,env_cnt,env_rate;
+int env_on;
+int cost_bgn=3;
+int player_bgn=1;
+int mode;
+int turn;
+bool adturn;
+Card appcard[MAXAPCARDNUM];
+int appcnt;
+Card void_card=(Card){0,0,0,0,0,-2,0};
+
 int libcnt[105],funcnt[105][105];//funcnt[mode][occ]
 
 struct spocc{
@@ -102,12 +149,12 @@ struct spocc{
 string Card::Intro(){
 	if(func==1) return "+4◆";
 	else if(func==2)return "+1◆并+1◆上限";
-	else if(func==3)return "所有人+2◆";
+	else if(func==3)return "所有人+2◆,自己抽一张牌";
 	else if(func==4)return "对手[燃烧]3回合（击破护盾时才生效）";
 	else if(func==5)return "自身[狂暴]至回合结束";
 	else if(func==6)return "对手[中毒]3回合（职业为地精或击破护盾时才生效）";
 	else if(func==7)return "立刻补充你的手牌";
-	else if(func==8)return "手牌上限+1(最大为6)";
+	else if(func==8)return "手牌上限+1(最大为6),达到上限后改为+2◆";
 	else if(func==9)return "HP上限+40";
 	else if(func==10)return "-1◆上限";
 	else if(func==11)return "HP上限-60";
@@ -122,16 +169,16 @@ string Card::Intro(){
 	else if(func==20)return "穿透护盾的真实伤害";
 	else if(func==21)return "对手获得50护甲";
 	else if(func==22)return "HP上限-20,+1<★牺牲>标记";
-	else if(func==23)return "自身[治疗]3回合";
-	else if(func==24)return "HP上限-100,清空<★牺牲>标记;恢复到满血";
+	else if(func==23)return "自身[治疗]2回合";
+	else if(func==24)return "HP上限-110,清空<★牺牲>;恢复到满血,清空手牌后补满";
 	else if(func==25)return "+2◆并-1<★疲惫>标记";
-	else if(func==26)return "不要太贪心！";
+	else if(func==26)return "不要太贪心!";
 	else if(func==27)return "刷1张[虚空垃圾]进入牌库;被弃置时不耗费不生效";
 	else if(func==28)return "+3◆,刷3张[虚空垃圾]至牌库;被弃置时不耗费不生效";
 	else if(func==29)return "被弃置时不耗费不生效";
 	else if(func==30)return "刷1张[虚空垃圾]至牌库";
 	else if(func==31)return "清空自身Buff，对手恢复20HP，刷1张[虚空垃圾]至牌库";
-	else if(func==32)return "清空手牌中[虚空垃圾]且每张[虚空垃圾]使对手受60ATK";
+	else if(func==32)return "清空手牌中[虚空垃圾]且每张使对手受60ATK(弃牌则回复60HEAL)";
 	else if(func==33)return "刷1张[清理虚空]至牌库";
 	else if(func==34)return "+2<★成长>标记";
 	else if(func==35)return "对手[治疗]2回合";
@@ -140,7 +187,7 @@ string Card::Intro(){
 	else if(func==38)return "对手下回合[迷惑]";
 	else if(func==39)return "双方[治疗]2回合";
 	else if(func==40)return "将对手牌库的一张牌清除特效和MISS后放入手牌";
-	else if(func==41)return "此牌在手牌中时，你每出一张牌ATK+10(无论是否MISS)";
+	else if(func==41)return "此牌在手牌中时,你每打出一张牌ATK+10";
 	else if(func==42)return "回合结束时,若手牌里全是[神圣意志],直接获胜";
 	else if(func==43)return "刷1张[神圣意志]进入牌库";
 	else if(func==44)return "将随机一个手牌槽位变为[神圣意志]";
@@ -154,30 +201,36 @@ string Card::Intro(){
 	else if(func==52)return "自身随机获得1-2回合随机buff";
 	else if(func==53)return "随机选择自身或对手,随机获得1-2回合随机buff";
 	else if(func==54)return "自身和对手随机获得1-2回合随机buff";
-	else if(func==55)return "打出后随机将对手2个手牌槽位变为[激活思维]";
+	else if(func==55)return "打出后随机将对手2个手牌槽变为[激活思维]";
 	else if(func==56)return "对手下2回合[迷惑]";
-	else if(func==57)return "(宝藏)-2<★疲惫>并升级牌库所有牌";
+	else if(func==57)return "(宝藏)-3<★疲惫>并升级牌库所有牌";
 	else if(func==58)return "-3<★疲惫>";
-	else if(func==59)return "(宝藏)-3<★原罪>,对手hp上限-80,清空牌库的[虚空垃圾]";
+	else if(func==59)return "(宝藏)-3<★原罪>,对手hp上限-90,清空牌库的[虚空垃圾]";
 	else if(func==60)return "(宝藏)+2◆,手牌上限+1,增强部分牌库牌,使用后此牌变为[无中生有]";
-	else if(func==61)return "(宝藏)+1<★牺牲>,+60hp上限";
-	else if(func==62)return "(宝藏)+3<★法力>,+1◆上限，向牌库刷入2张[法力成长]";
+	else if(func==61)return "(宝藏)+2<★牺牲>,+60hp上限";
+	else if(func==62)return "(宝藏)+3<★法力>,+1◆上限,向牌库刷入3张[法力成长]";
 	else if(func==63)return "(宝藏)+2<★成长>,清空牌库中[累赘],将等量[累赘]刷入对手牌库";
-	else if(func==64)return "(宝藏)+3<★信仰>,向牌库中刷入[神圣意志][精神控制]各2张";
-	else if(func==65)return "随机选对手牌库一张牌,清除特效和MISS后视为你打出且不耗费";
-	else if(func==66)return "25% +1<★法力>,牌库中所有[法力成长] +15ATK";
+	else if(func==64)return "(宝藏)+3<★信仰>,牌库+2[神圣意志],对手1个手牌槽变为[精神控制]";
+	else if(func==65)return "被弃置则本回合和下回合[虚弱]";
+	else if(func==66)return "30% +1<★法力>,牌库中所有[法力成长] +15ATK";
 	else if(func==67)return "自身[狂暴]至回合结束,抽一张牌";
-	else if(func==68)return "随机+(1-3个)<★防御>";
+	else if(func==68)return "随机+(1-2个)<★防御>";
 	else if(func==69)return "本局剩余时间内,自己回合开始时+1<★防御>";
-	else if(func==70)return "[蓄力之击]+6ATK";
-	else if(func==71)return "[蓄力之击]+10ATK";
+	else if(func==70)return "[蓄力之击]+12ATK";
+	else if(func==71)return "[蓄力之击]+20ATK";
 	else if(func==72)return "本局剩余时间内,自己回合开始时[蓄力之击]+5ATK";
-	else if(func==73)return "本局剩余时间内,自己回合开始时+3<★防御>";
-	else if(func==74)return "本局剩余时间内,自己回合开始时[蓄力之击]+15ATK";
-	else if(func==75)return "此牌在手牌中时，你每出一张牌ATK+3(无论是否MISS)";
-	else if(func==76)return "随机+(4-7个)<★防御>";
+	else if(func==73)return "本局剩余时间内,自己回合开始时+2<★防御>";
+	else if(func==74)return "本局剩余时间内,自己回合开始时[蓄力之击]+24ATK";
+	else if(func==75)return "你每打出一张牌时此牌ATK+5,ATK≥400后将[破防]置入手牌";
+	else if(func==76)return "随机+(2-4个)<★防御>";
 	else if(func==77)return "对手下回合[虚弱]";
 	else if(func==78) return "+3◆并+1<★防御>";
+	else if(func==79) return "本局剩余时间内,自己回合开始时[蓄力之击]+15ATK";
+	else if(func==80)return "本局剩余时间内,自己回合开始时[蓄力之击]+8ATK";
+	else if(func==81)return "对手-6<★防御>,[蓄力之击]+40ATK";
+	else if(func==82)return "每张手牌的HEAL清空后加等量ATK,若HEAL=0则ATK+12";
+	else if(func==83)return "60% +1<★法力>";
+	else if(func==84)return "被弃置则下2回合[虚弱]";
 	return "                                                     ";
 }
 
@@ -212,7 +265,7 @@ void previous(){
 	lib[1][7]=(Card){0,0,0,0,25,7,23};
 	lib[1][8]=(Card){4,0,30,50,0,8,24};
 	lib[1][9]=(Card){2,0,60,0,0,9,25};
-	lib[1][10]=(Card){1,0,0,80,0,21,26};
+	lib[1][10]=(Card){1,0,0,75,0,21,26};
 	lib[1][11]=(Card){2,0,30,0,0,23,27};
 	libcnt[1]=11;
 	fun[1][1][1]=(Card){1,0,0,0,0,60,28};
@@ -226,15 +279,15 @@ void previous(){
 	lib[2][5]=(Card){1,0,-60,0,0,5,33};
 	lib[2][6]=(Card){3,0,120,35,0,0,34};
 	lib[2][7]=(Card){1,80,0,0,0,10,35};
-	lib[2][8]=(Card){2,0,160,0,0,11,36};
+	lib[2][8]=(Card){2,0,150,0,0,11,36};
 	lib[2][9]=(Card){0,0,0,0,0,22,37};
 	lib[2][10]=lib[2][9];
 	lib[2][11]=(Card){1,0,0,0,0,24,38};
 	lib[2][12]=lib[2][3];
 	libcnt[2]=12;
-	fun[1][2][1]=(Card){1,1,70,0,0,61,39};
+	fun[1][2][1]=(Card){1,5,75,0,0,61,39};
 	funcnt[2][1]=1;
-	job[2]={600,4,80,5};
+	job[2]={580,4,80,5};
 	//wizard
 	lib[3][1]=(Card){2,25,0,0,0,50,40};
 	lib[3][2]=(Card){0,45,0,0,30,0,41};
@@ -249,23 +302,24 @@ void previous(){
 	lib[3][11]=(Card){2,155,50,0,40,35,50};
 	lib[3][12]=(Card){3,185,0,0,20,36,51};
 	lib[3][13]=(Card){1,0,-20,0,0,37,52};
-	libcnt[3]=13;
+	lib[3][14]=(Card){3,85,40,0,0,83,140};
+	libcnt[3]=14;
 	fun[1][3][1]=(Card){2,0,120,0,0,62,53};
-	fun[1][3][2]=(Card){2,70,0,0,0,66,54};
+	fun[1][3][2]=(Card){2,50,0,0,0,66,54};
 	funcnt[1][3]=2;
 	job[3]={330,4,120,7};
 	//warrior
 	lib[4][1]=(Card){2,0,0,95,0,0,55};
 	lib[4][2]=(Card){1,0,50,55,0,14,56};
 	lib[4][3]=lib[4][2];
-	lib[4][4]=(Card){1,80,0,0,15,0,57};
-	lib[4][5]=(Card){2,135,0,0,20,0,58};
+	lib[4][4]=(Card){1,75,0,0,15,0,57};
+	lib[4][5]=(Card){2,130,0,0,20,0,58};
 	lib[4][6]=lib[4][5];
 	lib[4][7]=(Card){0,0,0,0,0,15,59};
 	lib[4][8]=(Card){3,125,0,60,0,0,60};
-	lib[4][9]=(Card){4,125,-30,0,0,4,61};
+	lib[4][9]=(Card){4,130,-30,0,0,4,61};
 	lib[4][10]=(Card){2,0,10,10,0,16,62};
-	lib[4][11]=(Card){4,245,0,0,10,0,63};
+	lib[4][11]=(Card){4,230,0,0,10,0,63};
 	lib[4][12]=(Card){3,0,0,150,0,0,64};
 	lib[4][13]=(Card){2,0,55,30,0,0,65};
 	lib[4][14]=lib[4][13];
@@ -328,44 +382,49 @@ void previous(){
 	lib[7][2]=(Card){2,0,65,0,0,39,102};
 	lib[7][3]=(Card){1,0,20,0,15,40,103};
 	lib[7][4]=(Card){2,0,40,20,0,56,104};
-	lib[7][5]=(Card){1,0,0,0,0,41,105};
+	lib[7][5]=(Card){1,15,0,0,0,41,105};
 	lib[7][6]=(Card){2,10,70,0,0,43,106};
-	lib[7][7]=(Card){1,0,45,0,0,43,107};
-	lib[7][8]=(Card){2,0,55,15,0,44,108};
+	lib[7][7]=(Card){1,0,40,0,0,43,107};
+	lib[7][8]=(Card){2,0,55,15,10,44,108};
 	lib[7][9]=(Card){3,0,65,30,0,45,109};
 	lib[7][10]=(Card){2,0,0,0,0,46,110};
 	lib[7][11]=(Card){2,0,60,10,0,47,111};
 	lib[7][12]=(Card){2,0,20,10,0,55,112};
 	lib[7][13]=lib[7][5];
 	lib[7][14]=(Card){3,40,60,0,0,49,113};
-	libcnt[7]=14;
+	lib[7][15]=(Card){1,15,0,0,0,82,139};
+	libcnt[7]=15;
 	lib[7][libcnt[7]+1]=(Card){5,0,180,60,0,42,114};
 	lib[7][libcnt[7]+2]=(Card){2,20,0,0,0,48,115};
 	lib[7][libcnt[7]+3]=(Card){0,0,15,0,0,0,116};
 	fun[1][7][1]=(Card){2,0,120,0,0,64,117};
-	fun[1][7][2]=(Card){0,0,0,0,30,65,118};
+	fun[1][7][2]=(Card){2,0,0,0,0,65,118};
 	funcnt[1][7]=2;
 	job[7]={450,4,150,6};
 	//攻守之战
-	lib[20][1]=(Card){1,0,10,10,0,68,120};//+(1-3)<★防御>
-	lib[20][2]=(Card){2,0,30,25,0,69,121};//本局剩余时间内,自己回合开始时+1<★防御>
-	lib[20][3]=(Card){1,60,0,0,10,70,122};//[蓄力之击]+10ATK
-	lib[20][4]=(Card){2,105,0,0,10,71,123};//[蓄力之击]+20ATK
-	lib[20][5]=(Card){3,130,0,0,0,72,124};//本局剩余时间内,自己回合开始时[蓄力之击]+5ATK
-	lib[20][6]=(Card){4,110,90,0,0,76,125};
-	lib[20][7]=(Card){2,35,30,30,0,70,126};
-	lib[20][8]=(Card){5,20,140,20,0,73,127};//本局剩余时间内,自己回合开始时+3<★防御>
-	lib[20][9]=(Card){5,180,0,20,0,74,128};//本局剩余时间内,自己回合开始时[蓄力之击]+15ATK
-	lib[20][10]=(Card){2,90,0,0,0,72,129};
-	lib[20][11]=(Card){1,0,15,15,0,77,130};
-	lib[20][12]=(Card){2,20,30,40,0,77,131};
-	lib[20][13]=(Card){3,110,10,10,0,49,132};
+	lib[20][1]=(Card){1,0,15,5,0,68,120};//+(1-2)<★防御>
+	lib[20][2]=(Card){3,0,45,20,0,69,121};//本局剩余时间内,自己回合开始时+1<★防御>
+	lib[20][3]=(Card){1,65,0,0,10,70,122};//[蓄力之击]+15ATK
+	lib[20][4]=(Card){2,95,0,0,10,71,123};//[蓄力之击]+25ATK
+	lib[20][5]=(Card){3,125,0,0,0,72,124};//本局剩余时间内,自己回合开始时[蓄力之击]+5ATK
+	lib[20][6]=(Card){4,110,70,0,0,76,125};
+	lib[20][7]=(Card){2,35,25,30,0,70,126};
+	lib[20][8]=(Card){7,20,165,65,0,73,127};//本局剩余时间内,自己回合开始时+2<★防御>
+	lib[20][9]=(Card){5,180,0,20,0,74,128};//本局剩余时间内,自己回合开始时[蓄力之击]+24ATK
+	lib[20][10]=(Card){2,75,0,0,0,72,129};
+	lib[20][11]=(Card){2,20,20,30,0,77,130};
+	lib[20][12]=(Card){4,50,70,50,0,77,131};
+	lib[20][13]=(Card){3,85,10,0,0,49,132};
 	lib[20][14]=(Card){1,25,0,0,0,38,101};
 	lib[20][15]=(Card){2,0,30,10,0,78,133};
 	lib[20][16]=(Card){2,85,0,0,0,38,134};
-	lib[20][17]=(Card){3,0,60,60,0,68,135};
-	libcnt[20]=17;
-	job[20]={640,5,120,8};
+	lib[20][17]=(Card){3,0,45,30,0,76,135};
+	lib[20][18]=(Card){0,0,0,0,30,7,23};
+	lib[20][19]=(Card){2,40,0,0,0,80,136};
+	lib[20][20]=(Card){4,135,20,20,0,79,137};//本局剩余时间内,自己回合开始时[蓄力之击]+15ATK
+	libcnt[20]=20;
+	lib[20][libcnt[20]+1]=(Card){2,80,0,0,0,81,138};
+	job[20]={600,5,120,8};
 }
 
 string Card::Name(){
@@ -500,7 +559,7 @@ string Card::Name(){
 	if(id==125) return "[坚守]";
 	if(id==126) return "[进击II]";
 	if(id==127) return "[武装II]";
-	if(id==128) return "[力量积累]";
+	if(id==128) return "[力量积累II]";
 	if(id==129) return "[力量I]";
 	if(id==130) return "[休战调养]";
 	if(id==131) return "[威慑]";
@@ -508,6 +567,11 @@ string Card::Name(){
 	if(id==133) return "[自我成长]";
 	if(id==134) return "[骚扰攻击]";
 	if(id==135) return "[建立防线II]";
+	if(id==136) return "[能量迸发]";
+	if(id==137) return "[力量积累I]";
+	if(id==138) return "[破防]";
+	if(id==139) return "[暗影形态]";
+	if(id==140) return "[奥术能量]";
 	else return "[未命名]";
 }
 
@@ -527,51 +591,51 @@ string occ_intro(int x){
 void occ_func(int x){
 	SetColor(7,0);
 	if(x==1){
-		printf("HP 420   MAX_DEF 120   手牌上限4   ◆6");printf(" ");
+		printf("HP 420   MAX_DEF 120   手牌上限4   ◆3/6");printf(" ");
 		printf("\n\t");printf("                                                ");
 		printf("\n\t 1.所有职业技能牌都中规中矩,且都有特效");printf("                  ");
 		printf("\n\t 2.[拾荒] 若回合开始时没有费用则获得1点费用");printf("                 ");
 		printf("\n");printf("                                                        ");
 		printf("\n");printf("                                               ");
 	}else if(x==2){
-		printf("HP 600   MAX_DEF 80   手牌上限4   ◆5");printf("  ");SetColor(13);
-		printf("\n\t<★牺牲> 每个标记使ATK增加6");printf("                     ");;SetColor(7);
+		printf("HP 600   MAX_DEF 80   手牌上限4   ◆3/5");printf("  ");SetColor(13);
+		printf("\n\t<★牺牲> 每个标记使ATK增加5");printf("                     ");;SetColor(7);
 		printf("\n\t 1.每次自己出牌而受到伤害会+1<★牺牲>");printf("               ");
 		printf("\n\t 2.一些职业技能牌会通过削弱自己而获得优势");printf("               ");
 		printf("\n");printf("                                                        ");
 		printf("\n");printf("                                               ");
 	}else if(x==3){
-		printf("HP 320   MAX_DEF 120   手牌上限4   ◆7");printf(" ");SetColor(13);
+		printf("HP 320   MAX_DEF 120   手牌上限4   ◆3/7");printf(" ");SetColor(13);
 		printf("\n\t<★法力>下回合获得等于标记数量的◆并清空标记");printf("          ");SetColor(7);
 		printf("\n\t 1.[精通] 每回合开始有45%概率 +1<★法力>");printf("               ");
-		printf("\n\t 2.[法力凝聚] 若HP≤100,每当1个<★法力>清空时恢复20HP");printf("         ");
+		printf("\n\t 2.[法力凝聚] 每当1个<★法力>清空时恢复8HP");printf("         ");
 		printf("\n");printf("                                                        ");
 		printf("\n");printf("                                               ");
 	}else if(x==4){
-		printf("HP 500   MAX_DEF 240   手牌上限4   ◆6");printf(" ");SetColor(13);
+		printf("HP 500   MAX_DEF 240   手牌上限4   ◆3/6");printf(" ");SetColor(13);
 		printf("\n\t<★疲惫>每个标记使攻击力降低4%%");printf("                      ");SetColor(7);
 		printf("\n\t 1.[备战状态] 回合开始时-1<★疲惫>");printf("                ");
 		printf("\n\t 2.[尽力出击] 使用攻击牌后+2<★疲惫>");printf("                       ");
-		printf("\n\t 3.[装备精良] 每回合开始时若没有护甲 则护甲+45");printf("                 ");
+		printf("\n\t 3.[装备精良] 每回合开始时若没有护甲 则护甲+30");printf("                 ");
 		printf("\n\t 4.[无畏] 无法抽到公共牌库中治疗牌");printf("      ");
 	}else if(x==5){
-		printf("HP 280   MAX_DEF 0   手牌上限3   ◆3");printf("   ");SetColor(13);
-		printf("\n\t<★成长>每个标记使你ATK+9%% HP上限+10 MAX_DEF+10");printf("             ");SetColor(7);
+		printf("HP 280   MAX_DEF 0   手牌上限3   ◆3/3");printf("   ");SetColor(13);
+		printf("\n\t<★成长>每个标记使你ATK+9%% HP上限+10 MAX_DEF+5");printf("             ");SetColor(7);
 		printf("\n\t 1.[贪婪] 回合开始时变为3◆,使用牌后有80%会抽牌");printf("           ");
-		printf("\n\t 2.[健康] 每当获得1个<★成长>时恢复15HP");printf("                    ");
+		printf("\n\t 2.[健康] 每当获得1个<★成长>时恢复12HP");printf("                    ");
 		printf("\n\t 3.[与世隔绝] 无法抽到公共牌库中的牌");printf("            ");
 		printf("\n\t 4.[敏捷] 部分牌有穿透护盾攻击的能力");printf("      ");
 	}
 	else if(x==6){
-		printf("HP 400   MAX_DEF 40   手牌上限4   ◆5");printf("   ");SetColor(13);
+		printf("HP 400   MAX_DEF 40   手牌上限4   ◆0/5");printf("   ");SetColor(13);
 		printf("\n\t<★原罪>回合开始时每个标记对你造成5点伤害");printf("             ");SetColor(7);
-		printf("\n\t 1.[源于虚空] 开局时0◆,每回合额外获得1◆");printf("               ");
+		printf("\n\t 1.[源于虚空] 开局时0◆,每回合额外+1◆");printf("               ");
 		printf("\n\t 2.[虚空把戏] 弃牌需消耗相应费用并视为打出,ATK与HEAL交换");printf("          ");
 		printf("\n\t 3.[舞弊] 每次弃牌时(无论是否视为打出)+1<★原罪>");printf("        ");
 		printf("\n\t 4.[与世隔绝] 无法抽到公共牌库中的牌");printf("        ");
 	}
 	else if(x==7){
-		printf("HP 450   MAX_DEF 120   手牌上限4   ◆6");printf("   ");SetColor(13);
+		printf("HP 450   MAX_DEF 120   手牌上限4   ◆3/6");printf("   ");SetColor(13);
 		printf("\n\t<★信仰>每个标记额外增加2%抽到[神圣意志]的概率");printf("             ");SetColor(7);
 		printf("\n\t 1.[虔诚] 手牌中全是[神圣意志]则直接获胜");printf("               ");
 		printf("\n\t 2.[奉献] 若回合结束时没有费用 则+1<★信仰>");printf("                 ");
@@ -597,10 +661,10 @@ void occ_treasure(int x){
 		printf("宝藏获取条件:回合开始时最大HP≤500");printf("              ");
 	}
 	else if(x==3){
-		printf("宝藏获取条件:回合开始时HP≤160");printf("                   ");
+		printf("宝藏获取条件:回合开始时HP≤180");printf("                   ");
 	}
 	else if(x==4){
-		printf("宝藏获取条件:回合开始时<★疲惫>≥8");printf("               ");
+		printf("宝藏获取条件:回合开始时<★疲惫>≥6");printf("               ");
 	}
 	else if(x==5){
 		printf("宝藏获取条件:回合开始时最大HP≥320且HP≤240");printf("     ");
@@ -647,6 +711,6 @@ string env_brief(int id){
 	else if(id==4) return "双方失误率减少10%          ";
 	else if(id==5) return "双方每回合回复5%最大hp的hp ";
 	else if(id==6) return "双方每回合损失5%最大hp的hp ";
-	else if(id==7) return "双方每回合额外获得1点费用   ";
+	else if(id==7) return "双方每回合额外+1◆   ";
 	else           return "无特殊效果                 ";
 }
