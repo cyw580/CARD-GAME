@@ -1115,20 +1115,6 @@ void another_player_quit(int server_mode){
 	SetPos(11,0);
 	printf("对方退出了游戏，他也许是投降了...\n");
 	Sleep(1500);
-	system("cls");
-	winner=server_mode;
-	printf("#%d ",winner);
-	printf(pl[winner].name);
-	printf("获得了胜利!!");
-	Shake(10,1);
-	while(1){
-		SetColor(rand(0)%16);
-		SetPos(rand(0)%100,rand(0)%30);
-		printf("#%d ",winner);
-		printf(pl[winner].name);
-		printf("获得了胜利!!");
-		Sleep(10);
-	}
 }
 int Ask(int now){
 	int option_use=0,option_giveup=0,option_over=0;
@@ -1157,7 +1143,10 @@ int Ask(int now){
 			if(!pl[now].used[i] && pl[now].handcard[i].id==114) pl[now].buff[10]++; //114-->[神圣意志]
 	}//牧师检索[神圣意志]
 	use_card=(Card){0,0,0,0,0,-2,0};
-	if(send_gaming(use_card)<0) another_player_quit(server_mode); 
+	if(send_gaming(use_card)<0) {
+		another_player_quit(server_mode); 
+		return 1;
+	}
 	int cursor=1;
 	SetColor(7);
 	while(!winner){
@@ -1339,7 +1328,10 @@ int Ask(int now){
 						for(int i=1;i<=pl[now].cardcnt;i++) 
 							if(!pl[now].used[i] && pl[now].handcard[i].id==114) pl[now].buff[10]++; //114-->[神圣意志]
 					}//牧师检索[神圣意志]
-					if(send_gaming(use_card)<0) another_player_quit(server_mode);
+					if(send_gaming(use_card)<0) {
+						another_player_quit(server_mode); 
+						return 1;
+					}
 				}
 				option_use=0;
 			}
@@ -1398,7 +1390,10 @@ int Ask(int now){
 						option_giveup=0;
 						pl[now].buff[0]++;
 						UI();
-						if(send_gaming(use_card)<0) another_player_quit(server_mode);
+						if(send_gaming(use_card)<0) {
+							another_player_quit(server_mode); 
+							return 1;
+						}
 					}
 				}
 				if(pl[now].occ==7){
@@ -1406,7 +1401,10 @@ int Ask(int now){
 					for(int i=1;i<=pl[now].cardcnt;i++) 
 						if(!pl[now].used[i] && pl[now].handcard[i].id==114) pl[now].buff[10]++; //114-->[神圣意志]
 				}//牧师检索[神圣意志]
-				if(send_gaming(void_card)<0) another_player_quit(server_mode);
+				if(send_gaming(void_card)<0) {
+					another_player_quit(server_mode); 
+					return 1;
+				}
 			}
 		}
 		if(input==SPACE || input==ENTER) {//结束回合
@@ -1738,7 +1736,7 @@ int Ask_same(int now){
 	return 0;
 }
 
-void Options(bool x){
+bool Options(bool x){
 	if(x){
 		system("cls");
 		SetPos(0,0);
@@ -1820,15 +1818,27 @@ void Options(bool x){
 				if(input==SPACE || input==ENTER){
 					send_int(8255); break;
 				}
-				if(send_int(6000+env_on)<0) another_player_quit(server_mode);
-				if(send_int(6100+mode)<0) another_player_quit(server_mode);
-				if(send_int(6200+player_bgn)<0) another_player_quit(server_mode);
+				if(send_int(6000+env_on)<0) {
+					another_player_quit(server_mode); 
+					return 1;
+				}
+				if(send_int(6100+mode)<0) {
+					another_player_quit(server_mode); 
+					return 1;
+				}
+				if(send_int(6200+player_bgn)<0) {
+					another_player_quit(server_mode);
+					return 1;
+				}
 			}
 			else{
 				bool quit_option=0;
 				for(int i=1;i<=3;i++){
 					int recv_val=recv_message();
-					if(recv_val<0) another_player_quit(server_mode);
+					if(recv_val<0) {
+						another_player_quit(server_mode); 
+						return 1;
+					}
 					if(recv_val==8255){
 						quit_option=1; break;
 					}
@@ -1919,7 +1929,7 @@ void Options(bool x){
 			}
 		}
 	}
-	return;
+	return 0;
 }
 void Connect(){
 	int cursor=1;
@@ -1939,12 +1949,17 @@ void Connect(){
 		else SetColor(0,7);
 		printf("3.在本机进行游戏    ");
 
+		SetPos(1,4);
+		if(cursor!=4)SetColor(7,0);
+		else SetColor(0,7);
+		printf("4.退出游戏         ");
+
 		input=getch();
 		if(input==UP || input==LEFT || input=='w' || input=='a') cursor--;
 		if(input==DOWN || input==RIGHT || input=='s' || input=='d') cursor++;
 		if(input>='1' && input<='3') cursor=input-'0';
-		if(cursor>3) cursor=1;
-		if(cursor<1) cursor=3;
+		if(cursor>4) cursor=1;
+		if(cursor<1) cursor=4;
 		if(input=='z' || input==SPACE || input==ENTER){
 			server_mode=cursor;
 			break;
@@ -1956,138 +1971,314 @@ void Connect(){
 int main(){
 	SetConsoleOutputCP(65001);
 	mouse(0);
-	SetConsoleTitle("CARD GAME:v2.2.0");
 	srand(time(NULL));
 	previous();//获得公共牌库和职业牌库
-	bool connect_established=0;
-	while(!connect_established){
-		connect_established=1;
-		system("cls");
-		Connect();
-		if(server_mode==3) break;
-		SetColor(7,0);
-		if(server_mode==2) printf("\n输入服务端ip地址:");
-		else system("cls"),printf("等待玩家连入...\n");
-		if(TCP_initialize(server_mode)!=0){
-			connect_established=0;
+	while(1){
+		closesocket(Client);
+		prepare();
+		SetConsoleTitle("CARD GAME:v2.2.0");
+		bool connect_established=0;
+		while(!connect_established){
+			connect_established=1;
 			system("cls");
+			Connect();
+			if(server_mode==3 || server_mode==4) break;
+			SetColor(7,0);
+			if(server_mode==2) printf("\n输入服务端ip地址:");
+			else system("cls"),printf("等待玩家连入...\n");
+			if(TCP_initialize(server_mode)!=0){
+				connect_established=0;
+				system("cls");
+				if(server_mode==1){
+					printf("无法设立服务端...请检查是否有同一程序正在运行...\n");
+					getch();
+				}
+				else{
+					printf("无法连接至服务器...请检查网络状况及服务器是否正常启动...\n");
+					getch();
+				}
+			}
+		}
+		if(server_mode==4) break;
+		while(_kbhit()) getch();
+		if(server_mode!=3){
 			if(server_mode==1){
-				printf("无法设立服务端...请检查是否有同一程序正在运行...\n");
-				getch();
+				system("cls");
+				SetConsoleTitle("CARD GAME:Options");
+				if(Options(1)) continue;
+				while(_kbhit()) getch();
+				SetColor(0,7);
+				system("color 07");
+				system("cls");//清屏并切换到Choose界面
+				// if(send_int(6000+env_on)<0) another_player_quit(server_mode);
+				// if(send_int(6100+mode)<0) another_player_quit(server_mode);
 			}
-			else{
-				printf("无法连接至服务器...请检查网络状况及服务器是否正常启动...\n");
-				getch();
+			else {
+				// system("cls");
+				// printf("正在等待服务端设定游戏模式...\n");
+				if(Options(1)) continue;
+				while(_kbhit()) getch();
 			}
-		}
-	}
-	while(_kbhit()) getch();
-	if(server_mode!=3){
-		if(server_mode==1){
+			while(_kbhit()) getch();
 			system("cls");
-			SetConsoleTitle("CARD GAME:Options");
-			Options(1);
-			while(_kbhit()) getch();
-			SetColor(0,7);
-			system("color 07");
-			system("cls");//清屏并切换到Choose界面
-			// if(send_int(6000+env_on)<0) another_player_quit(server_mode);
-			// if(send_int(6100+mode)<0) another_player_quit(server_mode);
-		}
-		else {
-			// system("cls");
-			// printf("正在等待服务端设定游戏模式...\n");
-			Options(1);
-			while(_kbhit()) getch();
-		}
-		while(_kbhit()) getch();
-		system("cls");
-		SetConsoleTitle("CARD GAME:Choose Your Identity.");
-		Choose(server_mode);//选择职业
-		SetPos(0,20);
-		printf("P%d的职业是",server_mode);
-		printf(occ_name(pl[server_mode].occ));
-		if(server_mode==1) send_int(2010);
-		else send_int(2020);
-		send_player(pl[server_mode]);
-		recv_message();
-		if(pl[server_mode].occ!=6) pl[server_mode].cost=3;//初始费用设置
-		init(server_mode);//获得相应牌形成牌库
-		if(mode!=4){
-			if(pl[3-server_mode].occ==7 && pl[server_mode].occ!=7) {//获得[亵渎] 
-				pl[server_mode].heap[++pl[server_mode].heapn]=lib[7][libcnt[7]+2];
+			SetConsoleTitle("CARD GAME:Choose Your Identity.");
+			Choose(server_mode);//选择职业
+			SetPos(0,20);
+			printf("P%d的职业是",server_mode);
+			printf(occ_name(pl[server_mode].occ));
+			if(server_mode==1) send_int(2010);
+			else send_int(2020);
+			send_player(pl[server_mode]);
+			recv_message();
+			if(pl[server_mode].occ!=6) pl[server_mode].cost=3;//初始费用设置
+			init(server_mode);//获得相应牌形成牌库
+			if(mode!=4){
+				if(pl[3-server_mode].occ==7 && pl[server_mode].occ!=7) {//获得[亵渎] 
+					pl[server_mode].heap[++pl[server_mode].heapn]=lib[7][libcnt[7]+2];
+				}
 			}
-		}
-		for(int i=1;i<=pl[server_mode].cardcnt;i++) {
-			pl[server_mode].handcard[i]=pl[server_mode].heap[(rand(0)%pl[server_mode].heapn)+1];
-		}
-		if(mode==3){
-			pl[1].handcard[5]=pl[2].handcard[5]=(Card){0,0,0,0,0,75,119};
-		}
-		//初始发牌
-		if(server_mode==1) send_int(2010);
-		else send_int(2020);
-		send_player(pl[server_mode]);
-		recv_message();
+			for(int i=1;i<=pl[server_mode].cardcnt;i++) {
+				pl[server_mode].handcard[i]=pl[server_mode].heap[(rand(0)%pl[server_mode].heapn)+1];
+			}
+			if(mode==3){
+				pl[1].handcard[5]=pl[2].handcard[5]=(Card){0,0,0,0,0,75,119};
+			}
+			//初始发牌
+			if(server_mode==1) send_int(2010);
+			else send_int(2020);
+			send_player(pl[server_mode]);
+			recv_message();
 
-		SetConsoleTitle("Here we go...");
-		Sleep(1500);
-		while(_kbhit()) getch();
-		system("cls");//清屏并开始游戏
-		if(server_mode==1){
-			if(!player_bgn){
-				player_bgn=rand(0)%2+1;
-			}//随机先手
-			now=player_bgn;
-		}
-		env_now=0;
-		char title[]="CARD GAME:Turn of P1  Turn:   ";
-		if(server_mode==1){
-			send_int(4000+now*10);
-		}
-		else if(recv_message()<0) another_player_quit(server_mode);
-		if(server_mode!=now) Sleep(1500);
-		if(server_mode==now) adturn=1;
-		while(!winner && !Check(now)){
-			if(!if_adv) adv(3-now),if_adv=1; //后手补偿
-			if(pl[3-now].occ==7 && pl[3-now].buff[10]==pl[3-now].cardcnt && mode!=4) {
-				system("cls");
-				SetPos(13,0);
-				SetColor(14);
-				printf("对方受到了[神圣意志]的净化,你输了!");
-				Sleep(500);
-				winner=3-now;
-				break;
+			SetConsoleTitle("Here we go...");
+			Sleep(1500);
+			while(_kbhit()) getch();
+			system("cls");//清屏并开始游戏
+			if(server_mode==1){
+				if(!player_bgn){
+					player_bgn=rand(0)%2+1;
+				}//随机先手
+				now=player_bgn;
 			}
-			if(mode==3 && pl[3-now].buff[0]>=50) {
-				system("cls");
-				SetPos(13,0);
-				SetColor(14);
-				printf("对方建立起了绝对防线,你输了!");
-				Sleep(500);
-				winner=3-now;
-				break;
+			env_now=0;
+			char title[]="CARD GAME:Turn of P1  Turn:   ";
+			if(server_mode==1){
+				send_int(4000+now*10);
 			}
-			if(!adturn) turn++,adturn=1;
-			title[19]=now+'0';
-			title[27]=turn/100+'0';
-			title[28]=turn/10%10+'0';
-			title[29]=turn%10+'0';
-			SetConsoleTitle(title);
-			if(now==server_mode){
-				turn++;
-				adturn=0;
+			else if(recv_message()<0) {
+				another_player_quit(server_mode); 
+				continue;
+			}
+			if(server_mode!=now) Sleep(1500);
+			if(server_mode==now) adturn=1;
+			while(!winner && !Check(now)){
+				if(!if_adv) adv(3-now),if_adv=1; //后手补偿
+				if(pl[3-now].occ==7 && pl[3-now].buff[10]==pl[3-now].cardcnt && mode!=4) {
+					system("cls");
+					SetPos(13,0);
+					SetColor(14);
+					printf("对方受到了[神圣意志]的净化,你输了!");
+					Sleep(500);
+					winner=3-now;
+					break;
+				}
+				if(mode==3 && pl[3-now].buff[0]>=50) {
+					system("cls");
+					SetPos(13,0);
+					SetColor(14);
+					printf("对方建立起了绝对防线,你输了!");
+					Sleep(500);
+					winner=3-now;
+					break;
+				}
+				if(!adturn) turn++,adturn=1;
 				title[19]=now+'0';
 				title[27]=turn/100+'0';
 				title[28]=turn/10%10+'0';
 				title[29]=turn%10+'0';
 				SetConsoleTitle(title);
-				SetPos(11,Row+12);
-				printf("即将轮到你的回合......");
-				Sleep(1500);
-				while(_kbhit()) getch();
-				appcnt=0;
-				system("cls");
+				if(now==server_mode){
+					turn++;
+					adturn=0;
+					title[19]=now+'0';
+					title[27]=turn/100+'0';
+					title[28]=turn/10%10+'0';
+					title[29]=turn%10+'0';
+					SetConsoleTitle(title);
+					SetPos(11,Row+12);
+					printf("即将轮到你的回合......");
+					Sleep(1500);
+					while(_kbhit()) getch();
+					appcnt=0;
+					system("cls");
+					if(mode==4){
+						if(changejob<2) changejob++;
+						else {
+							if(rand(0)%100<25*changejob) {
+								pl[now].occ=rand(0)%sumjob+1;
+								init(now);
+								changejob=0;
+							}
+							else changejob++;
+						}
+					}
+					if(Ask(now)==1) break;			//origin copy
+					if(pl[now].occ==7){
+						if(pl[now].cost==0) pl[now].buff[0]++;
+						pl[now].buff[10]=0;
+						for(int i=1;i<=pl[now].cardcnt;i++) 
+							if(!pl[now].used[i] && pl[now].handcard[i].id==114) pl[now].buff[10]++; //114-->[神圣意志]
+						if(pl[now].buff[10]==pl[now].cardcnt && mode!=4)  winner=now;
+					}//牧师检索[神圣意志]
+					if(pl[now].occ==20){
+						if(pl[now].cost==0) {
+							pl[now].buff[0]+=1;
+							if(pl[now].handcard[pl[now].cardcnt].id==119) pl[now].handcard[pl[now].cardcnt].ATK+=15;
+						}
+					}
+					pl[now].UpdateBuff(2);
+					if(mode==3 && pl[now].buff[0]>=50) winner=now;
+					//环境变动
+					if(env_on){
+						if(env_cnt>=2){
+							env_rate+=25;
+							if(rand(0)%100 < env_rate){
+								int _p=0;
+								while((_p=rand(0)%env_num)==env_now);
+								env_now=_p;
+								env_cnt=-1;
+								env_rate=0;
+							}
+						}
+						else{
+							env_rate=0;
+						}
+						env_cnt++;
+					}			//origin copy
+					// pl[now].rest=pl[now].cardcnt;
+					if(!winner){
+						SetPos(11,Row+12);
+						printf("你的回合即将结束......");
+						now=3-now;
+						if(send_gaming(void_card)<0) {
+							another_player_quit(server_mode); 
+							break;
+						}
+						Sleep(1500);
+						while(_kbhit()) getch();
+						system("cls");
+					}
+					else if(pl[now].occ==7 && pl[now].buff[10]==pl[now].cardcnt && mode!=4){ 
+						system("cls");
+						SetPos(11,0);
+						SetColor(6);
+						printf("[神圣意志]洗涤了你的心灵,你直接获得了胜利!");
+						now=3-now;
+						if(send_gaming(void_card)<0){
+							another_player_quit(server_mode); 
+							break;
+						}
+						Sleep(500);
+					}
+					else if(mode==3 && pl[now].buff[0]>=50){ 
+						system("cls");
+						SetPos(11,0);
+						SetColor(6);
+						printf("干得漂亮!你建立起了强大的防线");
+						now=3-now;
+						if(send_gaming(void_card)<0){
+							another_player_quit(server_mode); 
+							break;
+						}
+						Sleep(500);
+					}
+					else if(winner==now){
+						system("cls");
+						SetPos(13,0);
+						SetColor(6);
+						printf("恭喜你击败对手获得了胜利!");
+						now=3-now;
+						if(send_gaming(void_card)<0) {
+							another_player_quit(server_mode); 
+							break;
+						}
+						Sleep(500);
+					}
+				}
+				else{
+					UI();
+					UI_other();
+					if(recv_gaming()<0) {
+						another_player_quit(server_mode); 
+						break;
+					}
+				}
+			}
+		}
+		else {
+			SetColor(7,0);
+			system("cls");
+			printf("WELCOME!!\n");
+			for(int i=1;i<=2;i++){
+				printf("请输入P%d的名字:",i);
+				cin>>pl[i].name;
+			}//输入姓名
+			Sleep(200);
+			while(_kbhit()) getch();
+			system("cls");//清屏并切换到Option界面
+
+			SetConsoleTitle("CARD GAME:Options");
+			Options(0);
+			SetColor(0,7);
+			system("color 07");
+			system("cls");//清屏并切换到Choose界面
+
+			SetConsoleTitle("CARD GAME:Choose Your Identity.");
+			for(int now=1;now<=2;now++){
+				Choose(now);//选择职业
+				SetPos(0,19+now);
+				printf("P%d的职业是",now);
+				printf(occ_name(pl[now].occ));
+			}
+			SetConsoleTitle("Here we go...");
+			Sleep(1500);
+			while(_kbhit()) getch();
+			system("cls");//清屏并开始游戏
+
+			for(int i=1;i<=2;i++) if(pl[i].occ!=6) pl[i].cost=3;//初始费用设置
+			for(int x=1;x<=2;x++) {
+				init(x);//获得相应牌形成牌库
+				for(int i=1;i<=pl[x].cardcnt;i++) {
+					pl[x].handcard[i]=pl[x].heap[(rand(0)%pl[x].heapn)+1];
+				}
+			}
+			if(mode==3){
+				pl[1].handcard[5]=pl[2].handcard[5]=(Card){0,0,0,0,0,75,119};
+			}
+			//初始发牌
+
+			if(!player_bgn){
+				player_bgn=rand(0)%2+1;
+			}//随机先手
+			int now=player_bgn;
+
+			adv(3-player_bgn);//后手补偿
+
+			env_now=0;
+
+			char title[]="CARD GAME:Turn of P1  Turn:   ";
+			title[19]=now+'0';
+			title[27]=turn/100+'0';
+			title[28]=turn/10%10+'0';
+			title[29]=turn%10+'0';
+			SetConsoleTitle(title);
+			while(!winner && !Check(now)){
+				turn++;
+				title[19]=now+'0';
+				title[27]=turn/100+'0';
+				title[28]=turn/10%10+'0';
+				title[29]=turn%10+'0';
+				SetConsoleTitle(title);
+				UI();
 				if(mode==4){
 					if(changejob<2) changejob++;
 					else {
@@ -2099,13 +2290,12 @@ int main(){
 						else changejob++;
 					}
 				}
-				if(Ask(now)==1) break;			//origin copy
+				if(Ask_same(now)==1) break;
 				if(pl[now].occ==7){
 					if(pl[now].cost==0) pl[now].buff[0]++;
-					pl[now].buff[10]=0;
-					for(int i=1;i<=pl[now].cardcnt;i++) 
-						if(!pl[now].used[i] && pl[now].handcard[i].id==114) pl[now].buff[10]++; //114-->[神圣意志]
-					if(pl[now].buff[10]==pl[now].cardcnt && mode!=4)  winner=now;
+					bool ssyz=1;
+					for(int i=1;i<=pl[now].cardcnt;i++) if(pl[now].used[i] || pl[now].handcard[i].id!=114) ssyz=0;
+					if(ssyz && mode!=4) winner=now;
 				}//牧师检索[神圣意志]
 				if(pl[now].occ==20){
 					if(pl[now].cost==0) {
@@ -2113,8 +2303,12 @@ int main(){
 						if(pl[now].handcard[pl[now].cardcnt].id==119) pl[now].handcard[pl[now].cardcnt].ATK+=15;
 					}
 				}
+				if(pl[now].occ==20 && pl[now].buff[0]>=50) winner=now;
 				pl[now].UpdateBuff(2);
-				if(mode==3 && pl[now].buff[0]>=50) winner=now;
+				system("cls");
+				now++;
+				if(now>2)now=1;
+
 				//环境变动
 				if(env_on){
 					if(env_cnt>=2){
@@ -2131,251 +2325,92 @@ int main(){
 						env_rate=0;
 					}
 					env_cnt++;
-				}			//origin copy
-				// pl[now].rest=pl[now].cardcnt;
-				if(!winner){
-					SetPos(11,Row+12);
-					printf("你的回合即将结束......");
-					now=3-now;
-					if(send_gaming(void_card)<0) another_player_quit(server_mode);
-					Sleep(1500);
-					while(_kbhit()) getch();
-					system("cls");
 				}
-				else if(pl[now].occ==7 && pl[now].buff[10]==pl[now].cardcnt && mode!=4){ 
-					system("cls");
-					SetPos(11,0);
-					SetColor(6);
-					printf("[神圣意志]洗涤了你的心灵,你直接获得了胜利!");
-					now=3-now;
-					if(send_gaming(void_card)<0) another_player_quit(server_mode);
-					Sleep(500);
-				}
-				else if(mode==3 && pl[now].buff[0]>=50){ 
-					system("cls");
-					SetPos(11,0);
-					SetColor(6);
-					printf("干得漂亮!你建立起了强大的防线");
-					now=3-now;
-					if(send_gaming(void_card)<0) another_player_quit(server_mode);
-					Sleep(500);
-				}
-				else if(winner==now){
-					system("cls");
-					SetPos(13,0);
-					SetColor(6);
-					printf("恭喜你击败对手获得了胜利!");
-					now=3-now;
-					if(send_gaming(void_card)<0) another_player_quit(server_mode);
-					Sleep(500);
-				}
-			}
-			else{
-				UI();
-				UI_other();
-				if(recv_gaming()<0) another_player_quit(server_mode);
 			}
 		}
-	}
-	else {
-		SetColor(7,0);
+		Sleep(1200);
 		system("cls");
-		printf("WELCOME!!\n");
-		for(int i=1;i<=2;i++){
-			printf("请输入P%d的名字:",i);
-			cin>>pl[i].name;
-		}//输入姓名
-		Sleep(200);
-		while(_kbhit()) getch();
-		system("cls");//清屏并切换到Option界面
-
-		SetConsoleTitle("CARD GAME:Options");
-		Options(0);
-		SetColor(0,7);
-		system("color 07");
-		system("cls");//清屏并切换到Choose界面
-
-		SetConsoleTitle("CARD GAME:Choose Your Identity.");
-		for(int now=1;now<=2;now++){
-			Choose(now);//选择职业
-			SetPos(0,19+now);
-			printf("P%d的职业是",now);
-			printf(occ_name(pl[now].occ));
-		}
-		SetConsoleTitle("Here we go...");
-		Sleep(1500);
-		while(_kbhit()) getch();
-		system("cls");//清屏并开始游戏
-
-		for(int i=1;i<=2;i++) if(pl[i].occ!=6) pl[i].cost=3;//初始费用设置
-		for(int x=1;x<=2;x++) {
-			init(x);//获得相应牌形成牌库
-			for(int i=1;i<=pl[x].cardcnt;i++) {
-				pl[x].handcard[i]=pl[x].heap[(rand(0)%pl[x].heapn)+1];
-			}
-		}
-		if(mode==3){
-			pl[1].handcard[5]=pl[2].handcard[5]=(Card){0,0,0,0,0,75,119};
-		}
-		//初始发牌
-
-		if(!player_bgn){
-			player_bgn=rand(0)%2+1;
-		}//随机先手
-		int now=player_bgn;
-
-		adv(3-player_bgn);//后手补偿
-
-		env_now=0;
-
-		char title[]="CARD GAME:Turn of P1  Turn:   ";
-		title[19]=now+'0';
-		title[27]=turn/100+'0';
-		title[28]=turn/10%10+'0';
-		title[29]=turn%10+'0';
-		SetConsoleTitle(title);
-		while(!winner && !Check(now)){
-			turn++;
-			title[19]=now+'0';
-			title[27]=turn/100+'0';
-			title[28]=turn/10%10+'0';
-			title[29]=turn%10+'0';
-			SetConsoleTitle(title);
-			UI();
-			if(mode==4){
-				if(changejob<2) changejob++;
-				else {
-					if(rand(0)%100<25*changejob) {
-						pl[now].occ=rand(0)%sumjob+1;
-						init(now);
-						changejob=0;
-					}
-					else changejob++;
+		UI();
+		now=1;
+		SetPos(0,Row);
+		printf("GAME OVER!!! Result:");
+		for(int i=1;i<=pl[1].cardcnt;i++){
+				int color=0;
+				// SetPos(1,11+i);
+				// printf("%d",pl[now].used[i]);//debug
+				SetPos(5,Row+i);
+				if(pl[1].used[i])SetColor(8);
+				SetColor(color=7),printf("  %d ",i); 
+				if(pl[1].used[i]){
+					SetColor(8);
+					printf("                                                                   ");
+					SetPos(14,Row+i);
+					printf("[Used.]");
+					continue;
 				}
-			}
-			if(Ask_same(now)==1) break;
-			if(pl[now].occ==7){
-				if(pl[now].cost==0) pl[now].buff[0]++;
-				bool ssyz=1;
-				for(int i=1;i<=pl[now].cardcnt;i++) if(pl[now].used[i] || pl[now].handcard[i].id!=114) ssyz=0;
-				if(ssyz && mode!=4) winner=now;
-			}//牧师检索[神圣意志]
-			if(pl[now].occ==20){
-				if(pl[now].cost==0) {
-					pl[now].buff[0]+=1;
-					if(pl[now].handcard[pl[now].cardcnt].id==119) pl[now].handcard[pl[now].cardcnt].ATK+=15;
-				}
-			}
-			if(pl[now].occ==20 && pl[now].buff[0]>=50) winner=now;
-			pl[now].UpdateBuff(2);
-			system("cls");
-			now++;
-			if(now>2)now=1;
-
-			//环境变动
-			if(env_on){
-				if(env_cnt>=2){
-					env_rate+=25;
-					if(rand(0)%100 < env_rate){
-						int _p=0;
-						while((_p=rand(0)%env_num)==env_now);
-						env_now=_p;
-						env_cnt=-1;
-						env_rate=0;
-					}
-				}
-				else{
-					env_rate=0;
-				}
-				env_cnt++;
-			}
-		}
-	}
-	Sleep(1200);
-	system("cls");
-	UI();
-	now=1;
-	SetPos(0,Row);
-	printf("GAME OVER!!! Result:");
-	for(int i=1;i<=pl[1].cardcnt;i++){
-			int color=0;
-			// SetPos(1,11+i);
-			// printf("%d",pl[now].used[i]);//debug
-			SetPos(5,Row+i);
-			if(pl[1].used[i])SetColor(8);
-			SetColor(color=7),printf("  %d ",i); 
-			if(pl[1].used[i]){
-				SetColor(8);
-				printf("                                                                   ");
+				printf(" %d ",pl[now].handcard[i].cost);
+				SetColor(color);
 				SetPos(14,Row+i);
-				printf("[Used.]");
-				continue;
-			}
-			printf(" %d ",pl[now].handcard[i].cost);
-			SetColor(color);
-			SetPos(14,Row+i);
-			printf(pl[now].handcard[i].Name());//牌名
-			printf("               ");
-			SetPos(20+14,Row+i);
-			printf("%-3d",pl[now].handcard[i].ATK);
-			//ATK
-			SetPos(30+14,Row+i);
-			printf("%-3d",pl[now].handcard[i].HEAL);//HEAL
-			SetPos(40+14,Row+i);
-			printf("%-3d",pl[now].handcard[i].DEF);//DEF
-			SetPos(50+14,Row+i);
-			printf("%-3d%%",pl[now].handcard[i].MISS);//MISS
-	}
-	Row+=pl[1].cardcnt+1;
-	now=2;
-	for(int i=1;i<=pl[2].cardcnt;i++){
-			int color=0;
-			// SetPos(1,11+i);
-			// printf("%d",pl[now].used[i]);//debug
-			SetPos(5,Row+i);
-			if(pl[2].used[i])SetColor(8);
-			SetColor(color=7),printf("  %d ",i); 
-			if(pl[2].used[i]){
-				SetColor(8);
-				printf("                                                                   ");
+				printf(pl[now].handcard[i].Name());//牌名
+				printf("               ");
+				SetPos(20+14,Row+i);
+				printf("%-3d",pl[now].handcard[i].ATK);
+				//ATK
+				SetPos(30+14,Row+i);
+				printf("%-3d",pl[now].handcard[i].HEAL);//HEAL
+				SetPos(40+14,Row+i);
+				printf("%-3d",pl[now].handcard[i].DEF);//DEF
+				SetPos(50+14,Row+i);
+				printf("%-3d%%",pl[now].handcard[i].MISS);//MISS
+		}
+		Row+=pl[1].cardcnt+1;
+		now=2;
+		for(int i=1;i<=pl[2].cardcnt;i++){
+				int color=0;
+				// SetPos(1,11+i);
+				// printf("%d",pl[now].used[i]);//debug
+				SetPos(5,Row+i);
+				if(pl[2].used[i])SetColor(8);
+				SetColor(color=7),printf("  %d ",i); 
+				if(pl[2].used[i]){
+					SetColor(8);
+					printf("                                                                   ");
+					SetPos(14,Row+i);
+					printf("[Used.]");
+					continue;
+				}
+				printf(" %d ",pl[now].handcard[i].cost);
+				SetColor(color);
+				printf("                 ");
 				SetPos(14,Row+i);
-				printf("[Used.]");
-				continue;
-			}
-			printf(" %d ",pl[now].handcard[i].cost);
-			SetColor(color);
-			printf("                 ");
-			SetPos(14,Row+i);
-			printf(pl[now].handcard[i].Name());//牌名
-			printf("                 ");
-			SetPos(20+14,Row+i);
-			printf("%-3d",pl[now].handcard[i].ATK);
-			printf("                 ");
-			//ATK
-			SetPos(30+14,Row+i);
-			printf("%-3d",pl[now].handcard[i].HEAL);//HEAL
-			printf("                 ");
-			SetPos(40+14,Row+i);
-			printf("%-3d",pl[now].handcard[i].DEF);//DEF
-			printf("                 ");
-			SetPos(50+14,Row+i);
-			printf("%-3d%%",pl[now].handcard[i].MISS);//MISS
+				printf(pl[now].handcard[i].Name());//牌名
+				printf("                 ");
+				SetPos(20+14,Row+i);
+				printf("%-3d",pl[now].handcard[i].ATK);
+				printf("                 ");
+				//ATK
+				SetPos(30+14,Row+i);
+				printf("%-3d",pl[now].handcard[i].HEAL);//HEAL
+				printf("                 ");
+				SetPos(40+14,Row+i);
+				printf("%-3d",pl[now].handcard[i].DEF);//DEF
+				printf("                 ");
+				SetPos(50+14,Row+i);
+				printf("%-3d%%",pl[now].handcard[i].MISS);//MISS
 
-	}
-			//debug
-	Sleep(4000);//4s的情况展示
-	system("cls");
-	printf("#%d ",winner);
-	printf(pl[winner].name);
-	printf("获得了胜利!!");
-	Shake(10,1);
-	while(1){
-		SetColor(rand(0)%16);
-		SetPos(rand(0)%100,rand(0)%30);
-		printf("#%d ",winner);
-		printf(pl[winner].name);
-		printf("获得了胜利!!");
-		Sleep(10);
+		}
+				//debug
+		Sleep(4000);//4s的情况展示
+		system("cls");
+		for(int i=1;i<=500;i++){
+			SetColor(rand(0)%16);
+			SetPos(rand(0)%100,rand(0)%30);
+			printf("#%d ",winner);
+			printf(pl[winner].name);
+			printf("获得了胜利!!");
+			Sleep(5);
+		}
+		system("cls");
 	}
 	return 0;
 }

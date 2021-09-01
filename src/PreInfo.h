@@ -148,6 +148,20 @@ struct spocc{
 	int maxhp,cardcnt,maxdef,maxcost;
 }job[105];
 
+void prepare(){
+	server_mode=0;
+	winner=0;
+	now=0;
+	env_now=env_cnt=env_rate=0;
+	env_on=0;
+	cost_bgn=3;
+	player_bgn=1;
+	mode=0;
+	turn=0;
+	adturn=0;
+	changejob=0;
+}
+
 string Card::Intro(){
 	if(func==1) return "+4◆";
 	else if(func==2)return "+1◆并+1◆上限";
@@ -354,7 +368,7 @@ void previous(){
 	libcnt[5]=18;
 	fun[1][5][1]=(Card){3,0,75,0,0,63,83};
 	funcnt[1][5]=1;
-	job[5]={280,3,0,3};
+	job[5]={1,3,0,3};
 	//demon
 	lib[6][1]=(Card){1,0,45,0,0,31,84};
 	lib[6][2]=(Card){2,0,70,0,0,33,85};
