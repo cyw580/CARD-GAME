@@ -178,7 +178,7 @@ string Card::Intro(){
 	else if(func==13)return "对手损失现有HP的25%";
 	else if(func==14)return "对手下回合[狂暴]";
 	else if(func==15)return "消耗所有◆,造成(35*◆+25)伤害,不受环境/buff影响";
-	else if(func==16)return "对手-3◆";
+	else if(func==16)return "对手-1◆,对方下回合[虚弱]";
 	else if(func==17)return "你在本回合、对手在下回合都[狂暴]";
 	else if(func==18)return "+2◆";
 	else if(func==19)return "+1<★成长>标记";
@@ -187,7 +187,7 @@ string Card::Intro(){
 	else if(func==22)return "HP上限-20,+1<★牺牲>标记";
 	else if(func==23)return "自身[治疗]2回合";
 	else if(func==24)return "HP上限-110,清空<★牺牲>;恢复到满血,清空手牌后补满";
-	else if(func==25)return "+2◆并-1<★疲惫>标记";
+	else if(func==25)return "+3◆并-1<★疲惫>标记";
 	else if(func==26)return "不要太贪心!";
 	else if(func==27)return "刷1张[虚空垃圾]进入牌库;被弃置时不耗费不生效";
 	else if(func==28)return "+3◆,刷3张[虚空垃圾]至牌库;被弃置时不耗费不生效";
@@ -334,12 +334,12 @@ void previous(){
 	lib[4][7]=(Card){0,0,0,0,0,15,59};
 	lib[4][8]=(Card){3,125,0,60,0,0,60};
 	lib[4][9]=(Card){4,130,-30,0,0,4,61};
-	lib[4][10]=(Card){2,0,10,10,0,16,62};
+	lib[4][10]=(Card){2,0,20,20,0,16,62};
 	lib[4][11]=(Card){4,230,0,0,10,0,63};
 	lib[4][12]=(Card){3,0,0,150,0,0,64};
 	lib[4][13]=(Card){2,0,55,30,0,0,65};
 	lib[4][14]=lib[4][13];
-	lib[4][15]=(Card){1,0,0,10,0,25,66};
+	lib[4][15]=(Card){2,0,0,10,0,25,66};
 	lib[4][16]=(Card){2,20,-30,0,0,17,67};
 	lib[4][17]=(Card){2,0,50,0,0,58,68};
 	libcnt[4]=17;
@@ -368,7 +368,7 @@ void previous(){
 	libcnt[5]=18;
 	fun[1][5][1]=(Card){3,0,75,0,0,63,83};
 	funcnt[1][5]=1;
-	job[5]={1,3,0,3};
+	job[5]={280,3,0,3};
 	//demon
 	lib[6][1]=(Card){1,0,45,0,0,31,84};
 	lib[6][2]=(Card){2,0,70,0,0,33,85};

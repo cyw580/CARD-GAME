@@ -217,7 +217,8 @@ int Card::Special(int from,int to){
 		pl[to].buff[3]=max(pl[to].buff[3],1);
 	}
 	else if(func==16){
-		pl[to].cost=max(0,pl[to].cost-3);
+		pl[to].cost=max(0,pl[to].cost-1);
+		pl[to].buff[4]=max(pl[to].buff[4],1);pl[to].buff[4];
 	}
 	else if(func==17){
 		pl[from].buff[3]=max(pl[from].buff[3],1);
@@ -250,7 +251,7 @@ int Card::Special(int from,int to){
 	}
 	else if(func==25){
 		pl[from].buff[0]=max(pl[from].buff[0]-1,0);
-		pl[from].cost=min(pl[from].cost+2,pl[from].maxcost);
+		pl[from].cost=min(pl[from].cost+3,pl[from].maxcost);
 	}
 	else if(func==27){
 		pl[from].heap[++pl[from].heapn]=lib[6][libcnt[6]+1];
@@ -1974,9 +1975,8 @@ int main(){
 	srand(time(NULL));
 	previous();//获得公共牌库和职业牌库
 	while(1){
-		closesocket(Client);
 		prepare();
-		SetConsoleTitle("CARD GAME:v2.2.0");
+		SetConsoleTitle("CARD GAME:v2.3.0");
 		bool connect_established=0;
 		while(!connect_established){
 			connect_established=1;
@@ -1984,16 +1984,27 @@ int main(){
 			Connect();
 			if(server_mode==3 || server_mode==4) break;
 			SetColor(7,0);
-			if(server_mode==2) printf("\n输入服务端ip地址:");
-			else system("cls"),printf("等待玩家连入...\n");
+			if(server_mode==2) WSAstart(),printf("\n输入服务端ip地址:");
+			else {
+				WSAstart();
+				system("cls");
+				char hostname[256]={0},ip[256]={0};
+				gethostname(hostname,sizeof(hostname));
+				HOSTENT* host=gethostbyname(hostname);
+				strcpy(ip,inet_ntoa(*(in_addr*)*host->h_addr_list));
+				printf("你的ip地址是:%s\n",ip);
+				SetPos(0,2),printf("等待玩家连入...\n");
+			}
 			if(TCP_initialize(server_mode)!=0){
 				connect_established=0;
 				system("cls");
 				if(server_mode==1){
-					printf("无法设立服务端...请检查是否有同一程序正在运行...\n");
+					SetColor(6);
+					printf("无法设立服务端...请检查是否有同一程序正在运行或者稍后再试...\n");
 					getch();
 				}
 				else{
+					SetColor(6);
 					printf("无法连接至服务器...请检查网络状况及服务器是否正常启动...\n");
 					getch();
 				}
@@ -2400,9 +2411,9 @@ int main(){
 
 		}
 				//debug
-		Sleep(4000);//4s的情况展示
+		Sleep(3600);//3.6s的情况展示
 		system("cls");
-		for(int i=1;i<=500;i++){
+		for(int i=1;i<=300;i++){
 			SetColor(rand(0)%16);
 			SetPos(rand(0)%100,rand(0)%30);
 			printf("#%d ",winner);

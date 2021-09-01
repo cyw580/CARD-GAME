@@ -7,21 +7,25 @@
 #include"PreInfo.h"
 SOCKADDR_IN addrServer,addrClient;
 SOCKET Client;
-
+WORD w_req;
+WSADATA wsadata;
+int WSAstart(){
+    w_req=MAKEWORD(2,2);
+	return WSAStartup(w_req, &wsadata);
+}
 int TCP_initialize(int server_mode){
-    WORD w_req=MAKEWORD(2,2);
-	WSADATA wsadata;
-	int err=WSAStartup(w_req, &wsadata);
+	closesocket(Client);
     if(server_mode==1){
         SOCKET Listen=socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
         if(Listen==INVALID_SOCKET) return 1;
         addrServer.sin_family=AF_INET;
         addrServer.sin_port=htons(11451);
         addrServer.sin_addr.S_un.S_addr=inet_addr("0.0.0.0");
-        if(bind(Listen,(struct sockaddr*)&addrServer,sizeof(addrServer))) return 2;
+        if(bind(Listen,(struct sockaddr*)&addrServer,sizeof(addrServer)))return 2;
         if(listen(Listen,1)) return 3;
         int sockaddr_siz=sizeof(sockaddr_in);
         Client=accept(Listen,(struct sockaddr*)&addrClient,&sockaddr_siz);
+        closesocket(Listen);
     }
     else{
         char Server_addrstr[16]={0};
