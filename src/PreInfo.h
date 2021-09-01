@@ -140,7 +140,9 @@ Card appcard[MAXAPCARDNUM];
 int appcnt;
 Card void_card=(Card){0,0,0,0,0,-2,0};
 int changejob;
-int sumjob=7;
+int sumjob=8;
+int pdatk; //鱼人判断攻击
+int pdmur; //刃鳞鱼人加攻击
 
 int libcnt[105],funcnt[105][105];//funcnt[mode][occ]
 
@@ -160,6 +162,12 @@ void prepare(){
 	turn=0;
 	adturn=0;
 	changejob=0;
+	for(int i=1;i<=2;i++){
+		pl[i].cost=pl[i].maxcost=pl[i].rest=pl[i].heapn=pl[i].occ=0;
+		pl[i].hp=pl[i].def=pl[i].cardcnt=pl[i].prehp=0;
+		pl[i].maxhp=pl[i].maxdef=0;
+		for(int j=1;j<=10;j++) pl[i].used[j]=pl[i].buff[j]=0;
+	}
 }
 
 string Card::Intro(){
@@ -228,7 +236,7 @@ string Card::Intro(){
 	else if(func==63)return "(宝藏)+2<★成长>,清空牌库中[累赘],将等量[累赘]刷入对手牌库";
 	else if(func==64)return "(宝藏)+3<★信仰>,牌库+2[神圣意志],对手1个手牌槽变为[精神控制]";
 	else if(func==65)return "被弃置则本回合和下回合[虚弱]";
-	else if(func==66)return "30% +1<★法力>,牌库中所有[法力成长] +15ATK";
+	else if(func==66)return "牌库中所有[法力成长]+15ATK,有30%概率+1<★法力>";
 	else if(func==67)return "自身[狂暴]至回合结束,抽一张牌";
 	else if(func==68)return "随机+(1-2个)<★防御>";
 	else if(func==69)return "本局剩余时间内,自己回合开始时+1<★防御>";
@@ -247,6 +255,12 @@ string Card::Intro(){
 	else if(func==82)return "每张手牌的HEAL清空后加等量ATK,若HEAL=0则ATK+12";
 	else if(func==83)return "60% +1<★法力>";
 	else if(func==84)return "被弃置则下2回合[虚弱]";
+	else if(func==85)return "+1<★嗜血>标记";
+	else if(func==86)return "+2<★嗜血>标记";
+	else if(func==87)return "对手[中毒]1回合（职业为地精或击破护盾时才生效）";
+	else if(func==88)return "(传说宝藏)ATK为<★嗜血>数量*基础数值,+5<★嗜血>标记";
+	else if(func==89)return "下一回合开始时手牌中的随机一张牌+15ATK";
+	
 	return "                                                     ";
 }
 
@@ -417,6 +431,19 @@ void previous(){
 	fun[1][7][2]=(Card){2,0,0,0,0,65,118};
 	funcnt[1][7]=2;
 	job[7]={450,4,150,6};
+	//Murloc
+	lib[8][1]=(Card){1,50,0,0,10,0,141};
+	lib[8][2]=lib[8][1];
+	lib[8][3]=(Card){2,50,0,0,0,86,142};
+	lib[8][4]=(Card){2,10,0,0,0,41,143};
+	lib[8][5]=(Card){1,20,0,0,20,87,144};
+	lib[8][6]=(Card){1,20,10,0,0,85,146};
+	lib[8][7]=(Card){1,0,40,0,10,85,145};
+	lib[8][8]=lib[8][6];
+	lib[8][9]=(Card){4,15,0,0,0,88,147};
+	lib[8][10]=(Card){3,80,10,0,0,89,148};
+	libcnt[8]=10;
+	job[8]={450,4,50,4};
 	//攻守之战
 	lib[20][1]=(Card){1,0,15,5,0,68,120};//+(1-2)<★防御>
 	lib[20][2]=(Card){3,0,45,20,0,69,121};//本局剩余时间内,自己回合开始时+1<★防御>
@@ -588,6 +615,14 @@ string Card::Name(){
 	if(id==138) return "[破防]";
 	if(id==139) return "[暗影形态]";
 	if(id==140) return "[奥术能量]";
+	if(id==141) return "[吸取生命]";
+	if(id==142) return "[幽灵弯刀]";
+	if(id==143) return "[鱼人招潮者]";
+	if(id==144) return "[淬毒小刀]";
+	if(id==145) return "[兴奋剂]";
+	if(id==146) return "[鱼人猎潮者]";
+	if(id==147) return "[老瞎眼]";
+	if(id==148) return "[深海刃鳞鱼人]";
 	else return "[未命名]";
 }
 
@@ -600,7 +635,8 @@ string occ_intro(int x){
 	else if(x==5)return "更灵活更敏捷，通过发育获得优势";
 	else if(x==6)return "受虚空力量滋养，有着多样的特效与出牌方式";
 	else if(x==7)return "受到神圣的祝福，强大的治疗与控制能力";
-	else if(x==8)return "反正我都会玩，随便来一个";
+	else if(x==8)return "残暴嗜血的种族，流淌着击败敌人的血液";
+	else if(x==9)return "反正我都会玩，随便来一个";
 	return "";
 }
 
@@ -659,6 +695,14 @@ void occ_func(int x){
 		printf("\n\t 4.[和平] 无法抽到公共牌库中ATK≥80的牌");printf("          ");
 	}
 	else if(x==8){
+		printf("HP 450   MAX_DEF 50   手牌上限4   ◆4");printf("   ");SetColor(13);
+		printf("\n\t<★嗜血>每个标记增加10%手牌吸血效果");printf("              ");SetColor(7);
+		printf("\n\t 1.[吸血] 手牌造成伤害时回复血量");printf("                 ");
+		printf("\n\t 2.[冷静] 如果当前回合没有出攻击牌 则-1<★嗜血>");printf("               ");
+		printf("\n\t 3.[短命] 回合结束时减少当前生命值15%的生命");printf("              ");
+		printf("\n\t 4.[与世隔绝] 无法抽到公共牌库中的牌");printf("            ");
+	}
+	else if(x==9){
 		printf("HP ???   MAX_DEF ???   手牌上限?   ◆?");printf(" ");
 		printf("\n                                                                 ");
 		printf("\n                                                                 ");

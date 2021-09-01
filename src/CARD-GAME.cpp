@@ -21,6 +21,8 @@ using namespace std;
 int UI();
 int Sort(int now);
 
+mt19937 rad(std::chrono::system_clock::now().time_since_epoch().count());
+
 int Check(int now){
 	if(pl[now].hp<1){
 		winner=3-now;
@@ -36,6 +38,7 @@ int Card::cal_atk(int from,int to){//计算实际攻击力
 	if(pl[from].occ==5 && ATK>0) damage=ATK+ATK*pl[from].buff[0]*0.09;//地精
 	if(pl[from].occ==4 && pl[from].buff[0])//战士
 		damage-=0.04*damage*pl[from].buff[0];
+	if(func==88) damage*=pl[from].buff[0]+1; //老瞎眼
 	if(pl[to].occ==20 && pl[to].buff[0]) damage-=0.02*damage*pl[to].buff[0];
 	//职业影响
 	if(pl[from].buff[3])//狂暴
@@ -60,6 +63,10 @@ int Card::cal_heal(int from,int to){//计算实际恢复量
 	if(pl[from].occ==20 && pl[from].buff[0]) heal-=0.01*heal*pl[from].buff[0];
 	if(mode==2) //欢乐模式：随机buff
 		heal*=0.7;
+	if(pl[from].occ==8){
+		int damage=max(cal_atk(from,to)-pl[to].def,0);
+		heal+=damage*0.1*pl[from].buff[0];
+	}
 	return heal;
 }
 
@@ -91,7 +98,8 @@ int Card::Use(int from,int to){
 	use_card=(Card){0,0,0,0,0,-2,0};
 	use_card.id=id;
 	use_card.cost=cost;
-	if(rand(0)%100<miss && id!=119){
+	if(ATK>0&&pl[from].occ==8) pdatk++; 
+	if(rad()%100<miss && id!=119){
 		SetPos(0,1);
 		printf("操作失误了!");
 		if(pl[from].occ==4 && ATK>0) pl[from].buff[0]+=2;
@@ -184,7 +192,7 @@ int Card::Special(int from,int to){
 		for(int i=1;i<=pl[from].cardcnt;i++){
 			if(pl[from].used[i]){
 				pl[from].used[i]=0;
-				pl[from].handcard[i]=pl[from].heap[(rand(0)%pl[from].heapn)+1];
+				pl[from].handcard[i]=pl[from].heap[(rad()%pl[from].heapn)+1];
 			}
 		}
 		pl[from].rest=pl[from].cardcnt;
@@ -307,7 +315,7 @@ int Card::Special(int from,int to){
 		pl[from].heap[++pl[from].heapn]=lib[7][libcnt[7]+1];
 	}
 	else if(func==44){
-		int x=rand(0)%pl[from].cardcnt+1;//选取随机槽位
+		int x=rad()%pl[from].cardcnt+1;//选取随机槽位
 		if(pl[from].used[x]){
 			pl[from].rest++;
 			pl[from].used[x]=0;
@@ -315,24 +323,24 @@ int Card::Special(int from,int to){
 		pl[from].handcard[x]=lib[7][libcnt[7]+1];
 	}
 	else if(func==45){
-		pl[from].heap[++pl[from].heapn]=pl[to].heap[rand(0)%pl[to].heapn+1];
+		pl[from].heap[++pl[from].heapn]=pl[to].heap[rad()%pl[to].heapn+1];
 		pl[from].heap[pl[from].heapn].func=18;
 	}
 	else if(func==46){
 		pl[from].cost=min(pl[from].maxcost,pl[from].cost+4);
-		int x=rand(0)%pl[to].cardcnt+1;//选取随机槽位
+		int x=rad()%pl[to].cardcnt+1;//选取随机槽位
 		pl[to].handcard[x]=lib[7][10];//[法力水晶]
 		if(pl[to].used[x]) pl[to].used[x]=0;
 	}
 	else if(func==47){
 		for(int i=1;i<=pl[to].cardcnt;i++){
 			if(pl[to].used[i]){
-				pl[to].handcard[i]=pl[to].heap[(rand(0)%pl[to].heapn)+1];
+				pl[to].handcard[i]=pl[to].heap[(rad()%pl[to].heapn)+1];
 				pl[to].used[i]=0;
 				if(pl[to].handcard[i].func==42) pl[to].buff[0]++;
 			}
 		}
-		int x=rand(0)%pl[to].cardcnt+1;//选取随机槽位
+		int x=rad()%pl[to].cardcnt+1;//选取随机槽位
 		pl[to].handcard[x].cost+=1;
 	}
 	else if(func==48){
@@ -349,21 +357,21 @@ int Card::Special(int from,int to){
 			pl[to].buff[1]+=2;
 	}
 	else if(func==51){
-		pl[to].buff[rand(0)%6+1]+=rand(0)%2+1;
+		pl[to].buff[rad()%6+1]+=rad()%2+1;
 	}
 	else if(func==52){
-		pl[from].buff[rand(0)%6+1]+=rand(0)%2+1;
+		pl[from].buff[rad()%6+1]+=rad()%2+1;
 	}
 	else if(func==53){
-		pl[rand(0)%2+1].buff[rand(0)%6+1]+=rand(0)%2+1;
+		pl[rad()%2+1].buff[rad()%6+1]+=rad()%2+1;
 	}
 	else if(func==54){
-		pl[to].buff[rand(0)%6+1]+=rand(0)%2+1;
-		pl[from].buff[rand(0)%6+1]+=rand(0)%2+1;
+		pl[to].buff[rad()%6+1]+=rad()%2+1;
+		pl[from].buff[rad()%6+1]+=rad()%2+1;
 	}
 	else if(func==55){
-		int x=rand(0)%pl[to].cardcnt+1,y=rand(0)%pl[to].cardcnt+1;//选取随机槽位
-		while(x==y) x=rand(0)%pl[to].cardcnt+1,y=rand(0)%pl[to].cardcnt+1;//去重
+		int x=rad()%pl[to].cardcnt+1,y=rad()%pl[to].cardcnt+1;//选取随机槽位
+		while(x==y) x=rad()%pl[to].cardcnt+1,y=rad()%pl[to].cardcnt+1;//去重
 		pl[to].handcard[x]=pl[to].handcard[y]=lib[7][libcnt[7]+3];
 		pl[to].used[x]=pl[to].used[y]=0;
 	}
@@ -439,11 +447,11 @@ int Card::Special(int from,int to){
 		pl[from].buff[0]+=3;
 		pl[from].heap[++pl[from].heapn]=lib[7][libcnt[7]+1];
 		pl[from].heap[++pl[from].heapn]=lib[7][libcnt[7]+1];
-		int x=rand(0)%pl[to].cardcnt+1;
+		int x=rad()%pl[to].cardcnt+1;
 		pl[to].handcard[x]=fun[1][7][2],pl[to].used[x]=0;
 	}
 	else if(func==66){
-		if(rand(0)%100<30){
+		if(rad()%100<30){
 			pl[from].buff[0]+=1;
 		}
 		for(int i=1;i<=pl[from].heapn;i++){
@@ -454,7 +462,7 @@ int Card::Special(int from,int to){
 		pl[from].buff[3]=max(pl[from].buff[3],1);
 	}
 	else if(func==68){
-		pl[from].buff[0]+=rand(0)%2+1;
+		pl[from].buff[0]+=rad()%2+1;
 	}
 	else if(func==69){
 		pl[from].buff[8]++;
@@ -475,7 +483,7 @@ int Card::Special(int from,int to){
 		pl[from].buff[7]+=24;
 	}
 	else if(func==76){
-		pl[from].buff[0]+=rand(0)%3+2;
+		pl[from].buff[0]+=rad()%3+2;
 	}
 	else if(func==77){
 		pl[to].buff[4]=max(pl[to].buff[4],1);
@@ -495,7 +503,23 @@ int Card::Special(int from,int to){
 		if(pl[from].handcard[pl[from].cardcnt].id==119) pl[from].handcard[pl[from].cardcnt].ATK+=40;
 	}
 	else if(func==83){
-		if(rand(0)<60) pl[from].buff[0]++;
+		if(rad()%100<60) pl[from].buff[0]++;
+	}
+	else if(func==85){
+		pl[from].buff[0]+=1;
+	}
+	else if(func==86){
+		pl[from].buff[0]+=2;
+	}
+	else if(func==87){
+		if(damage>=pl[to].def||pl[from].occ==5)
+			pl[to].buff[2]+=1;
+	}
+	else if(func==88){
+		pl[from].buff[0]+=5;
+	}
+	else if(func==89){
+		pdmur++;
 	}
 	return 0;
 }
@@ -504,12 +528,12 @@ void extra(int now,int cursor){
 	if(pl[now].handcard[cursor].func==37 || pl[now].handcard[cursor].func==67 || pl[now].handcard[cursor].func==3){
 		pl[now].used[cursor]=0;
 		pl[now].rest++;
-		pl[now].handcard[cursor]=pl[now].heap[(rand(0)%pl[now].heapn)+1];
+		pl[now].handcard[cursor]=pl[now].heap[(rad()%pl[now].heapn)+1];
 	}//[急不可耐],[血色怒火],[互惠共赢]抽牌
 	if(pl[now].handcard[cursor].func==40){
 		pl[now].used[cursor]=0;
 		pl[now].rest++;
-		pl[now].handcard[cursor]=pl[3-now].heap[(rand(0)%pl[3-now].heapn)+1];
+		pl[now].handcard[cursor]=pl[3-now].heap[(rad()%pl[3-now].heapn)+1];
 		pl[now].handcard[cursor].MISS=pl[now].handcard[cursor].func=0;
 	}//[不完全记忆]
 	if(pl[now].handcard[cursor].func==60){
@@ -519,7 +543,7 @@ void extra(int now,int cursor){
 	}//[熟练拾荒]变为[无中生有]
 	if(pl[now].handcard[cursor].func==24){
 		for(int i=1;i<=pl[now].cardcnt;i++) {
-			pl[now].handcard[i]=pl[now].heap[rand(0)%pl[now].heapn+1];
+			pl[now].handcard[i]=pl[now].heap[rad()%pl[now].heapn+1];
 			pl[now].used[i]=0;
 		}
 		pl[now].rest=pl[now].cardcnt;
@@ -562,6 +586,7 @@ void init(int x){
 		pl[x].heap[++pl[x].heapn]=lib[1][7];
 		return;
 	}
+	if(pl[x].occ==8) pl[x].buff[0]=1;
 	pl[x].maxhp=job[pl[x].occ].maxhp;
 	pl[x].cardcnt=job[pl[x].occ].cardcnt;
 	pl[x].maxdef=job[pl[x].occ].maxdef;
@@ -573,7 +598,7 @@ void init(int x){
 		pl[x].heap[i]=lib[0][i];
 		if(pl[x].occ==3 && pl[x].heap[i].HEAL>=75) i--,tot--; //法师不能抽公共牌库HEAL>=75的牌
 		if(pl[x].occ==4 && pl[x].heap[i].HEAL>0) i--,tot--;//战士不能抽公共牌库HEAL牌
-		if(pl[x].occ==5 || pl[x].occ==6) i--,tot--;//地精、恶魔不能抽公共牌库的牌
+		if(pl[x].occ==5 || pl[x].occ==6 || pl[x].occ==8) i--,tot--;//地精、恶魔、鱼人不能抽公共牌库的牌
 		if(pl[x].occ==7 && pl[x].heap[i].ATK>=80) i--,tot--;//牧师不能抽公共牌库ATK>=80的牌
 	}
 	pl[x].heapn=tot;
@@ -602,7 +627,7 @@ void treasure(int now){//竞技模式：宝藏牌
 			}
 		}
 		if(!gettre[now]){
-			pl[now].handcard[rand(0)%pl[now].cardcnt+1]=fun[1][1][1];
+			pl[now].handcard[rad()%pl[now].cardcnt+1]=fun[1][1][1];
 			gettre[now]=1;
 		}
 	}
@@ -616,7 +641,7 @@ void treasure(int now){//竞技模式：宝藏牌
 			}
 		}
 		if(!gettre[now]){
-			pl[now].handcard[rand(0)%pl[now].cardcnt+1]=fun[1][2][1];
+			pl[now].handcard[rad()%pl[now].cardcnt+1]=fun[1][2][1];
 			gettre[now]=1;
 		}
 	}
@@ -630,7 +655,7 @@ void treasure(int now){//竞技模式：宝藏牌
 			}
 		}
 		if(!gettre[now]){
-			pl[now].handcard[rand(0)%pl[now].cardcnt+1]=fun[1][3][1];
+			pl[now].handcard[rad()%pl[now].cardcnt+1]=fun[1][3][1];
 			gettre[now]=1;
 		}
 	}
@@ -644,7 +669,7 @@ void treasure(int now){//竞技模式：宝藏牌
 			}
 		}
 		if(!gettre[now]){
-			pl[now].handcard[rand(0)%pl[now].cardcnt+1]=fun[1][4][1];
+			pl[now].handcard[rad()%pl[now].cardcnt+1]=fun[1][4][1];
 			gettre[now]=1;
 		}
 	}
@@ -658,7 +683,7 @@ void treasure(int now){//竞技模式：宝藏牌
 			}
 		}
 		if(!gettre[now]){
-			pl[now].handcard[rand(0)%pl[now].cardcnt+1]=fun[1][5][1];
+			pl[now].handcard[rad()%pl[now].cardcnt+1]=fun[1][5][1];
 			gettre[now]=1;
 		}
 	}
@@ -672,7 +697,7 @@ void treasure(int now){//竞技模式：宝藏牌
 			}
 		}
 		if(!gettre[now]){
-			pl[now].handcard[rand(0)%pl[now].cardcnt+1]=fun[1][6][1];
+			pl[now].handcard[rad()%pl[now].cardcnt+1]=fun[1][6][1];
 			gettre[now]=1;
 		}
 	}
@@ -686,7 +711,21 @@ void treasure(int now){//竞技模式：宝藏牌
 			}
 		}
 		if(!gettre[now]){
-			pl[now].handcard[rand(0)%pl[now].cardcnt+1]=fun[1][7][1];
+			pl[now].handcard[rad()%pl[now].cardcnt+1]=fun[1][7][1];
+			gettre[now]=1;
+		}
+	}
+	if(pl[now].occ==8 && pl[now].hp<=100){
+		for(int i=1;i<=pl[now].cardcnt;i++){
+			if(pl[now].used[i]) {
+				pl[now].used[i]=0;
+				gettre[now]=1;
+				pl[now].handcard[i]=fun[1][7][1];
+				break;
+			}
+		}
+		if(!gettre[now]){
+			pl[now].handcard[rad()%pl[now].cardcnt+1]=fun[1][7][1];
 			gettre[now]=1;
 		}
 	}
@@ -700,7 +739,7 @@ void adv(int x){
 	if(pl[x].occ==1 || pl[x].occ==20){
 		pl[x].def=40;
 	}
-	else if(pl[x].occ==2 || pl[x].occ==6){
+	else if(pl[x].occ==2 || pl[x].occ==6 || pl[x].occ==8){
 		pl[x].buff[5]=2;
 	}
 	else if(pl[x].occ==3){
@@ -730,7 +769,8 @@ string occ_name(int x){
 	else if(x==5)return "地精";
 	else if(x==6)return "恶魔";
 	else if(x==7)return "牧师";
-	else if(x==8)return "随缘";
+	else if(x==8)return "鱼人";
+	else if(x==9)return "随缘";
 	else if(x==20)return "竞技者";
 	return "";
 }
@@ -763,7 +803,7 @@ void Choose(int now){
 	}
 	int cursor=1;
 	if(mode==4){
-		pl[now].occ=rand(0)%sumjob+1;
+		pl[now].occ=rad()%sumjob+1;
 		SetPos(0,0);
 		printf("请仔细阅读游戏规则:");
 		SetPos(0,2);
@@ -827,7 +867,7 @@ void Choose(int now){
 				return;
 			}
 			else {
-				pl[now].occ=rand(0)%sumjob+1;
+				pl[now].occ=rad()%sumjob+1;
 				return;
 			}
 		}
@@ -972,7 +1012,10 @@ void UI_other(){
 			printf("%d",appcard[x].cost);//费用
 			SetColor(0,8);
 			SetPos(14,Row+i);
+			if(appcard[x].id==147) //老瞎眼
+				SetColor(6,0);
 			printf(appcard[x].Name());//牌名
+			SetColor(7,0);
 			printf("                 ");
 			SetPos(20+14,Row+i);
 			printf("%-3d         ",appcard[x].ATK);
@@ -1004,7 +1047,10 @@ void UI_other(){
 			printf("%d",appcard[x].cost);//费用
 			SetColor(7);
 			SetPos(14,Row+i);
+			if(appcard[x].id==147) //老瞎眼
+				SetColor(6,0);
 			printf(appcard[x].Name());//牌名
+			SetColor(7,0);
 			printf("               ");
 			SetPos(20+14,Row+i);
 			printf("%-3d         ",appcard[x].ATK);
@@ -1039,9 +1085,9 @@ void start_turn(int now){
 	if(mode==4) pl[now].cost=min(pl[now].cost+1,pl[now].maxcost);//加费 
 	if(mode==3){
 		if(pl[now].handcard[pl[now].cardcnt].id==119) {
-			if(rand(0)%100<10+(pl[now].handcard[pl[now].cardcnt].ATK)/12) pl[now].cost=min(pl[now].cost+1,pl[now].maxcost);//加费
+			if(rad()%100<10+(pl[now].handcard[pl[now].cardcnt].ATK)/12) pl[now].cost=min(pl[now].cost+1,pl[now].maxcost);//加费
 		}
-		else if(rand(0)%100<10) pl[now].cost=min(pl[now].cost+1,pl[now].maxcost);//加费
+		else if(rad()%100<10) pl[now].cost=min(pl[now].cost+1,pl[now].maxcost);//加费
 	}
 	if(env_now==7)
 		pl[now].cost=min(pl[now].cost+1,pl[now].maxcost);//环境加费 
@@ -1052,7 +1098,7 @@ void start_turn(int now){
 			pl[now].hp=min(pl[now].maxhp,pl[now].hp+8*pl[now].buff[0]);
 			pl[now].cost=min(pl[now].maxcost,pl[now].cost+pl[now].buff[0]);
 			pl[now].buff[0]=0;
-			if(rand(0)%100<45) pl[now].buff[0]++;
+			if(rad()%100<45) pl[now].buff[0]++;
 		}//法师<★法力>标记获得费用
 		if(pl[now].occ==4) {
 			if(pl[now].def==0) pl[now].def=30;
@@ -1068,6 +1114,8 @@ void start_turn(int now){
 				pl[now].hp-=da-pl[now].def,pl[now].def=0;
 			}
 		}//恶魔<★原罪>让自己受伤
+		if(pl[now].occ==8) 
+			pl[now].cost=min(pl[now].cost+1,pl[now].maxcost);//鱼人每回合2费
 	}
 	if(pl[now].buff[5])//治疗buff
 		pl[now].hp=min(pl[now].hp+30,pl[now].maxhp);
@@ -1079,7 +1127,7 @@ void start_turn(int now){
 	//buff前判
 
 	if(mode==2){
-		pl[now].buff[rand(0)%6+1]++;
+		pl[now].buff[rad()%6+1]++;
 	}//娱乐模式：随机buff
 
 	if(env_now==5){
@@ -1103,7 +1151,7 @@ void start_turn(int now){
 					}
 				}
 				if(!gettre[now]){
-					pl[now].handcard[rand(0)%(pl[now].cardcnt-1)+1]=lib[20][libcnt[20]+1]; //不会覆盖[蓄力之击]
+					pl[now].handcard[rad()%(pl[now].cardcnt-1)+1]=lib[20][libcnt[20]+1]; //不会覆盖[蓄力之击]
 					gettre[now]=1;
 				}
 			}
@@ -1128,16 +1176,22 @@ int Ask(int now){
 	for(int i=1;i<=pl[now].cardcnt;i++){
 		if(pl[now].used[i]){
 			pl[now].used[i]=0;
-			if(pl[now].occ==7 && rand(0)%100<pl[now].buff[0]*2){
+			if(pl[now].occ==7 && rad()%100<pl[now].buff[0]*2){
 				pl[now].handcard[i]=lib[7][libcnt[7]+1];
 			}
 			else{
-				pl[now].handcard[i]=pl[now].heap[(rand(0)%pl[now].heapn)+1];
+				pl[now].handcard[i]=pl[now].heap[(rad()%pl[now].heapn)+1];
+				if(pl[now].handcard[i].id==147) //老瞎眼
+					pl[now].handcard[i]=pl[now].heap[(rad()%pl[now].heapn)+1];
 			}
 		}
 	}
 	pl[now].rest=pl[now].cardcnt;
 	//补充手牌
+	if(pl[now].occ==8 && pdmur){
+		while(pdmur--)
+			pl[now].handcard[rad()%pl[now].cardcnt+1].ATK+=15;
+	} //刃鳞鱼人buff修改
 	if(pl[now].occ==7){
 		pl[now].buff[10]=0;
 		for(int i=1;i<=pl[now].cardcnt;i++) 
@@ -1204,7 +1258,10 @@ int Ask(int now){
 			printf("%d",pl[now].handcard[i].cost);
 			SetColor(color);
 			SetPos(14,Row+i);
+			if(pl[now].handcard[i].id==147) //老瞎眼
+				SetColor(6,0);
 			printf(pl[now].handcard[i].Name());//牌名
+			SetColor(7,0);
 			printf("               ");
 			SetPos(20+14,Row+i);
 			printf("%-3d",pl[now].handcard[i].ATK);
@@ -1310,10 +1367,10 @@ int Ask(int now){
 					pl[now].used[cursor]=1;
 					pl[now].rest--;
 					if(pl[now].handcard[cursor].Use(now,3-now)) extra(now,cursor);
-					if(mode!=4 && pl[now].occ==5 && rand(0)%100<80) {
+					if(mode!=4 && pl[now].occ==5 && rad()%100<80) {
 						pl[now].used[cursor]=0;
 						pl[now].rest++;
-						pl[now].handcard[cursor]=pl[now].heap[(rand(0)%pl[now].heapn)+1];
+						pl[now].handcard[cursor]=pl[now].heap[(rad()%pl[now].heapn)+1];
 					}
 					for(int i=1;i<=pl[now].cardcnt;i++){
 						if(pl[now].used[i]) continue;
@@ -1461,15 +1518,21 @@ int Ask_same(int now){
 	for(int i=1;i<=pl[now].cardcnt;i++){
 		if(pl[now].used[i]){
 			pl[now].used[i]=0;
-			if(pl[now].occ==7 && rand(0)%100<pl[now].buff[0]*2){
+			if(pl[now].occ==7 && rad()%100<pl[now].buff[0]*2){
 				pl[now].handcard[i]=lib[7][libcnt[7]+1];
 			}
 			else{
-				pl[now].handcard[i]=pl[now].heap[(rand(0)%pl[now].heapn)+1];
+				pl[now].handcard[i]=pl[now].heap[(rad()%pl[now].heapn)+1];
+				if(pl[now].handcard[i].id==147) // 老瞎眼
+					pl[now].handcard[i]=pl[now].heap[(rad()%pl[now].heapn)+1];
 			}
 		}
 	}
 	//补充手牌
+	if(pl[now].occ==8 && pdmur){
+		while(pdmur--)
+			pl[now].handcard[rad()%pl[now].cardcnt+1].ATK+=15;
+	} //刃鳞鱼人buff修改
 	pl[now].rest=pl[now].cardcnt;
 
 	int cursor=1;
@@ -1526,7 +1589,10 @@ int Ask_same(int now){
 			printf("%d",pl[now].handcard[i].cost);
 			SetColor(color);
 			SetPos(14,Row+i);
+			if(pl[now].handcard[i].id==147) //老瞎眼
+				SetColor(6,0);
 			printf(pl[now].handcard[i].Name());//牌名
+			SetColor(7,0);
 			printf("               ");
 			SetPos(20+14,Row+i);
 			printf("%-3d",pl[now].handcard[i].ATK);
@@ -1631,10 +1697,10 @@ int Ask_same(int now){
 					pl[now].used[cursor]=1;
 					pl[now].rest--;
 					if(pl[now].handcard[cursor].Use(now,3-now)) extra(now,cursor);
-					if(mode!=4 && pl[now].occ==5 && rand(0)%100<80) {
+					if(mode!=4 && pl[now].occ==5 && rad()%100<80) {
 						pl[now].used[cursor]=0;
 						pl[now].rest++;
-						pl[now].handcard[cursor]=pl[now].heap[(rand(0)%pl[now].heapn)+1];
+						pl[now].handcard[cursor]=pl[now].heap[(rad()%pl[now].heapn)+1];
 					}
 					for(int i=1;i<=pl[now].cardcnt;i++){
 						if(pl[now].used[i]) continue;
@@ -1958,7 +2024,7 @@ void Connect(){
 		input=getch();
 		if(input==UP || input==LEFT || input=='w' || input=='a') cursor--;
 		if(input==DOWN || input==RIGHT || input=='s' || input=='d') cursor++;
-		if(input>='1' && input<='3') cursor=input-'0';
+		if(input>='1' && input<='4') cursor=input-'0';
 		if(cursor>4) cursor=1;
 		if(cursor<1) cursor=4;
 		if(input=='z' || input==SPACE || input==ENTER){
@@ -2041,7 +2107,7 @@ int main(){
 			else send_int(2020);
 			send_player(pl[server_mode]);
 			recv_message();
-			if(pl[server_mode].occ!=6) pl[server_mode].cost=3;//初始费用设置
+			if(pl[server_mode].occ!=6 || mode==4) pl[server_mode].cost=3;//初始费用设置
 			init(server_mode);//获得相应牌形成牌库
 			if(mode!=4){
 				if(pl[3-server_mode].occ==7 && pl[server_mode].occ!=7) {//获得[亵渎] 
@@ -2049,7 +2115,9 @@ int main(){
 				}
 			}
 			for(int i=1;i<=pl[server_mode].cardcnt;i++) {
-				pl[server_mode].handcard[i]=pl[server_mode].heap[(rand(0)%pl[server_mode].heapn)+1];
+				pl[server_mode].handcard[i]=pl[server_mode].heap[(rad()%pl[server_mode].heapn)+1];
+				if(pl[server_mode].handcard[i].id==147) //老瞎眼
+					pl[server_mode].handcard[i]=pl[server_mode].heap[(rad()%pl[server_mode].heapn)+1];
 			}
 			if(mode==3){
 				pl[1].handcard[5]=pl[2].handcard[5]=(Card){0,0,0,0,0,75,119};
@@ -2066,7 +2134,7 @@ int main(){
 			system("cls");//清屏并开始游戏
 			if(server_mode==1){
 				if(!player_bgn){
-					player_bgn=rand(0)%2+1;
+					player_bgn=rad()%2+1;
 				}//随机先手
 				now=player_bgn;
 			}
@@ -2124,8 +2192,8 @@ int main(){
 					if(mode==4){
 						if(changejob<2) changejob++;
 						else {
-							if(rand(0)%100<25*changejob) {
-								pl[now].occ=rand(0)%sumjob+1;
+							if(rad()%100<25*changejob) {
+								pl[now].occ=rad()%sumjob+1;
 								init(now);
 								changejob=0;
 							}
@@ -2140,6 +2208,11 @@ int main(){
 							if(!pl[now].used[i] && pl[now].handcard[i].id==114) pl[now].buff[10]++; //114-->[神圣意志]
 						if(pl[now].buff[10]==pl[now].cardcnt && mode!=4)  winner=now;
 					}//牧师检索[神圣意志]
+					if(pl[now].occ==8){
+						pl[now].hp*=0.80;
+						if(pdatk<2) pl[now].buff[0]=max(pl[now].buff[0]-1,0);
+						pdatk=0;
+					}//鱼人
 					if(pl[now].occ==20){
 						if(pl[now].cost==0) {
 							pl[now].buff[0]+=1;
@@ -2152,9 +2225,9 @@ int main(){
 					if(env_on){
 						if(env_cnt>=2){
 							env_rate+=25;
-							if(rand(0)%100 < env_rate){
+							if(rad()%100 < env_rate){
 								int _p=0;
-								while((_p=rand(0)%env_num)==env_now);
+								while((_p=rad()%env_num)==env_now);
 								env_now=_p;
 								env_cnt=-1;
 								env_rate=0;
@@ -2255,11 +2328,13 @@ int main(){
 			while(_kbhit()) getch();
 			system("cls");//清屏并开始游戏
 
-			for(int i=1;i<=2;i++) if(pl[i].occ!=6) pl[i].cost=3;//初始费用设置
+			for(int i=1;i<=2;i++) if(pl[i].occ!=6 || mode==4) pl[i].cost=3;//初始费用设置
 			for(int x=1;x<=2;x++) {
 				init(x);//获得相应牌形成牌库
 				for(int i=1;i<=pl[x].cardcnt;i++) {
-					pl[x].handcard[i]=pl[x].heap[(rand(0)%pl[x].heapn)+1];
+					pl[x].handcard[i]=pl[x].heap[(rad()%pl[x].heapn)+1];
+					if(pl[x].handcard[i].id==147) //老瞎眼
+						pl[x].handcard[i]=pl[x].heap[(rad()%pl[x].heapn)+1]; 
 				}
 			}
 			if(mode==3){
@@ -2268,7 +2343,7 @@ int main(){
 			//初始发牌
 
 			if(!player_bgn){
-				player_bgn=rand(0)%2+1;
+				player_bgn=rad()%2+1;
 			}//随机先手
 			int now=player_bgn;
 
@@ -2293,8 +2368,8 @@ int main(){
 				if(mode==4){
 					if(changejob<2) changejob++;
 					else {
-						if(rand(0)%100<25*changejob) {
-							pl[now].occ=rand(0)%sumjob+1;
+						if(rad()%100<25*changejob) {
+							pl[now].occ=rad()%sumjob+1;
 							init(now);
 							changejob=0;
 						}
@@ -2308,6 +2383,11 @@ int main(){
 					for(int i=1;i<=pl[now].cardcnt;i++) if(pl[now].used[i] || pl[now].handcard[i].id!=114) ssyz=0;
 					if(ssyz && mode!=4) winner=now;
 				}//牧师检索[神圣意志]
+				if(pl[now].occ==8){
+					pl[now].hp*=0.85;
+					if(pdatk<2) pl[now].buff[0]=max(pl[now].buff[0]-1,0);
+					pdatk=0;
+				}//鱼人
 				if(pl[now].occ==20){
 					if(pl[now].cost==0) {
 						pl[now].buff[0]+=1;
@@ -2324,9 +2404,9 @@ int main(){
 				if(env_on){
 					if(env_cnt>=2){
 						env_rate+=25;
-						if(rand(0)%100 < env_rate){
+						if(rad()%100 < env_rate){
 							int _p=0;
-							while((_p=rand(0)%env_num)==env_now);
+							while((_p=rad()%env_num)==env_now);
 							env_now=_p;
 							env_cnt=-1;
 							env_rate=0;
@@ -2362,7 +2442,10 @@ int main(){
 				printf(" %d ",pl[now].handcard[i].cost);
 				SetColor(color);
 				SetPos(14,Row+i);
+				if(pl[now].handcard[i].id==147) //老瞎眼
+					SetColor(6,0);
 				printf(pl[now].handcard[i].Name());//牌名
+				SetColor(7,0);
 				printf("               ");
 				SetPos(20+14,Row+i);
 				printf("%-3d",pl[now].handcard[i].ATK);
@@ -2394,7 +2477,10 @@ int main(){
 				SetColor(color);
 				printf("                 ");
 				SetPos(14,Row+i);
+				if(pl[now].handcard[i].id==147) //老瞎眼
+					SetColor(6,0);
 				printf(pl[now].handcard[i].Name());//牌名
+				SetColor(7,0);
 				printf("                 ");
 				SetPos(20+14,Row+i);
 				printf("%-3d",pl[now].handcard[i].ATK);
@@ -2414,8 +2500,8 @@ int main(){
 		Sleep(3600);//3.6s的情况展示
 		system("cls");
 		for(int i=1;i<=300;i++){
-			SetColor(rand(0)%16);
-			SetPos(rand(0)%100,rand(0)%30);
+			SetColor(rad()%16);
+			SetPos(rad()%100,rad()%30);
 			printf("#%d ",winner);
 			printf(pl[winner].name);
 			printf("获得了胜利!!");
