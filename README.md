@@ -2,7 +2,7 @@
 一个卡牌游戏
 
 ## 简介
-
+[Wiki](https://github.com/cyw580/CARD-GAME/wiki)
 ## 使用说明
 开始时输入两位玩家名字（仅限英文、数字或符号，避免输入中文）
 
