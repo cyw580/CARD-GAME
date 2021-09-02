@@ -582,6 +582,9 @@ void extra(int now,int cursor){
 		}
 		pl[now].handcard[x]=lib[7][libcnt[7]+1];
 	}
+	if(pl[now].handcard[cursor].func==90){
+		pl[now].buff[0]/=2;
+	}
 }
 
 bool giveupcard(int now,int cursor){
@@ -1388,6 +1391,8 @@ int Ask(int now){
 			else{
 				pl[now].hp=0;
 				UI(now);
+				SetPos(11,Row+12);
+				printf("                       ");
 				winner=3-now;
 				if(send_gaming(void_card)<0) {
 					another_player_quit(server_mode); 

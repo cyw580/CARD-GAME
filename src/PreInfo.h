@@ -139,6 +139,8 @@ int changejob;
 int sumjob=8;
 bool fight;
 int havewon,havelost;
+bool gettre[5];
+bool if_adv;
 
 int libcnt[105],funcnt[105][105];//funcnt[mode][occ]
 
@@ -159,12 +161,15 @@ void prepare(){
 	adturn=0;
 	appcnt=0;
 	changejob=0;
+	if_adv=0;
 	for(int i=1;i<=2;i++){
 		pl[i].cost=pl[i].maxcost=pl[i].rest=pl[i].heapn=pl[i].occ=0;
 		pl[i].hp=pl[i].def=pl[i].cardcnt=pl[i].prehp=0;
 		pl[i].maxhp=pl[i].maxdef=0;
 		for(int j=0;j<=10;j++) pl[i].used[j]=pl[i].buff[j]=0;
+		gettre[i]=0;
 	}
+	
 }
 
 void fightresult(bool r,int x){
@@ -489,7 +494,7 @@ void previous(){
 	lib[6][14]=(Card){1,45,0,0,10,0,96};
 	lib[6][15]=lib[6][3];
 	lib[6][16]=lib[6][14];
-	lib[6][17]=(Card){3,95,50,0,0,33,97};
+	lib[6][17]=(Card){3,75,55,0,0,33,97};
 	libcnt[6]=17;
 	lib[6][libcnt[6]+1]=(Card){1,0,0,0,0,27,98};
 	lib[6][libcnt[6]+2]=(Card){2,0,0,0,0,32,99};
