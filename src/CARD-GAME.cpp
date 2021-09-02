@@ -94,6 +94,7 @@ int Card::Use(int from,int to){
 	use_card=(Card){0,0,0,0,0,-2,0};
 	use_card.id=id;
 	use_card.cost=cost;
+	use_card.func=func;
 	if(rad()%100<miss && id!=119){
 		SetPos(0,1);
 		printf("操作失误了!");
@@ -104,7 +105,6 @@ int Card::Use(int from,int to){
 		return 0;
 	}//失效判定
 	int damage,flag=0;
-	use_card.func=func;
 	if(func) flag=Special(from,to);
 	if(flag==4) return 0;
 	damage=use_card.ATK=cal_atk(from,to);
@@ -644,8 +644,6 @@ void init(int x){
 		pl[x].heapn+=tot;
 	}
 }
-
-bool gettre[5];
 void treasure(int now){//竞技模式：宝藏牌
 	if(gettre[now]) return;
 	if(pl[now].occ==1 && pl[now].buff[0]>=3){
@@ -761,7 +759,7 @@ void treasure(int now){//竞技模式：宝藏牌
 		}
 	}
 }
-bool if_adv;
+
 void adv(int x){
 	if(mode==4){
 		pl[x].cost=min(pl[x].maxcost,pl[x].cost+1);
@@ -1020,6 +1018,7 @@ int UI(int now){
 	// printf("rate:%d%%",env_rate);
 	SetColor(7);
 	return 0; 
+	mouse(0);
 }
 
 void UI_other(){
@@ -1121,6 +1120,7 @@ void UI_other(){
 			printf("                                                         ");
 		}
 	}
+	mouse(0);
 }
 
 void start_turn(int now){
@@ -1362,6 +1362,7 @@ int Ask(int now){
 			printf("           ");
 
 		}//显示手牌
+		mouse(0);
 		SetColor(7);
 		SetPos(11,Row+9);
 		printf("                                                                         ");
@@ -1546,6 +1547,7 @@ int Ask(int now){
 			}
 		}
 		if(input==SPACE || input==ENTER) {//结束回合
+			option_giveup=option_use=option_quit=0;
 			SetPos(0,1);
 			printf("                ");
 			if(!option_over){
@@ -1718,6 +1720,7 @@ int Ask_same(int now){
 			}
 			printf("           ");
 		}//显示手牌
+		mouse(0);
 		SetColor(7);
 		SetPos(11,Row+9);
 		printf("                                                                         ");
@@ -1942,6 +1945,7 @@ bool Options(bool x){
 				printf("三局两胜的热血竞技,体验其他竞技模式,是时候展现你真正的实力了!             ");
 				printf("\n\t依次进行:经典模式->攻防之战->宝藏牌           ");
 			}
+			mouse(0);
 			//游戏模式设定
 			if(server_mode==1){
 				input=getch();
@@ -2052,7 +2056,7 @@ bool Options(bool x){
 				printf("\n\t                                          ");
 			}
 			//游戏模式设定
-			
+			mouse(0);
 			input=getch();
 			if(input==UP || input==LEFT || input=='w' || input=='a') cursor--;
 			if(input==DOWN || input==RIGHT || input=='s' || input=='d') cursor++;
@@ -2098,7 +2102,8 @@ void Connect(){
 		if(cursor!=4)SetColor(7,0);
 		else SetColor(0,7);
 		printf("4.退出游戏         ");
-
+		
+		mouse(0);
 		input=getch();
 		if(input==UP || input==LEFT || input=='w' || input=='a') cursor--;
 		if(input==DOWN || input==RIGHT || input=='s' || input=='d') cursor++;
@@ -2456,6 +2461,7 @@ int main(){
 	srand(time(NULL));
 	previous();//获得公共牌库和职业牌库
 	while(1){
+		mouse(0);
 		fight=havewon=havelost=server_mode=0;
 		prepare();
 		SetConsoleTitle("CARD GAME:v3.0.0");
