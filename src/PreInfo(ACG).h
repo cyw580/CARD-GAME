@@ -109,7 +109,7 @@ iv init()
 	srand(time(NULL));
 	mouse(0);
 	
-	cardlong=27;
+	cardlong=30;
 	cardname[1]="惩罚";
 	cardname[2]="附带弃置";
 	cardname[3]="埋伏";
@@ -136,7 +136,10 @@ iv init()
 	cardname[24]="地精的恩赐";
 	cardname[25]="恶魔的恩赐";
 	cardname[26]="牧师的恩赐";
-	cardname[27]="随缘的恩赐";
+	cardname[27]="鱼人的恩赐";
+	cardname[28]="随缘的恩赐";
+	cardname[29]="俄罗斯转盘";
+	cardname[30]="埋伏II";
 	
 	//牌面 
 	explanation[1]="令对手从牌库中抽一张牌";
@@ -165,7 +168,10 @@ iv init()
 	explanation[24]="你的随机两张无【地精的恩赐】手牌得到【地精的恩赐】";
 	explanation[25]="你的随机两张无【恶魔的恩赐】手牌得到【恶魔的恩赐】";
 	explanation[26]="你的随机一张无【牧师的恩赐】手牌得到【牧师的恩赐】";
-	explanation[27]="随机使用一张恩赐牌";
+	explanation[27]="你的所有无恩赐效果手牌得到【鱼人的恩赐】";
+	explanation[28]="随机使用一张恩赐牌";
+	explanation[29]="50%向对方手牌里加入一张【俄罗斯转盘】，否则清空自己的■";
+	explanation[30]="把牌堆顶的牌◆+2";
 	
 	theskill[1].set_up("自由意志",40,1,1);
 	theskill[2].set_up("命运指针",70,1,2);
@@ -182,7 +188,7 @@ iv init()
 	theskill[13].set_up("燃烧怒火",80,1,13);
 	theskill[14].set_up("底线",0,0,14);
 	theskill[15].set_up("偿还",0,0,15);
-	theskill[16].set_up("坠落",100,1,16);
+	theskill[16].set_up("坠落",80,1,16);
 	
 	skillexplanation[1]="将牌堆顶的牌的费用化为0并加入手牌";
 	skillexplanation[2]="将自己的随机一张牌给予对方";
@@ -241,6 +247,7 @@ iv init()
 	speffectexplanation["地精的恩赐"]="使【地精的恩赐】buff加2回合，【地精的恩赐】为3回合时转化为1◆";
 	speffectexplanation["恶魔的恩赐"]="回合开始时有带有【恶魔的恩赐】的手牌数量*10%的概率弃一张牌";
 	speffectexplanation["牧师的恩赐"]="当你的所有手牌都带有【牧师的恩赐】时直接获胜";
+	speffectexplanation["鱼人的恩赐"]="打出这张牌时+5■";
 	
 	cardsystlong=3;
 	cardsyst[1]="基础套牌";
@@ -256,10 +263,12 @@ iv init()
 	
 	gamemodelong=2;
 	gamemodename[1]="经典模式";
-	gamemodename[2]="计时模式";
+	gamemodename[2]="娱乐模式：计时";
+	gamemodename[3]="娱乐模式：只狼";
 	
 	gamemodeexplanation[1]="最经典的游戏模式";
 	gamemodeexplanation[2]="每回合开局多摸1张牌，在20回合后手牌数量少的人获胜";
+	gamemodeexplanation[3]="每得到一张手牌便增加躯干条，躯干条充满将被对方忍杀";
 }
 
 //From PreInfo.h
