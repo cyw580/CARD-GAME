@@ -83,6 +83,12 @@ iv dealcard() //发牌
 	REP(3) addcard(1,card("俄罗斯转盘",2,29));
 	REP(2) addcard(1,card("埋伏II",3,30));
 	addcard(1,card("阻碍",3,0));
+	if(thecardsyst[2])
+	{
+		REP(6) addcard(1,card("赞美太阳",2,15));
+		REP(8) addcard(1,card("时间流逝",1,16));
+		REP(4) addcard(1,card("绯红之王",1,17));
+	}
 	if(thecardsyst[3])
 	{
 		REP(3) addcard(1,card("浪人的恩赐",1,20));
@@ -95,11 +101,12 @@ iv dealcard() //发牌
 		REP(3) addcard(1,card("鱼人的恩赐",1,27));	
 		REP(3) addcard(1,card("随缘的恩赐",1,28));	
 	}
-	if(thecardsyst[2])
+	if(thecardsyst[4])
 	{
-		REP(6) addcard(1,card("赞美太阳",2,15));
-		REP(8) addcard(1,card("时间流逝",1,16));
-		REP(4) addcard(1,card("绯红之王",1,17));
+		REP(10) addcard(1,card("忍杀",1,31));
+		REP(8) addcard(1,card("刚干糖",2,32));
+		REP(5) addcard(1,card("苇名十字斩",2,33));
+		REP(3) addcard(1,card("不死斩",2,34));
 	}
 }
 card drawcard() //抽牌 
@@ -169,8 +176,9 @@ iv printground()
 	moveto(14,4);print(change(handcard1.size())+"/"+change(handcardmax1));
 	if(gamemode==3)
 	{
-		moveto(6,4);print("     ");
-		moveto(6,4);yellow(change(trunk1)+"/100");	
+		moveto(6,4);print("       ");
+		moveto(6,4);
+		if(trunk1==100) red("失衡");else yellow(change(trunk1)+"/100");	
 		moveto(40,3);
 		REP(3) red("□");REP(14) yellow("□");REP(3) red("□");
 		moveto(60-trunk1/10*2,3);REP(trunk1/10*2) yellow("■");
@@ -202,8 +210,9 @@ iv printground()
 	moveto(14,8);print(change(handcard2.size())+"/"+change(handcardmax2));
 	if(gamemode==3)
 	{
-		moveto(6,8);print("     ");
-		moveto(6,8);yellow(change(trunk2)+"/100");	
+		moveto(6,8);print("       ");
+		moveto(6,8);
+		if(trunk2==100) red("失衡");else yellow(change(trunk2)+"/100");	
 		moveto(40,7);
 		REP(3) red("□");REP(14) yellow("□");REP(3) red("□");
 		moveto(60-trunk2/10*2,7);REP(trunk2/10*2) yellow("■");
@@ -355,7 +364,7 @@ iv choosechanged(int lastchoose,int choose)
 }
 iv win()
 {
-	if(handcard1.size()==0 and handcard2.size()==0)
+	if(handcard1.size()==0 and handcard2.size()==0 and gamemode!=3)
 	{
 		system("cls");
 		print("平局");
@@ -363,12 +372,24 @@ iv win()
 	}
 	if(handcard1.size()==0)
 	{
+		if(gamemode==3)
+		{
+			trunk2=min(trunk2+20,100);
+			addhandcard(&handcard1,drawcard(),&handcardmax1,&buffclear);
+			return;
+		}
 		system("cls");
 		print("P1胜利\n");
 		exit(0);
 	}
 	if(handcard2.size()==0)
 	{
+		if(gamemode==3)
+		{
+			trunk1=min(trunk1+20,100);
+			addhandcard(&handcard2,drawcard(),&handcardmax2,&buffclear);
+			return;
+		}
 		system("cls");
 		print("P2胜利\n");
 		exit(0);
@@ -422,9 +443,9 @@ iv addhandcard(vector<card> *t,card t2,int *handcardmax,vector<buff> *thebuff)
 	else if(gamemode==3)
 	{
 		if(t==&handcard1)
-			trunk1+=t2.cost*5;
+			trunk1+=t2.cost*8;
 		else
-			trunk2+=t2.cost*5;
+			trunk2+=t2.cost*8;
 		if(trunk1>100) trunk1=100;
 		if(trunk2>100) trunk2=100;
 	}
@@ -525,7 +546,7 @@ iv usecard(card t,int pos)
 	if(t.effect==12)
 	{
 		int s=ran(1,cardlong);
-		while(s==12 or (15<=s and s<=17 and !thecardsyst[2]) or (20<=s and s<=28 and !thecardsyst[3])) s=ran(1,cardlong);
+		while(s==12 or (15<=s and s<=17 and !thecardsyst[2]) or (20<=s and s<=28 and !thecardsyst[3]) or (31<=s and s<=34 and !thecardsyst[4])) s=ran(1,cardlong);
 		usecard(card("114514",0,s),pos);
 		moveto(0,1);print("你使用了【"+cardname[s]+"】");
 	}
@@ -685,6 +706,38 @@ iv usecard(card t,int pos)
 	if(t.effect==30)
 	{
 		cardheap[0].cost+=2;
+	}
+	if(t.effect==31)
+	{
+		if(turn==1 and trunk2==100)
+		{
+			system("cls");
+			print("P1胜利\n");
+			exit(0);
+		}
+		if(turn==2 and trunk1==100)
+		{
+			system("cls");
+			print("P2胜利\n");
+			exit(0);
+		}
+	}
+	if(t.effect==32)
+	{
+		if(turn==1) trunk1=max(trunk1-20,0);
+		if(turn==2) trunk2=max(trunk2-20,0);
+	}
+	if(t.effect==33)
+	{
+		int yjjakioi=handcard1.size()-handcard2.size();
+		if(yjjakioi<0) yjjakioi=-yjjakioi;
+		if(turn==1) trunk2=min(trunk2+6*yjjakioi,100);
+		if(turn==2) trunk1=min(trunk1+6*yjjakioi,100);
+	}
+	if(t.effect==34)
+	{
+		if(turn==1) trunk2+=(100-trunk2)/2;
+		if(turn==2) trunk1+=(100-trunk1)/2;
 	}
 }
 iv usemagic(skill t)
@@ -864,8 +917,8 @@ iv game()
 	}
 	if(gamemode==3)
 	{
-		if(turn==1) trunk1-=15*(handcardmax1-handcard1.size())/(handcard1.size());
-		if(turn==2) trunk2-=15*(handcardmax2-handcard2.size())/(handcard2.size());
+		if(turn==1) trunk1-=20*(handcardmax1-handcard1.size())/(handcardmax1);
+		if(turn==2) trunk2-=20*(handcardmax2-handcard2.size())/(handcardmax2);
 		if(trunk1<0) trunk1=0;
 		if(trunk2<0) trunk2=0;
 	}
@@ -1194,7 +1247,10 @@ iv option()
 				thecardsyst[2]=timemode; 
 			}
 			if(choose==3)
+			{
 				gamemode++;
+				thecardsyst[4]=int(gamemode==3);
+			}
 			if(choose==4)
 			{
 				cardsystem();
@@ -1241,6 +1297,8 @@ iv cardsystem()
 				if(timemode) thecardsyst[2]=1-thecardsyst[2];
 			if(choose==3)
 				thecardsyst[3]=1-thecardsyst[3];
+			if(choose==4)
+				if(gamemode==3) thecardsyst[4]=1-thecardsyst[4];
 		}
 		if(surec(c) or magicc(c)) break;
 		if(choose==0) choose=cardsystlong;
@@ -1268,6 +1326,13 @@ iv title()
 	}
 	if(choose==1)
 	{
+		if(gamemode==3)
+		{
+			system("cls");
+			wolf();
+			char c='T';
+			while(!surec(c)) c=getch();
+		}
 		choosesoul();
 		startgame();
 	}
