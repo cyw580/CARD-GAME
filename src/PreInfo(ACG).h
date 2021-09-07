@@ -109,7 +109,7 @@ iv init()
 	srand(time(NULL));
 	mouse(0);
 	
-	cardlong=34;
+	cardlong=27;
 	cardname[1]="惩罚";
 	cardname[2]="附带弃置";
 	cardname[3]="埋伏";
@@ -136,14 +136,7 @@ iv init()
 	cardname[24]="地精的恩赐";
 	cardname[25]="恶魔的恩赐";
 	cardname[26]="牧师的恩赐";
-	cardname[27]="鱼人的恩赐";
-	cardname[28]="随缘的恩赐";
-	cardname[29]="俄罗斯转盘";
-	cardname[30]="埋伏II";
-	cardname[31]="忍杀";
-	cardname[32]="刚干糖";
-	cardname[33]="苇名十字斩"; 
-	cardname[34]="不死斩";
+	cardname[27]="随缘的恩赐";
 	
 	//牌面 
 	explanation[1]="令对手从牌库中抽一张牌";
@@ -172,14 +165,7 @@ iv init()
 	explanation[24]="你的随机两张无【地精的恩赐】手牌得到【地精的恩赐】";
 	explanation[25]="你的随机两张无【恶魔的恩赐】手牌得到【恶魔的恩赐】";
 	explanation[26]="你的随机一张无【牧师的恩赐】手牌得到【牧师的恩赐】";
-	explanation[27]="你的所有无恩赐效果手牌得到【鱼人的恩赐】";
-	explanation[28]="随机使用一张恩赐牌";
-	explanation[29]="50%向对方手牌里加入一张【俄罗斯转盘】，否则清空自己的■";
-	explanation[30]="把牌堆顶的牌◆+2";
-	explanation[31]="在对方失衡时直接击杀对方，否则无效果";
-	explanation[32]="减少20点躯干条";
-	explanation[33]="（打出此牌后）对方增加 双方手牌数量差*6 的躯干条";
-	explanation[34]="对方增加 (100-对方躯干条)/2 的躯干条";
+	explanation[27]="随机使用一张恩赐牌";
 	
 	theskill[1].set_up("自由意志",40,1,1);
 	theskill[2].set_up("命运指针",70,1,2);
@@ -196,7 +182,7 @@ iv init()
 	theskill[13].set_up("燃烧怒火",80,1,13);
 	theskill[14].set_up("底线",0,0,14);
 	theskill[15].set_up("偿还",0,0,15);
-	theskill[16].set_up("坠落",80,1,16);
+	theskill[16].set_up("坠落",100,1,16);
 	
 	skillexplanation[1]="将牌堆顶的牌的费用化为0并加入手牌";
 	skillexplanation[2]="将自己的随机一张牌给予对方";
@@ -255,41 +241,25 @@ iv init()
 	speffectexplanation["地精的恩赐"]="使【地精的恩赐】buff加2回合，【地精的恩赐】为3回合时转化为1◆";
 	speffectexplanation["恶魔的恩赐"]="回合开始时有带有【恶魔的恩赐】的手牌数量*10%的概率弃一张牌";
 	speffectexplanation["牧师的恩赐"]="当你的所有手牌都带有【牧师的恩赐】时直接获胜";
-	speffectexplanation["鱼人的恩赐"]="打出这张牌时+5■";
 	
-	cardsystlong=4;
+	cardsystlong=3;
 	cardsyst[1]="基础套牌";
 	cardsyst[2]="时间套牌";
 	cardsyst[3]="恩赐套牌";
-	cardsyst[4]="只狼套牌";
+	//cardsyst[4]="";
 	
 	cardsystexplanation[1]="最为基础的牌型，不可关闭";
 	cardsystexplanation[2]="需要打开时间模式才能打开";
 	cardsystexplanation[3]="来自 CARD-GAME 各职业人物的恩赐";
-	cardsystexplanation[4]="需要进入 娱乐模式：只狼 才可打开";
 	
 	thecardsyst[1]=thecardsyst[2]=thecardsyst[3]=1;
 	
-	gamemodelong=3;
+	gamemodelong=2;
 	gamemodename[1]="经典模式";
-	gamemodename[2]="娱乐模式：计时";
-	gamemodename[3]="娱乐模式：只狼";
+	gamemodename[2]="计时模式";
 	
 	gamemodeexplanation[1]="最经典的游戏模式";
 	gamemodeexplanation[2]="每回合开局多摸1张牌，在20回合后手牌数量少的人获胜";
-	gamemodeexplanation[3]="每得到一张手牌便增加躯干条，躯干条充满将被对方忍杀";
-}
-
-void wolf()
-{
-	printf("请仔细阅读游戏规则:\n\n");
-	printf("1.只狼模式下双方存在满格为100的躯干条，躯干条充满时将失去平衡\n\n");
-	printf("2.在对方失衡时可以用【忍杀】直接击杀对方获得胜利\n\n");
-	printf("3.每得到一张手牌则增加 手牌费用*8 的躯干条\n\n");
-	printf("4.每回合初（摸牌前）减少 20*(手牌上限-手牌数量)/手牌数量的躯干条\n\n");
-	printf("5.只狼套牌里存在一些牌可以对躯干条造成影响\n\n");
-	printf("6.如果手牌打完不会直接胜利，而是再摸一张牌并且对方增加 20 躯干条\n\n");
-	printf("7.按下空格或者Enter继续");
 }
 
 //From PreInfo.h

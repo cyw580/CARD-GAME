@@ -532,7 +532,7 @@ int Card::Special(int from,int to){
 		else pl[from].cost=min(pl[from].cost+cost,pl[from].maxcost);
 	}
 	else if(func==96){
-		pl[from].buff[0]=(pl[from].buff[0]+5)*2;
+		pl[from].buff[0]=(pl[from].buff[0])*1.5;
 	}
 	return 0;
 }
@@ -829,10 +829,10 @@ void Choose(int now){
 		SetPos(0,12);
 		printf("6.回合结束若没有◆,<★防御>+1且[蓄力之击]+15ATK");
 		SetPos(0,14);
-		printf("7.按下空格或Enter进入游戏");
+		printf("7.按下你的“确认”键进入游戏");
 		while(1){
 			input=getch();
-			if(input==SPACE || input==ENTER){
+			if(input==bottom[5] || input==ENTER){
 				return;
 			}
 		}
@@ -855,10 +855,10 @@ void Choose(int now){
 		SetPos(0,12);
 		printf("6.玩家信息:HP 500   MAX_DEF 120   手牌上限6   ◆3/8");
 		SetPos(0,14);
-		printf("7.按下空格或Enter进入游戏");
+		printf("7.按下你的“确认”键进入游戏");
 		while(1){
 			input=getch();
-			if(input==SPACE || input==ENTER){
+			if(input==bottom[5] || input==ENTER){
 				return;
 			}
 		}
@@ -889,16 +889,16 @@ void Choose(int now){
 		}
 		if(fight) printf("\n\n(你可以查看这些职业说明,但你的职业是随缘的)");
 		input=getch();
-		if(input==UP || input==LEFT || input=='w' || input=='a')
+		if(input==bottom[1] || input==UP)
 			cursor--;
-		if(input==DOWN || input==RIGHT || input=='s' || input=='d')
+		if(input==bottom[2] || input==DOWN)
 			cursor++;
 		if(input>='1' && input<='9'){
 			cursor=input-'0';
 		}
 		if(cursor>sumjob+1) cursor=1;
 		if(cursor<1) cursor=sumjob+1;
-		if(input==SPACE || input==ENTER || input=='z'){
+		if(input==bottom[5] || input==ENTER){
 			if(fight || cursor>sumjob){
 				pl[now].occ=rad()%sumjob+1;
 				return;
@@ -1251,6 +1251,7 @@ int Ask(int now){
 	use_card=(Card){0,0,0,0,0,-2,0};
 	if(send_gaming(use_card)<0) {
 		another_player_quit(server_mode); 
+		winner=server_mode;
 		return 1;
 	}
 	int cursor=1;
@@ -1372,7 +1373,7 @@ int Ask(int now){
 		SetPos(11,Row+9);
 		printf(pl[now].handcard[cursor].Intro());
 		input=getch();
-		if(input=='q'){
+		if(input==bottom[6]){
 			SetPos(0,1);
 			printf("                ");
 			SetPos(11,Row+12);
@@ -1396,6 +1397,7 @@ int Ask(int now){
 				winner=3-now;
 				if(send_gaming(void_card)<0) {
 					another_player_quit(server_mode); 
+					winner=server_mode;
 					return 1;
 				}
 				break;
@@ -1404,7 +1406,7 @@ int Ask(int now){
 		if(input>='1' && input<='9' ){
 			if(!pl[now].used[input-'0'] && input-'0'<=pl[now].cardcnt) cursor=input-'0';
 		}
-		if(input==LEFT || input==UP || input=='w' || input=='a'){
+		if(input==bottom[1] || input==UP){
 			option_use=option_giveup=option_over=option_quit=0;
 			cursor--;
 			if(cursor<=0) cursor=pl[now].cardcnt;
@@ -1413,7 +1415,7 @@ int Ask(int now){
 				if(cursor<=0) cursor=pl[now].cardcnt;
 			}
 		}
-		if(input==RIGHT || input==DOWN || input=='s' || input=='d'){
+		if(input==bottom[2] || input==DOWN){
 			option_use=option_giveup=option_over=option_quit=0;
 			cursor++;
 			if(cursor>pl[now].cardcnt) cursor=1;
@@ -1424,7 +1426,7 @@ int Ask(int now){
 		}
 		if(cursor<=0)cursor=pl[now].cardcnt;
 		if(cursor>pl[now].cardcnt)cursor=1;//移动焦点
-		if(input=='z' || input=='+')//使用
+		if(input==bottom[3])//使用
 		{
 			SetPos(0,1);
 			printf("                                               ");
@@ -1467,13 +1469,14 @@ int Ask(int now){
 					}//牧师检索[神圣意志]
 					if(send_gaming(use_card)<0) {
 						another_player_quit(server_mode); 
+						winner=server_mode;
 						return 1;
 					}
 				}
 				option_use=0;
 			}
 		}
-		if(input=='x' || input=='-'){//弃牌
+		if(input==bottom[4]){//弃牌
 			SetPos(0,1);
 			printf("                                          ");
 			option_use=option_over=option_quit=0;
@@ -1487,6 +1490,7 @@ int Ask(int now){
 						use_card.MISS=2;
 						if(send_gaming(use_card)<0) {
 							another_player_quit(server_mode); 
+							winner=server_mode;
 							return 1;
 						}
 					}
@@ -1536,6 +1540,7 @@ int Ask(int now){
 						UI(now);
 						if(send_gaming(use_card)<0) {
 							another_player_quit(server_mode); 
+							winner=server_mode;
 							return 1;
 						}
 					}
@@ -1547,11 +1552,12 @@ int Ask(int now){
 				}//牧师检索[神圣意志]
 				if(send_gaming(void_card)<0) {
 					another_player_quit(server_mode); 
+					winner=server_mode;
 					return 1;
 				}
 			}
 		}
-		if(input==SPACE || input==ENTER) {//结束回合
+		if(input==bottom[5] || input==ENTER) {//结束回合
 			option_giveup=option_use=option_quit=0;
 			SetPos(0,1);
 			printf("                ");
@@ -1883,6 +1889,82 @@ int Ask_same(int now){
 	return 0;
 }
 
+void bot(){
+	SetColor(7,0);
+	system("cls");
+	SetPos(15,0);
+	printf("※ 按键设置 ※");
+	SetPos(0,1);
+	printf("使用[↑][↓]切换上下条目,按键“只能”设置为空格/小写字母,其他将无法设置");
+	printf("\n输入按键更改亮起处的按键,[ENTER]回到上一界面,请保证按键没有重复");
+	int cursor=1;
+	while(1){
+		SetPos(1,4);
+		if(cursor!=1)SetColor(7,0);
+		else SetColor(0,7);
+		printf("切换上一条目                          ");
+		SetPos(25,4);
+		printf("[%c]",bottom[1]);
+
+		SetPos(1,6);
+		if(cursor!=2)SetColor(7,0);
+		else SetColor(0,7);
+		printf("切换下一条目                          ");
+		SetPos(25,6);
+		printf("[%c]",bottom[2]);
+
+		SetPos(1,8);
+		if(cursor!=3)SetColor(7,0);
+		else SetColor(0,7);
+		printf("打出手牌/更改设置                          ");
+		SetPos(25,8);
+		printf("[%c]",bottom[3]);
+
+		SetPos(1,10);
+		if(cursor!=4)SetColor(7,0);
+		else SetColor(0,7);
+		printf("弃置手牌                          ");
+		SetPos(25,10);
+		printf("[%c]",bottom[4]);
+
+		SetPos(1,12);
+		if(cursor!=5)SetColor(7,0);
+		else SetColor(0,7);
+		printf("结束回合/确认                          ");
+		SetPos(25,12);
+		printf("[%c]",bottom[5]);
+
+		SetPos(1,14);
+		if(cursor!=6)SetColor(7,0);
+		else SetColor(0,7);
+		printf("认输                          ");
+		SetPos(25,14);
+		printf("[%c]",bottom[6]);
+		
+		input=getch();
+		SetPos(1,16);
+		SetColor(7,0);
+		printf("                                ");
+		if(input==' '||(input>='a'&&input<='z')) bottom[cursor]=input;
+		else if(input==UP) cursor--;
+		else if(input==DOWN) cursor++;
+		else if(input==ENTER) {
+			bool err=0;
+			for(int i=1;i<6;i++) for(int j=i+1;j<=6;j++) if(bottom[i]==bottom[j]) {
+				err=1;
+				SetPos(1,16);
+				SetColor(7,0);
+				printf("你设置了重复的按键,请检查!");
+				if(err) break;
+			}
+			if(err) continue;
+			return;
+		}
+		if(cursor>6) cursor=1;
+		if(cursor<1) cursor=6;
+	}
+}
+
 bool Options(bool x){
 	if(x){
 		system("cls");
@@ -1954,11 +2036,11 @@ bool Options(bool x){
 			//游戏模式设定
 			if(server_mode==1){
 				input=getch();
-				if(input==UP || input==LEFT || input=='w' || input=='a') cursor--;
-				if(input==DOWN || input==RIGHT || input=='s' || input=='d') cursor++;
+				if(input==bottom[1] || input==UP) cursor--;
+				if(input==bottom[2] || input==DOWN) cursor++;
 				if(cursor>3) cursor=1;
 				if(cursor<1) cursor=3;
-				if(input=='z' || input=='+'){
+				if(input==bottom[3]){
 					if(cursor==1){
 						env_on^=1;
 					}
@@ -1969,19 +2051,22 @@ bool Options(bool x){
 						mode=(mode+1)%6;
 					}
 				}
-				if(input==SPACE || input==ENTER){
+				if(input==bottom[5] || input==ENTER){
 					send_int(8255); break;
 				}
 				if(send_int(6000+env_on)<0) {
 					another_player_quit(server_mode); 
+					winner=server_mode;
 					return 1;
 				}
 				if(send_int(6100+mode)<0) {
 					another_player_quit(server_mode); 
+					winner=server_mode;
 					return 1;
 				}
 				if(send_int(6200+player_bgn)<0) {
 					another_player_quit(server_mode);
+					winner=server_mode;
 					return 1;
 				}
 			}
@@ -1991,6 +2076,7 @@ bool Options(bool x){
 					int recv_val=recv_message();
 					if(recv_val<0) {
 						another_player_quit(server_mode); 
+						winner=server_mode;
 						return 1;
 					}
 					if(recv_val==8255){
@@ -2088,6 +2174,7 @@ bool Options(bool x){
 void Connect(){
 	int cursor=1;
 	while(1){
+		SetColor(7,0);
 		SetPos(1,1);
 		if(cursor!=1) SetColor(7,0);
 		else SetColor(0,7);
@@ -2107,15 +2194,51 @@ void Connect(){
 		if(cursor!=4)SetColor(7,0);
 		else SetColor(0,7);
 		printf("4.退出游戏         ");
+
+		SetPos(1,5);
+		if(cursor!=5)SetColor(7,0);
+		else SetColor(0,7);
+		printf("5.设置按键         ");
+
+		SetPos(1,8);
+		SetColor(7,0);
+		printf("切换上一条目                          ");
+		SetPos(25,8);
+		printf("[%c]  [↑]",bottom[1]);
+
+		SetPos(1,9);
+		printf("切换下一条目                          ");
+		SetPos(25,9);
+		printf("[%c]  [↓]",bottom[2]);
+
+		SetPos(1,10);
+		printf("打出手牌/更改设置                          ");
+		SetPos(25,10);
+		printf("[%c]",bottom[3]);
+
+		SetPos(1,11);
+		printf("弃置手牌                          ");
+		SetPos(25,11);
+		printf("[%c]",bottom[4]);
+
+		SetPos(1,12);
+		printf("结束回合/确认                          ");
+		SetPos(25,12);
+		printf("[%c]  [ENTER]",bottom[5]);
+
+		SetPos(1,13);
+		printf("认输                          ");
+		SetPos(25,13);
+		printf("[%c]",bottom[6]);
 		
 		mouse(0);
 		input=getch();
-		if(input==UP || input==LEFT || input=='w' || input=='a') cursor--;
-		if(input==DOWN || input==RIGHT || input=='s' || input=='d') cursor++;
-		if(input>='1' && input<='4') cursor=input-'0';
-		if(cursor>4) cursor=1;
-		if(cursor<1) cursor=4;
-		if(input=='z' || input==SPACE || input==ENTER){
+		if(input==bottom[1] || input==UP) cursor--;
+		if(input==bottom[2] || input==DOWN) cursor++;
+		if(input>='1' && input<='5') cursor=input-'0';
+		if(cursor>5) cursor=1;
+		if(cursor<1) cursor=5;
+		if(input==bottom[5] || input==ENTER){
 			server_mode=cursor;
 			break;
 		}
@@ -2169,7 +2292,8 @@ int game(){
 			send_int(4000+now*10);
 		}
 		else if(recv_message()<0) {
-			another_player_quit(server_mode); 
+			another_player_quit(server_mode);
+			winner=server_mode; 
 			return 1;
 		}
 		if(server_mode!=now) Sleep(1500);
@@ -2286,6 +2410,7 @@ int game(){
 					now=3-now;
 					if(send_gaming(void_card)<0) {
 						another_player_quit(server_mode); 
+						winner=server_mode;
 						break;
 					}
 					Sleep(1500);
@@ -2300,6 +2425,7 @@ int game(){
 					now=3-now;
 					if(send_gaming(void_card)<0){
 						another_player_quit(server_mode); 
+						winner=server_mode;
 						break;
 					}
 					Sleep(500);
@@ -2312,6 +2438,7 @@ int game(){
 					now=3-now;
 					if(send_gaming(void_card)<0){
 						another_player_quit(server_mode); 
+						winner=server_mode;
 						break;
 					}
 					Sleep(500);
@@ -2324,6 +2451,7 @@ int game(){
 					now=3-now;
 					if(send_gaming(void_card)<0) {
 						another_player_quit(server_mode); 
+						winner=server_mode;
 						break;
 					}
 					Sleep(500);
@@ -2334,6 +2462,7 @@ int game(){
 				UI_other();
 				if(recv_gaming()<0) {
 					another_player_quit(server_mode); 
+					winner=server_mode;
 					break;
 				}
 			}
@@ -2475,7 +2604,7 @@ int main(){
 			connect_established=1;
 			system("cls");
 			Connect();
-			if(server_mode==3 || server_mode==4) break;
+			if(server_mode==3 || server_mode==4 || server_mode==5) break;
 			SetColor(7,0);
 			if(server_mode==2) WSAstart(),printf("\n输入服务端ip地址:");
 			else {
@@ -2503,6 +2632,10 @@ int main(){
 				}
 			}
 		}
+		if(server_mode==5){
+			bot();
+			continue;
+		}
 		if(server_mode==4) break;
 		if(server_mode!=3){
 			if(server_mode==1){
@@ -2513,8 +2646,6 @@ int main(){
 				SetColor(0,7);
 				system("color 07");
 				system("cls");//清屏并切换到Choose界面
-				// if(send_int(6000+env_on)<0) another_player_quit(server_mode);
-				// if(send_int(6100+mode)<0) another_player_quit(server_mode);
 			}
 			else {
 				// system("cls");
@@ -2552,6 +2683,11 @@ int main(){
 			else havelost++;
 			prepare();
 			mode=3;
+			if(send_gaming(void_card)<0) {
+				another_player_quit(server_mode); 
+				winner=server_mode;
+				continue;
+			}
 			game();
 			Sleep(1200),system("cls"),UI(server_mode),showresult();
 			if(winner==server_mode) havewon++;
@@ -2566,6 +2702,11 @@ int main(){
 			}
 			prepare();
 			mode=1;
+			if(send_gaming(void_card)<0) {
+				another_player_quit(server_mode); 
+				winner=server_mode;
+				continue;
+			}
 			game();
 			Sleep(1200),system("cls"),UI(server_mode),showresult();
 			if(winner==server_mode) havewon++;

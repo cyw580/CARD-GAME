@@ -142,6 +142,8 @@ int havewon,havelost;
 bool gettre[5];
 bool if_adv;
 
+char bottom[20]={' ','w','s','z','x',' ','q'};//1上，2下，3使用或更改设置，4弃牌，5结束回合或确认，6认输
+
 int libcnt[105],funcnt[105][105];//funcnt[mode][occ]
 
 struct spocc{
@@ -207,6 +209,8 @@ void showresult(){
 	printf("GAME OVER!!! Result:");
 	for(now=1;now<=2;now++){
 		SetColor(7);
+		SetPos(1,Row);
+		printf("P%d:",now);
 		for(int i=1;i<=pl[now].cardcnt;i++){
 				int color=0;
 				// SetPos(1,11+i);
@@ -350,7 +354,7 @@ string Card::Intro(){
 	else if(func==93)return "+25<★鱼仔>";
 	else if(func==94)return "打出后-2<★鱼仔>,或弃置后对手+10DEF";
 	else if(func==95)return "如果<★鱼仔>≥10则-5<★鱼仔>并清空双方所有buff,否则视为弃置";
-	else if(func==96)return "(宝藏)+5<★鱼仔>后翻倍,使用后此牌变为[水中疗养]";
+	else if(func==96)return "(宝藏)<★鱼仔>*1.5,使用后此牌变为[水中疗养]";
 	return "                                                     ";
 }
 
@@ -391,7 +395,8 @@ void previous(){
 	lib[1][11]=(Card){2,0,30,0,0,23,27};
 	lib[1][12]=lib[1][3];
 	lib[1][13]=lib[1][10];
-	libcnt[1]=13;
+	lib[1][14]=(Card){3,75,0,0,0,23,159};
+	libcnt[1]=14;
 	fun[1][1][1]=(Card){1,0,0,0,0,60,28};
 	funcnt[1][1]=1;
 	job[1]={420,4,120,6};
@@ -451,7 +456,7 @@ void previous(){
 	lib[4][16]=(Card){2,20,-30,0,0,17,67};
 	lib[4][17]=(Card){2,0,50,0,0,58,68};
 	libcnt[4]=17;
-	fun[1][4][1]=(Card){1,0,0,0,0,57,69};
+	fun[1][4][1]=(Card){1,0,10,10,0,57,69};
 	funcnt[1][4]=1;
 	job[4]={500,4,240,6};
 	//goblin
@@ -736,6 +741,7 @@ string Card::Name(){
 	if(id==156) return "[无力]";
 	if(id==157) return "[净水洗涤]";
 	if(id==158) return "[深海滋养]";
+	if(id==159) return "[自我防卫]";
 	else return "[未命名]";
 }
 
