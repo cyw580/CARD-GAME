@@ -37,7 +37,6 @@ int Card::cal_atk(int from,int to){//计算实际攻击力
 	if(pl[from].occ==5 && ATK>0) damage=ATK+ATK*pl[from].buff[0]*0.09;//地精
 	if(pl[from].occ==4 && pl[from].buff[0])//战士
 		damage-=0.04*damage*pl[from].buff[0];
-	if(func==88) damage*=pl[from].buff[0]+1; //老瞎眼
 	if(pl[to].occ==20 && pl[to].buff[0]) damage-=0.02*damage*pl[to].buff[0];
 	//职业影响
 	if(pl[from].buff[3])//狂暴
@@ -57,7 +56,7 @@ int Card::cal_atk(int from,int to){//计算实际攻击力
 
 int Card::cal_heal(int from,int to){//计算实际恢复量
 	int heal=HEAL;
-	if(func==90) heal+=pl[from].buff[0]*3;
+	if(func==90) heal+=pl[from].buff[0]*2;
 	if(pl[from].buff[4])//虚弱
 		heal*=0.7;
 	if(pl[from].occ==20 && pl[from].buff[0]) heal-=0.01*heal*pl[from].buff[0];
@@ -176,7 +175,7 @@ int Card::Special(int from,int to){
 	else if(func==3){
 		pl[from].cost=min(pl[from].maxcost,pl[from].cost+2);
 		pl[to].cost=min(pl[to].maxcost,pl[to].cost+2);
-		
+		pl[to].hp=min(pl[to].maxhp,pl[to].hp+20);
 	}
 	else if(func==4){
 		if(damage>=pl[to].def)
@@ -190,13 +189,18 @@ int Card::Special(int from,int to){
 			pl[to].buff[2]+=3;
 	}
 	else if(func==7){
-		for(int i=1;i<=pl[from].cardcnt;i++){
+		int cnt=0;
+		for(int i=1;i<=pl[from].cardcnt && cnt<2;i++){
 			if(pl[from].used[i]){
 				pl[from].used[i]=0;
-				pl[from].handcard[i]=pl[from].heap[(rad()%pl[from].heapn)+1];
+				Card x=pl[from].heap[(rad()%pl[from].heapn)+1];
+				while(x.id==23) x=pl[from].heap[(rad()%pl[from].heapn)+1];
+				pl[from].handcard[i]=x;
+				cnt++;
 			}
 		}
-		pl[from].rest=pl[from].cardcnt;
+		pl[from].rest=0;
+		for(int i=1;i<=pl[from].cardcnt;i++) if(!pl[from].used[i]) pl[from].rest++;
 		return 4;
 	}
 	else if(func==8){
@@ -415,6 +419,10 @@ int Card::Special(int from,int to){
 				pl[from].heap[i].id=-19;
 				pl[from].heap[i].cost=0;
 			}
+			if(pl[from].heap[i].id==23) { //23-->[无中生有]
+				pl[from].heap[i].id=-23;
+				pl[from].heap[i].MISS=5;
+			}
 		}
 	}
 	else if(func==61){
@@ -509,8 +517,8 @@ int Card::Special(int from,int to){
 		pl[from].buff[0]+=15;
 	}
 	else if(func==88){
-		if(pl[from].buff[0]>=24){
-			pl[from].buff[0]-=12;
+		if(pl[from].buff[0]>=30){
+			pl[from].buff[0]-=15;
 			pl[from].cost=min(pl[from].cost+3,pl[from].maxcost);
 		}
 		else pl[from].cost=min(pl[from].cost+cost,pl[from].maxcost);
@@ -519,20 +527,35 @@ int Card::Special(int from,int to){
 		pl[from].hp+=(pl[from].maxhp-pl[from].hp)*0.20;
 	}
 	else if(func==93){
-		pl[from].buff[0]+=25;
+		pl[from].buff[0]+=18;
 	}
 	else if(func==94){
-		pl[from].buff[0]=max(0,pl[from].buff[0]-2);
+		pl[from].buff[0]=max(0,pl[from].buff[0]-3);
 	}
 	else if(func==95){
-		if(pl[from].buff[0]>=10){
-			pl[from].buff[0]-=5;
+		if(pl[from].buff[0]>=15){
+			pl[from].buff[0]-=6;
 			for(int i=1;i<=6;i++) pl[from].buff[i]=pl[to].buff[i]=0;
 		}
 		else pl[from].cost=min(pl[from].cost+cost,pl[from].maxcost);
 	}
 	else if(func==96){
 		pl[from].buff[0]=(pl[from].buff[0])*1.5;
+	}
+	else if(func==97){
+		int cnt=0;
+		for(int i=1;i<=pl[from].cardcnt && cnt<3;i++){
+			if(pl[from].used[i]){
+				pl[from].used[i]=0;
+				Card x=pl[from].heap[(rad()%pl[from].heapn)+1];
+				while(x.id==-23) x=pl[from].heap[(rad()%pl[from].heapn)+1];
+				pl[from].handcard[i]=x;
+				cnt++;
+			}
+		}
+		pl[from].rest=0;
+		for(int i=1;i<=pl[from].cardcnt;i++) if(!pl[from].used[i]) pl[from].rest++;
+		return 4;
 	}
 	return 0;
 }
@@ -541,7 +564,9 @@ void extra(int now,int cursor){
 	if(pl[now].handcard[cursor].func==37 || pl[now].handcard[cursor].func==67 || pl[now].handcard[cursor].func==3){
 		pl[now].used[cursor]=0;
 		pl[now].rest++;
-		pl[now].handcard[cursor]=pl[now].heap[(rad()%pl[now].heapn)+1];
+		Card x=pl[now].heap[(rad()%pl[now].heapn)+1];
+		while(x.id==pl[now].handcard[cursor].id) x=pl[now].heap[(rad()%pl[now].heapn)+1];
+		pl[now].handcard[cursor]=x;
 	}//[急不可耐],[血色怒火],[互惠共赢]抽牌
 	if(pl[now].handcard[cursor].func==40){
 		pl[now].used[cursor]=0;
@@ -570,7 +595,7 @@ void extra(int now,int cursor){
 		for(int i=1;i<=pl[now].cardcnt;i++) {
 			if(pl[now].used[i]) continue;
 			if(pl[now].handcard[i].HEAL!=0) pl[now].handcard[i].ATK+=pl[now].handcard[i].HEAL;
-			else pl[now].handcard[i].ATK+=12;
+			else pl[now].handcard[i].ATK+=15;
 			pl[now].handcard[i].HEAL=0;
 		}
 	}//[暗影形态]搜索
@@ -1169,7 +1194,7 @@ void start_turn(int now){
 			}
 		}//恶魔<★原罪>让自己受伤
 		if(pl[now].occ==8){
-			pl[now].hp-=10;
+			pl[now].hp-=15;
 			pl[now].buff[0]+=10;
 		}
 	}
@@ -1294,7 +1319,7 @@ int Ask(int now){
 
 			SetPos(11,Row+i);
 			if(pl[now].handcard[i].func==15) {
-				pl[now].handcard[i].ATK=pl[now].cost*35+25;
+				pl[now].handcard[i].ATK=pl[now].cost*40+25;
 				pl[now].handcard[i].cost=pl[now].cost;
 			}//[背水一战]
 			if(pl[now].handcard[i].func==32){
@@ -1660,7 +1685,7 @@ int Ask_same(int now){
 
 			SetPos(11,Row+i);
 			if(pl[now].handcard[i].func==15) {
-				pl[now].handcard[i].ATK=pl[now].cost*35+25;
+				pl[now].handcard[i].ATK=pl[now].cost*40+25;
 				pl[now].handcard[i].cost=pl[now].cost;
 			}//[背水一战]
 			if(pl[now].handcard[i].func==32){
@@ -2366,10 +2391,10 @@ int game(){
 				if(pl[now].occ==8){
 					for(int i=1;i<=pl[now].cardcnt;i++){
 						if(pl[now].used[i]) continue;
-						if(pl[now].handcard[i].func==92) pl[now].handcard[i].ATK+=pl[now].buff[0];
+						if(pl[now].handcard[i].func==92) pl[now].handcard[i].ATK+=min(pl[now].buff[0],50);
 					}
 					int damage=pl[now].buff[0];
-					if(rad()%100<damage/6+2) {
+					if(pl[3-now].occ>1 && rad()%100<damage/6+2) {
 						if(pl[3-now].occ==5 && pl[3-now].buff[0]){
 							pl[3-now].maxhp-=10,pl[3-now].maxdef-=5;
 							pl[3-now].hp=min(pl[3-now].hp,pl[3-now].maxhp);
@@ -2543,7 +2568,7 @@ int game(){
 			if(pl[now].occ==8){
 				for(int i=1;i<=pl[now].cardcnt;i++){
 					if(pl[now].used[i]) continue;
-					if(pl[now].handcard[i].func==92) pl[now].handcard[i].ATK+=pl[now].buff[0];
+					if(pl[now].handcard[i].func==92) pl[now].handcard[i].ATK+=min(pl[now].buff[0],50);
 				}
 				int damage=pl[now].buff[0];
 				if(rad()%100<damage/6+2) {
@@ -2598,7 +2623,7 @@ int main(){
 		mouse(0);
 		fight=havewon=havelost=server_mode=0;
 		prepare();
-		SetConsoleTitle("CARD GAME:v3.0.0");
+		SetConsoleTitle("CARD GAME:v3.0.2");
 		bool connect_established=0;
 		while(!connect_established){
 			connect_established=1;

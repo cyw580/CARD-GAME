@@ -207,6 +207,7 @@ void showresult(){
 	SetColor(7);
 	SetPos(0,Row);
 	printf("GAME OVER!!! Result:");
+	Row++;
 	for(now=1;now<=2;now++){
 		SetColor(7);
 		SetPos(1,Row);
@@ -261,11 +262,11 @@ void showresult(){
 string Card::Intro(){
 	if(func==1) return "+4◆";
 	else if(func==2)return "+1◆并+1◆上限";
-	else if(func==3)return "所有人+2◆,自己抽一张牌";
+	else if(func==3)return "所有人+2◆,自己抽一张牌,对方恢复20HP";
 	else if(func==4)return "对手[燃烧]3回合（击破护盾时才生效）";
 	else if(func==5)return "自身[狂暴]至回合结束";
 	else if(func==6)return "对手[中毒]3回合（职业为地精或击破护盾时才生效）";
-	else if(func==7)return "立刻补充你的手牌";
+	else if(func==7)return "立刻抽取至多2张牌";
 	else if(func==8)return "手牌上限+1(最大为6),达到上限后改为+2◆";
 	else if(func==9)return "HP上限+40";
 	else if(func==10)return "-1◆上限";
@@ -273,7 +274,7 @@ string Card::Intro(){
 	else if(func==12)return "+2<★法力>标记";
 	else if(func==13)return "对手损失现有HP的25%";
 	else if(func==14)return "对手下回合[狂暴]";
-	else if(func==15)return "消耗所有◆,造成(35*◆+25)伤害,不受环境/buff影响";
+	else if(func==15)return "消耗所有◆,造成(40*◆+25)伤害,不受环境/buff影响";
 	else if(func==16)return "对手-1◆,对方下回合[虚弱],自己-1<★疲惫>";
 	else if(func==17)return "你在本回合、对手在下回合都[狂暴]";
 	else if(func==18)return "+2◆";
@@ -340,21 +341,22 @@ string Card::Intro(){
 	else if(func==79) return "本局剩余时间内,自己回合开始时[蓄力之击]+15ATK";
 	else if(func==80)return "本局剩余时间内,自己回合开始时[蓄力之击]+8ATK";
 	else if(func==81)return "对手-6<★防御>,[蓄力之击]+40ATK";
-	else if(func==82)return "每张手牌的HEAL清空后加等量ATK,若HEAL=0则ATK+12";
+	else if(func==82)return "每张手牌的HEAL清空后加等量ATK,若HEAL=0则ATK+15";
 	else if(func==83)return "60% +1<★法力>";
 	else if(func==84)return "被弃置则下2回合[虚弱]";
 	else if(func==85)return "+3<★鱼仔>";
 	else if(func==86)return "+8<★鱼仔>";
 	else if(func==87)return "+15<★鱼仔>";
-	else if(func==88)return "如果<★鱼仔>≥24则-12<★鱼仔>并+3◆,否则视为弃置";
+	else if(func==88)return "如果<★鱼仔>≥30则-15<★鱼仔>并+3◆,否则视为弃置";
 	else if(func==89)return "直接对敌方造成1.5*<★鱼仔>的伤害,不受环境/buff影响";
-	else if(func==90)return "恢复量HEAL=3*<★鱼仔>,现有<★鱼仔>数量减半";
+	else if(func==90)return "恢复量HEAL=2*<★鱼仔>,现有<★鱼仔>数量减半";
 	else if(func==91)return "恢复已损失HP的20%";
-	else if(func==92)return "回合结束增加与<★鱼仔>等量的ATK";
-	else if(func==93)return "+25<★鱼仔>";
-	else if(func==94)return "打出后-2<★鱼仔>,或弃置后对手+10DEF";
-	else if(func==95)return "如果<★鱼仔>≥10则-5<★鱼仔>并清空双方所有buff,否则视为弃置";
+	else if(func==92)return "回合结束增加与<★鱼仔>等量的ATK(每回合至多50)";
+	else if(func==93)return "+18<★鱼仔>";
+	else if(func==94)return "打出后-3<★鱼仔>,或弃置后对手+10DEF";
+	else if(func==95)return "如果<★鱼仔>≥15则-6<★鱼仔>并清空双方所有buff,否则视为弃置";
 	else if(func==96)return "(宝藏)<★鱼仔>*1.5,使用后此牌变为[水中疗养]";
+	else if(func==97)return "立刻抽取至多3张牌";
 	return "                                                     ";
 }
 
@@ -371,7 +373,7 @@ void previous(){
 	lib[0][8]=(Card){2,65,35,25,15,0,8};
 	lib[0][9]=(Card){2,25,70,35,25,0,9};
 	lib[0][10]=(Card){3,120,45,20,25,0,10};
-	lib[0][11]=(Card){5,0,135,80,0,0,11};
+	lib[0][11]=(Card){5,0,185,40,0,0,11};
 	lib[0][12]=(Card){5,240,0,0,10,0,12};
 	lib[0][13]=lib[0][8];
 	lib[0][14]=lib[0][9];
@@ -383,12 +385,12 @@ void previous(){
 	funcnt[2][0]=4;
 	//travaller
 	lib[1][1]=(Card){3,45,0,0,0,1,17};
-	lib[1][2]=(Card){3,0,40,25,0,2,18};
+	lib[1][2]=(Card){3,0,35,25,0,2,18};
 	lib[1][3]=(Card){1,0,0,0,0,3,19};
 	lib[1][4]=(Card){3,60,0,0,0,50,20};
 	lib[1][5]=(Card){2,0,0,0,0,5,21};
 	lib[1][6]=(Card){3,35,0,0,0,6,22};
-	lib[1][7]=(Card){0,0,0,0,25,7,23};
+	lib[1][7]=(Card){0,0,0,0,20,7,23};
 	lib[1][8]=(Card){4,0,30,50,0,8,24};
 	lib[1][9]=(Card){2,0,60,0,0,9,25};
 	lib[1][10]=(Card){1,0,0,75,0,21,26};
@@ -428,8 +430,8 @@ void previous(){
 	lib[3][8]=(Card){2,0,0,0,0,13,47};
 	lib[3][9]=(Card){2,0,35,0,0,12,48};
 	lib[3][10]=(Card){1,65,0,0,0,0,49};
-	lib[3][11]=(Card){2,155,50,0,40,35,50};
-	lib[3][12]=(Card){3,185,0,0,20,36,51};
+	lib[3][11]=(Card){2,145,50,0,40,35,50};
+	lib[3][12]=(Card){3,175,0,0,20,36,51};
 	lib[3][13]=(Card){1,0,-20,0,0,37,52};
 	lib[3][14]=(Card){3,85,40,0,0,83,140};
 	libcnt[3]=14;
@@ -532,19 +534,19 @@ void previous(){
 	job[7]={450,4,150,6};
 	//Murloc
 	lib[8][1]=(Card){2,0,20,0,0,49,141};
-	lib[8][2]=(Card){0,8,0,0,0,85,142};
-	lib[8][3]=(Card){2,45,20,0,0,86,143};
+	lib[8][2]=(Card){0,6,0,0,0,85,142};
+	lib[8][3]=(Card){2,40,15,0,0,86,143};
 	lib[8][4]=(Card){4,115,40,0,0,87,144};
 	lib[8][5]=(Card){1,0,0,0,0,88,145};
-	lib[8][6]=(Card){1,0,-30,0,0,89,146};
+	lib[8][6]=(Card){1,0,-40,0,0,89,146};
 	lib[8][7]=(Card){1,0,0,0,0,90,147};
 	lib[8][8]=(Card){1,0,45,0,0,0,148};
 	lib[8][9]=(Card){3,50,60,0,0,86,149};
 	lib[8][10]=(Card){2,90,0,0,0,0,150};
 	lib[8][11]=(Card){1,0,0,0,0,91,151};
-	lib[8][12]=(Card){5,0,0,0,0,92,152};
+	lib[8][12]=(Card){6,0,0,0,0,92,152};
 	lib[8][13]=(Card){2,0,55,0,0,85,153};
-	lib[8][14]=(Card){0,20,0,0,0,0,154};
+	lib[8][14]=(Card){0,15,0,0,0,0,154};
 	lib[8][15]=(Card){2,0,-30,0,0,93,155};
 	lib[8][16]=(Card){0,0,0,0,0,94,156};
 	lib[8][17]=(Card){1,0,0,0,0,95,157};
@@ -605,6 +607,7 @@ string Card::Name(){
 	if(id==-21) return "[有能狂怒II]";
 	if(id==22) return "[淬毒利刃]";
 	if(id==23) return "[无中生有]";
+	if(id==-23) return "[无中生有II]";
 	if(id==24) return "[仓储建设]";
 	if(id==25) return "[生命果]";
 	if(id==-25) return "[生命果II]";
@@ -816,7 +819,7 @@ void occ_func(int x){
 	else if(x==8){
 		printf("HP 360   MAX_DEF 0   手牌上限5   ◆3/6     ");printf("   ");SetColor(13);
 		printf("\n\t<★鱼仔>每个标记为你挡下2点伤害后消失");printf("              ");SetColor(7);
-		printf("\n\t 1.[快速繁殖] 每回合开始-10HP并+10<★鱼仔>");printf("                 ");
+		printf("\n\t 1.[快速繁殖] 每回合开始-15HP并+10<★鱼仔>");printf("                 ");
 		printf("\n\t 2.[集群攻击] 回合结束时对敌方造成★等量的伤害");printf("            ");
 		printf("\n\t 3.[水蚀] 回合结束有概率(与★数量相关)-1对手的★");printf("           ");
 		printf("\n\t 4.[与世隔绝] 无法抽到公共牌库中的牌");printf("            ");
