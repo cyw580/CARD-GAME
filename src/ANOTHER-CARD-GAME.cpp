@@ -1,11 +1,10 @@
 #include<bits/stdc++.h>
 #include<ext/pb_ds/assoc_container.hpp>
 #include<ext/pb_ds/hash_policy.hpp>
-#include<windows.h>
 #include<conio.h>
 #include<assert.h>
 #include<tchar.h>
-#include"PreInfo(ACG).h"
+#include"Socket(ACG).hpp"
 #define iv inline void
 #define REP(x) for(int i=1;i<=x;i++)
 using namespace std;
@@ -14,22 +13,15 @@ iv printhandcard(int choose);
 iv title();
 iv cardsystem();
 iv addhandcard(vector<card> *t,card t2,int *handcardmax,vector<buff> *thebuff);
-vector<card> cardheap,recardheap;
-vector<card> handcard1,handcard2;
-vector<skill> skills1,skills2,simpleskills1,simpleskills2;
-vector<buff> buff1,buff2,buffclear;
+iv init_server();
 bool visskill[114];
-string soul1,soul2;
-int cost1,cost2,costmax1,costmax2;
-int mana1,mana2,manamax1,manamax2;
-int handcardmax1,handcardmax2;
-int turn;
 int firsthand=3;
-int timemode=1,tim=0,twelveam=0,timrate=0;
+int timemode=1;
 int gamemode=1;
+int server_mode=0;
 bool foundfavour(card a)
 {
-	if(found(a.speffect,"浪人的恩赐") or found(a.speffect,"术士的恩赐") or found(a.speffect,"法师的恩赐") or found(a.speffect,"战士的恩赐") or found(a.speffect,"恶魔的恩赐") or found(a.speffect,"地精的恩赐") or found(a.speffect,"牧师的恩赐")) return true;
+	if(found(a.speffect,"浪人的恩赐") or found(a.speffect,"术士的恩赐") or found(a.speffect,"法师的恩赐") or found(a.speffect,"战士的恩赐") or found(a.speffect,"恶魔的恩赐") or found(a.speffect,"地精的恩赐") or found(a.speffect,"牧师的恩赐") or found(a.speffect,"鱼人的恩赐")) return true;
 	else return false;
 }
 iv addfavour(card &a,string favour)
@@ -41,6 +33,7 @@ iv addfavour(card &a,string favour)
 	else if(found(a.speffect,"恶魔的恩赐")) a.speffect[founds(a.speffect,"恶魔的恩赐")]=favour;
 	else if(found(a.speffect,"地精的恩赐")) a.speffect[founds(a.speffect,"地精的恩赐")]=favour;
 	else if(found(a.speffect,"牧师的恩赐")) a.speffect[founds(a.speffect,"牧师的恩赐")]=favour;
+	else if(found(a.speffect,"鱼人的恩赐")) a.speffect[founds(a.speffect,"鱼人的恩赐")]=favour;
 	else a.speffect.push_back(favour); 
 }
 iv addcard(int kind,card t) //往牌堆里加牌 
@@ -78,7 +71,15 @@ iv dealcard() //发牌
 	REP(4) addcard(1,card("万心同体",1,14));
 	REP(4) addcard(1,card("公平竞争",2,18));
 	REP(5) addcard(1,card("变本加厉",2,19));
+	REP(3) addcard(1,card("俄罗斯转盘",2,29));
+	REP(2) addcard(1,card("埋伏II",3,30));
 	addcard(1,card("阻碍",3,0));
+	if(thecardsyst[2])
+	{
+		REP(6) addcard(1,card("赞美太阳",2,15));
+		REP(8) addcard(1,card("时间流逝",1,16));
+		REP(4) addcard(1,card("绯红之王",1,17));
+	}
 	if(thecardsyst[3])
 	{
 		REP(3) addcard(1,card("浪人的恩赐",1,20));
@@ -88,13 +89,15 @@ iv dealcard() //发牌
 		REP(6) addcard(1,card("地精的恩赐",1,24));
 		REP(3) addcard(1,card("恶魔的恩赐",2,25));
 		REP(5) addcard(1,card("牧师的恩赐",1,26));
-		REP(3) addcard(1,card("随缘的恩赐",1,27));	
+		REP(3) addcard(1,card("鱼人的恩赐",1,27));	
+		REP(3) addcard(1,card("随缘的恩赐",1,28));	
 	}
-	if(thecardsyst[2])
+	if(thecardsyst[4])
 	{
-		REP(6) addcard(1,card("赞美太阳",2,15));
-		REP(8) addcard(1,card("时间流逝",1,16));
-		REP(4) addcard(1,card("绯红之王",1,17));
+		REP(10) addcard(1,card("忍杀",1,31));
+		REP(8) addcard(1,card("刚躯糖",2,32));
+		REP(5) addcard(1,card("苇名十字斩",2,33));
+		REP(3) addcard(1,card("不死斩",2,34));
 	}
 }
 card drawcard() //抽牌 
@@ -106,22 +109,29 @@ card drawcard() //抽牌
 }
 iv startgame() //开始游戏 
 {
-	dealcard();
-	cost1=cost2=0;
-	costmax1=costmax2=5;
-	mana1=mana2=manamax1=manamax2=100;
-	handcardmax1=handcardmax2=10;
-	if(soul1=="冷静") handcardmax1-=2;
-	if(soul2=="冷静") handcardmax2-=2;
-	if(firsthand!=3) turn=firsthand;
-	else turn=ran(1,2);
-	if(turn==1) cost2++;
-	else cost1++;
-	if(timemode) tim=ran(1,4);
-	REP(4) addhandcard(&handcard1,drawcard(),&handcardmax1,&buff1);
-	REP(4) addhandcard(&handcard2,drawcard(),&handcardmax2,&buff2);
-	if(soul1=="混沌") addhandcard(&handcard1,drawcard(),&handcardmax1,&buff1);
-	if(soul2=="混沌") addhandcard(&handcard2,drawcard(),&handcardmax2,&buff2);
+	if(server_mode==1)
+	{
+		dealcard();
+		cost1=cost2=0;
+		costmax1=costmax2=5;
+		mana1=mana2=manamax1=manamax2=100;
+		handcardmax1=handcardmax2=10;
+		if(soul1=="冷静") handcardmax1-=2;
+		if(soul2=="冷静") handcardmax2-=2;
+		if(firsthand!=3) turn=firsthand;
+		else turn=ran(1,2);
+		if(turn==1) cost2++;
+		else cost1++;
+		if(timemode) tim=ran(1,4);
+		REP(4) addhandcard(&handcard1,drawcard(),&handcardmax1,&buff1);
+		REP(4) addhandcard(&handcard2,drawcard(),&handcardmax2,&buff2);
+		if(soul1=="混沌") addhandcard(&handcard1,drawcard(),&handcardmax1,&buff1);
+		if(soul2=="混沌") addhandcard(&handcard2,drawcard(),&handcardmax2,&buff2);
+		trunk1=trunk2=0;	
+		send_situation();
+	}
+	if(server_mode==2)
+		recv_situation();
 }
 vector<card> *cardmine,*cardhis;
 int *costmine,*costmaxmine,*costhis,*costmaxhis,*manamine,*manahis,*manamaxmine,*manamaxhis;
@@ -131,7 +141,6 @@ string *soulmine,*soulhis;
 vector<buff> *buffmine,*buffhis;
 int Choose=1,sure_to_use=0,sure_to_magic=0,sure_to_end=0;
 int handkind=1;
-int clocks=0,clocksum=0;
 iv printground()
 {
 	//system("cls");
@@ -161,7 +170,19 @@ iv printground()
 	moveto(24,3);REP(mana1/20) blue("■");
 	moveto(14,4);print("     ");
 	moveto(14,4);print(change(handcard1.size())+"/"+change(handcardmax1));
-	moveto(24,4);
+	if(gamemode==3)
+	{
+		moveto(6,4);print("       ");
+		moveto(6,4);
+		if(trunk1==100) red("失衡");else yellow(change(trunk1)+"/100");	
+		moveto(40,3);
+		REP(3) red("□");REP(14) yellow("□");REP(3) red("□");
+		moveto(60-trunk1/10*2,3);REP(trunk1/10*2) yellow("■");
+		if(trunk1>=80) moveto(44,3),red("■"),moveto(74,3),red("■");
+		if(trunk1>=90) moveto(42,3),red("■"),moveto(76,3),red("■");
+		if(trunk1>=100) moveto(40,3),red("■"),moveto(78,3),red("■");
+	}
+	moveto(24,4);print(string(20,' '));moveto(24,4);
 	for(int i=0;i<buff1.size();i++)
 	{
 		if(i) print(" | ");
@@ -183,7 +204,19 @@ iv printground()
 	moveto(24,7);REP(mana2/20) blue("■");
 	moveto(14,8);print("     ");
 	moveto(14,8);print(change(handcard2.size())+"/"+change(handcardmax2));
-	moveto(24,8);
+	if(gamemode==3)
+	{
+		moveto(6,8);print("       ");
+		moveto(6,8);
+		if(trunk2==100) red("失衡");else yellow(change(trunk2)+"/100");	
+		moveto(40,7);
+		REP(3) red("□");REP(14) yellow("□");REP(3) red("□");
+		moveto(60-trunk2/10*2,7);REP(trunk2/10*2) yellow("■");
+		if(trunk2>=80) moveto(44,7),red("■"),moveto(74,7),red("■");
+		if(trunk2>=90) moveto(42,7),red("■"),moveto(76,7),red("■");
+		if(trunk2>=100) moveto(40,7),red("■"),moveto(78,7),red("■");
+	}
+	moveto(24,8);print(string(20,' '));moveto(24,8);
 	for(int i=0;i<buff2.size();i++)
 	{
 		if(i) print(" | ");
@@ -197,10 +230,63 @@ iv printground()
 	moveto(0,11);print("P"+change(turn));
 	moveto(8,11);print("#");
 	moveto(12,11);
-	if(handkind==1) cyan("◆");
-	if(handkind==2) blue("■");
-	
-	printhandcard(Choose);
+	if(turn==server_mode) 
+	{
+		if(handkind==1) cyan("◆");
+		if(handkind==2) blue("■");	
+		printhandcard(Choose);
+	}
+	else
+		red("●");
+}
+int otherlist[114],cardsum=0,skillsum=0;
+card othercardlist[114]=card("",0,0);
+skill otherskilllist[114];
+iv UI_other()
+{
+	int p1=0,p2=0;
+	for(int i=1;i<=cardsum+skillsum;i++)
+	{
+		moveto(8,11+i);print(change(i));
+		moveto(12,11+i);
+		if(otherlist[i]==1)
+		{
+			p1++;
+			cyan(change(othercardlist[p1].cost));
+			moveto(15,11+i);cyan("["+othercardlist[p1].name+"]");
+			moveto(30,11+i);
+			for(int j=0;j<othercardlist[p1].speffect.size();j++)
+				cyan("["+othercardlist[p1].speffect[j]+"]");
+		}
+		else
+		{
+			p2++;
+			blue(change(otherskilllist[p2].mana));
+			moveto(15,11+i);blue("["+otherskilllist[p2].name+"]");
+		}
+	}
+	if(cardsum+skillsum!=0)
+	{
+		moveto(10,24);print(string(50,' '));
+		moveto(10,25);print(string(60,' '));
+		moveto(10,26);print(string(60,' '));
+		if(otherlist[cardsum+skillsum]==1)
+		{
+			if(othercardlist[cardsum].effect)
+			{
+				moveto(10,24);print(explanation[othercardlist[cardsum].effect]);
+				for(int i=0;i<(othercardlist[cardsum].speffect.size());i++)
+				{
+					moveto(10,25+i);
+					print("["+(othercardlist[cardsum].speffect[i])+"]:"+speffectexplanation[othercardlist[cardsum].speffect[i]]);
+				}
+			}
+		}
+		else
+		{
+			moveto(10,24);print(skillexplanation[otherskilllist[skillsum].effect]);
+		}
+	}
 }
 iv printhandcard(int choose)
 {
@@ -291,7 +377,7 @@ iv choosechanged(int lastchoose,int choose)
 		for(int j=0;j<(*cardmine)[choose-1].speffect.size();j++)
 			green("["+(*cardmine)[choose-1].speffect[j]+"]");
 			
-		moveto(10,24);print(string(50,' '));
+		moveto(10,24);print(string(55,' '));
 		moveto(10,24);
 		if((*cardmine)[choose-1].effect) print(explanation[(*cardmine)[choose-1].effect]);
 		moveto(10,23);print(string(50,' '));moveto(10,23);
@@ -327,20 +413,38 @@ iv choosechanged(int lastchoose,int choose)
 }
 iv win()
 {
-	if(handcard1.size()==0 and handcard2.size()==0)
+	if(handcard1.size()==0 and handcard2.size()==0 and gamemode!=3)
 	{
+		send_string2("Win");
+		send_int2(3);
 		system("cls");
 		print("平局");
 		exit(0);
 	}
 	if(handcard1.size()==0)
 	{
+		if(gamemode==3)
+		{
+			trunk2=min(trunk2+20,100);
+			addhandcard(&handcard1,drawcard(),&handcardmax1,&buffclear);
+			return;
+		}
+		send_string2("Win");
+		send_int2(1);
 		system("cls");
 		print("P1胜利\n");
 		exit(0);
 	}
 	if(handcard2.size()==0)
 	{
+		if(gamemode==3)
+		{
+			trunk1=min(trunk1+20,100);
+			addhandcard(&handcard2,drawcard(),&handcardmax2,&buffclear);
+			return;
+		}
+		send_string2("Win");
+		send_int2(2);
 		system("cls");
 		print("P2胜利\n");
 		exit(0);
@@ -391,9 +495,20 @@ iv addhandcard(vector<card> *t,card t2,int *handcardmax,vector<buff> *thebuff)
 	}
 	else if(t->size()>*handcardmax or foundbuff(thebuff,"愤怒")!=-1)
 		throwcard(t,t->size());
+	else if(gamemode==3)
+	{
+		if(t==&handcard1)
+			trunk1+=t2.cost*8;
+		else
+			trunk2+=t2.cost*8;
+		if(trunk1>100) trunk1=100;
+		if(trunk2>100) trunk2=100;
+	}
 }
 iv usecard(card t,int pos)
 {
+	send_string2("Card");
+	send_card(t);
 	if(found(t.speffect,"地精的恩赐"))
 	{
 		if(foundbuff(buffmine,"地精的恩赐")==-1)
@@ -410,7 +525,9 @@ iv usecard(card t,int pos)
 	}
 	if(found(t.speffect,"术士的恩赐"))
 		increasemana(manamine,manamaxmine,15);
-	if(t.name!="114514")
+	if(found(t.speffect,"鱼人的恩赐"))
+		increasemana(manamine,manamaxmine,5);
+	if(pos!=114514)
 		throwcard(cardmine,pos);
 	if(t.effect==1) 
 	{
@@ -486,8 +603,8 @@ iv usecard(card t,int pos)
 	if(t.effect==12)
 	{
 		int s=ran(1,cardlong);
-		while(s==12 or (15<=s and s<=17 and !thecardsyst[2]) or (20<=s and s<=27 and !thecardsyst[3])) s=ran(1,cardlong);
-		usecard(card("114514",0,s),pos);
+		while(s==12 or (15<=s and s<=17 and !thecardsyst[2]) or (20<=s and s<=28 and !thecardsyst[3]) or (31<=s and s<=34 and !thecardsyst[4])) s=ran(1,cardlong);
+		usecard(card(cardname[s],0,s),114514);
 		moveto(0,1);print("你使用了【"+cardname[s]+"】");
 	}
 	if(t.effect==13)
@@ -626,13 +743,64 @@ iv usecard(card t,int pos)
 	}
 	if(t.effect==27)
 	{
-		int s=ran(20,26);
-		usecard(card("114514",0,s),pos);
+		for(int i=0;i<(cardmine->size());i++)
+			if(!foundfavour((*cardmine)[i]))
+				addfavour((*cardmine)[i],"鱼人的恩赐");
+	}
+	if(t.effect==28)
+	{
+		int s=ran(20,27);
+		usecard(card(cardname[s],0,s),114514);
 		moveto(0,1);print("你使用了【"+cardname[s]+"】");
+	}
+	if(t.effect==29)
+	{
+		if(ran(1,2)==1)
+			addhandcard(cardhis,card("俄罗斯转盘",2,29),handcardmaxhis,buffhis);
+		else
+			increasemana(manamine,manamaxmine,-114514);
+	}
+	if(t.effect==30)
+	{
+		cardheap[0].cost+=2;
+	}
+	if(t.effect==31)
+	{
+		if(turn==1 and trunk2==100)
+		{
+			system("cls");
+			print("P1胜利\n");
+			exit(0);
+		}
+		if(turn==2 and trunk1==100)
+		{
+			system("cls");
+			print("P2胜利\n");
+			exit(0);
+		}
+	}
+	if(t.effect==32)
+	{
+		if(turn==1) trunk1=max(trunk1-20,0);
+		if(turn==2) trunk2=max(trunk2-20,0);
+	}
+	if(t.effect==33)
+	{
+		int yjjakioi=handcard1.size()-handcard2.size();
+		if(yjjakioi<0) yjjakioi=-yjjakioi;
+		if(turn==1) trunk2=min(trunk2+6*yjjakioi,100);
+		if(turn==2) trunk1=min(trunk1+6*yjjakioi,100);
+	}
+	if(t.effect==34)
+	{
+		if(turn==1) trunk2+=(100-trunk2)/2;
+		if(turn==2) trunk1+=(100-trunk1)/2;
 	}
 }
 iv usemagic(skill t)
 {
+	send_string2("Skill");
+	send_skill(t);
 	if(t.effect==1)
 	{
 		card a=drawcard();a.cost=0;
@@ -766,312 +934,376 @@ iv recheck()
 }
 iv game()
 {
-	if(gamemode==2)
+	if(turn==server_mode)
 	{
-		clocksum++;
-		if(clocksum==3) clocksum=1,clocks++;
-		if(clocks==20)
+		if(gamemode==2)
 		{
-			if(handcard1.size()==handcard2.size())
+			clocksum++;
+			if(clocksum==3) clocksum=1,clocks++;
+			if(clocks==20)
 			{
-				handcard1.clear();
-				handcard2.clear();
+				if(handcard1.size()==handcard2.size())
+				{
+					handcard1.clear();
+					handcard2.clear();
+				}
+				else if(handcard1.size()<handcard2.size())
+					handcard1.clear();
+				else
+					handcard2.clear();
+				win();
 			}
-			else if(handcard1.size()<handcard2.size())
-				handcard1.clear();
-			else
-				handcard2.clear();
-			win();
 		}
-	}
-	if(turn==1)
-	{
-		cardmine=&handcard1;costmine=&cost1;costmaxmine=&costmax1;
-		cardhis=&handcard2;costhis=&cost2;costmaxhis=&costmax2;
-		manamine=&mana1;manamaxmine=&manamax1;
-		manahis=&mana2;manamaxhis=&manamax2;
-		skillsmine=&skills1,simpleskillsmine=&simpleskills1;
-		handcardmaxmine=&handcardmax1,handcardmaxhis=&handcardmax2; 
-		soulmine=&soul1,soulhis=&soul2;
-		buffmine=&buff1,buffhis=&buff2;
+		if(turn==1)
+		{
+			cardmine=&handcard1;costmine=&cost1;costmaxmine=&costmax1;
+			cardhis=&handcard2;costhis=&cost2;costmaxhis=&costmax2;
+			manamine=&mana1;manamaxmine=&manamax1;
+			manahis=&mana2;manamaxhis=&manamax2;
+			skillsmine=&skills1,simpleskillsmine=&simpleskills1;
+			handcardmaxmine=&handcardmax1,handcardmaxhis=&handcardmax2; 
+			soulmine=&soul1,soulhis=&soul2;
+			buffmine=&buff1,buffhis=&buff2;
+		}
+		else
+		{
+			cardmine=&handcard2;costmine=&cost2;costmaxmine=&costmax2;
+			cardhis=&handcard1;costhis=&cost1;costmaxhis=&costmax1;	
+			manamine=&mana2;manamaxmine=&manamax2;
+			manahis=&mana1;manamaxhis=&manamax1;
+			skillsmine=&skills2,simpleskillsmine=&simpleskills2;
+			handcardmaxmine=&handcardmax2,handcardmaxhis=&handcardmax1; 
+			soulmine=&soul2,soulhis=&soul1;
+			buffmine=&buff2,buffhis=&buff1;
+		}
+		if(gamemode==3)
+		{
+			if(turn==1) trunk1-=20*(handcardmax1-handcard1.size())/(handcardmax1);
+			if(turn==2) trunk2-=20*(handcardmax2-handcard2.size())/(handcardmax2);
+			if(trunk1<0) trunk1=0;
+			if(trunk2<0) trunk2=0;
+		}
+		for(int i=0;i<(buffmine->size());i++)
+			(*buffmine)[i].tim--;
+		for(int i=0;i<(buffmine->size());i++)
+			if((*buffmine)[i].tim==0)
+			{
+				buffmine->erase(buffmine->begin()+i);
+				i--;
+			}
+		int ddd=0;
+		if(*soulmine=="迷茫") ddd=ran(1,3)-2;
+		increasecost(costmine,costmaxmine,2+ddd);
+		if(foundbuff(buffmine,"持久")!=-1)
+			 increasecost(costmine,costmaxmine,1);
+		increasemana(manamine,manamaxmine,10);
+		bool theflag=0;
+		if(*soulmine=="暴戾" and cardmine->size()==*handcardmaxmine) theflag=1;
+		addhandcard(cardmine,drawcard(),handcardmaxmine,&buffclear);
+		if(*soulmine=="暴戾" and !theflag)
+			while((*cardmine)[(cardmine->size())-1].cost%2==0)
+			{
+				throwcard(cardmine,cardmine->size());
+				addhandcard(cardmine,drawcard(),handcardmaxmine,&buffclear);
+			}
+		if(tim==3) 
+		{
+			bool theflag2=0;
+			if(*soulmine=="暴戾" and cardmine->size()==*handcardmaxmine) theflag2=1;
+			addhandcard(cardmine,drawcard(),handcardmaxmine,&buffclear);
+			if(*soulmine=="暴戾" and !theflag2)
+				while((*cardmine)[(cardmine->size())-1].cost%2==0)
+				{
+					throwcard(cardmine,cardmine->size());
+					addhandcard(cardmine,drawcard(),handcardmaxmine,&buffclear);
+				}
+		}
+		if(*soulmine=="暴戾" and !theflag)
+			while((*cardmine)[(cardmine->size())-1].cost%2==0)
+			{
+				throwcard(cardmine,cardmine->size());
+				addhandcard(cardmine,drawcard(),handcardmaxmine,&buffclear);
+			}
+		if(*soulmine=="谔谔")
+		{
+			if(ran(1,10)<=6)
+			{
+				vector<int> ee;ee.clear();
+				for(int i=0;i<(cardmine->size());i++)
+					if(!found((*cardmine)[i].speffect,"加边！加边！加边！"))
+						ee.push_back(i);
+				if(ee.size())
+					(*cardmine)[ee[ran(0,ee.size()-1)]].speffect.push_back("加边！加边！加边！");	
+			}
+			bool eee=1;
+			for(int i=0;i<(cardmine->size());i++)
+				if(found((*cardmine)[i].speffect,"加边！加边！加边！"))
+				{
+					eee=0;
+					break;
+				}
+			if(eee) increasecost(costmine,costmaxmine,1);
+		}
+		if(tim==1) increasecost(costmine,costmaxmine,1);
+		int fashi=0;
+		for(int i=0;i<(cardmine->size());i++)
+			if(found((*cardmine)[i].speffect,"法师的恩赐"))
+				fashi++;
+		if(ran(1,10)<=fashi)
+		{
+			increasecost(costmine,costmaxmine,1);
+			buff s;s.set_up("法师的恩赐",1);
+			buffmine->push_back(s);
+		}
+		int emo=0;
+		for(int i=0;i<(cardmine->size());i++)
+			if(found((*cardmine)[i].speffect,"恶魔的恩赐"))
+				emo++;
+		if(ran(1,10)<=emo)
+		{
+			throwcard(cardmine,ran(1,cardmine->size()));
+			buff s;s.set_up("恶魔的恩赐",1);
+			buffmine->push_back(s);
+		}
+		if(gamemode==2)
+		{
+			bool theflag2=0;
+			if(*soulmine=="暴戾" and cardmine->size()==*handcardmaxmine) theflag2=1;
+			addhandcard(cardmine,drawcard(),handcardmaxmine,&buffclear);
+			if(*soulmine=="暴戾" and !theflag2)
+				while((*cardmine)[(cardmine->size())-1].cost%2==0)
+				{
+					throwcard(cardmine,cardmine->size());
+					addhandcard(cardmine,drawcard(),handcardmaxmine,&buffclear);
+				}
+		}
+		sure_to_use=0;sure_to_magic=0;sure_to_end=0;
+		handkind=1;
+		memset(visskill,0,sizeof(visskill));
+		system("cls");
+		char c='T';
+		Choose=1;
+		printground();
+		int lastchoose=1;
+		while(1)
+		{
+			choosechanged(lastchoose,Choose);
+			lastchoose=Choose;
+			c=getch();
+			moveto(0,1);print(string(24,' '));
+			if(handkind==1)
+			{
+				if(sure_to_end==1 or sure_to_magic==1) moveto(10,27),print(string(18,' '));
+				if(upc(c) or leftc(c)) Choose--,sure_to_use=0,sure_to_magic=0,sure_to_end=0;
+				if(downc(c) or rightc(c)) Choose++,sure_to_use=0,sure_to_magic=0,sure_to_end=0;
+				if(Choose==0) Choose=cardmine->size();
+				if(Choose==(cardmine->size())+1) Choose=1;
+				if(usec(c)) sure_to_use++,sure_to_magic=0,sure_to_end=0;
+				if(surec(c)) sure_to_end++,sure_to_magic=0,sure_to_use=0;
+				if(magicc(c)) sure_to_magic++,sure_to_use=0,sure_to_end=0;
+				if(sure_to_use==2)
+				{
+					moveto(0,1);
+					if((*cardmine)[Choose-1].cost>*costmine) print("费用不足无法使用此牌！");
+					else
+					{
+						print(string(24,' '));
+						*costmine-=(*cardmine)[Choose-1].cost;
+						usecard((*cardmine)[Choose-1],Choose);
+						if(tim==2)
+							if(ran(1,10)<=twelveam)
+								increasecost(costmine,costmaxmine,1);
+						recheck();
+						if(Choose>=(cardmine->size())) Choose=cardmine->size();
+						lastchoose=Choose;
+						printground();
+						send_string2("Situation");
+						send_situation();
+					}
+					sure_to_use=0;
+				}
+				if(sure_to_magic==1)
+				{
+					moveto(10,27);
+					print("确定要切换模式吗？");
+				}
+				if(sure_to_magic==2)
+				{
+					handkind=2;
+					lastchoose=Choose=1;
+					sure_to_magic=0;
+					system("cls");
+					printground(); 
+				}
+				if(sure_to_end==1)
+				{
+					moveto(10,27);
+					print("确定要结束回合吗？");
+				}
+				if(sure_to_end==2)
+					break;	
+			}
+			else if(handkind==2)
+			{
+				if(sure_to_end==1 or sure_to_magic==1) moveto(10,27),print(string(18,' '));
+				if(upc(c) or leftc(c)) Choose--,sure_to_use=0,sure_to_magic=0,sure_to_end=0;
+				if(downc(c) or rightc(c)) Choose++,sure_to_use=0,sure_to_magic=0,sure_to_end=0;
+				if(Choose==0) Choose=simpleskillsmine->size();
+				if(Choose==(simpleskillsmine->size())+1) Choose=1;
+				if(usec(c)) sure_to_use++,sure_to_magic=0,sure_to_end=0;
+				if(surec(c)) sure_to_end++,sure_to_magic=0,sure_to_use=0;
+				if(magicc(c)) sure_to_magic++,sure_to_use=0,sure_to_end=0;
+				if(sure_to_use==2)
+				{
+					moveto(0,1);
+					if((*simpleskillsmine)[Choose-1].mana>*manamine) print("魔法不足无法使用该技能！");
+					else if(visskill[Choose-1]) print("此回合已经使用过该技能！");
+					else
+					{
+						print(string(24,' '));
+						*manamine-=(*simpleskillsmine)[Choose-1].mana;
+						usemagic((*simpleskillsmine)[Choose-1]);	
+						visskill[Choose-1]=1;	
+						printground();
+						send_string2("Situation");
+						send_situation();
+					}
+					sure_to_use=0;
+				}
+				if(sure_to_magic==1)
+				{
+					moveto(10,27);
+					print("确定要切换模式吗？");
+				}
+				if(sure_to_magic==2)
+				{
+					handkind=1;
+					lastchoose=Choose=1;
+					sure_to_magic=0;
+					system("cls");
+					printground(); 
+				}
+				if(sure_to_end==1)
+				{
+					moveto(10,27);
+					print("确定要结束回合吗？");
+				}
+				if(sure_to_end==2)
+					break;	
+			}
+		}
+		send_string2("End");
+		ending();
+		if(timemode)
+		{
+			if(ran(1,10)<=timrate)
+			{
+				tim++;
+				if(tim==5) tim=1;
+				timrate=0;
+			}
+			else timrate=min(timrate+1,10);
+		}		
 	}
 	else
 	{
-		cardmine=&handcard2;costmine=&cost2;costmaxmine=&costmax2;
-		cardhis=&handcard1;costhis=&cost1;costmaxhis=&costmax1;	
-		manamine=&mana2;manamaxmine=&manamax2;
-		manahis=&mana1;manamaxhis=&manamax1;
-		skillsmine=&skills2,simpleskillsmine=&simpleskills2;
-		handcardmaxmine=&handcardmax2,handcardmaxhis=&handcardmax1; 
-		soulmine=&soul2,soulhis=&soul1;
-		buffmine=&buff2,buffhis=&buff1;
-	}
-	for(int i=0;i<(buffmine->size());i++)
-		(*buffmine)[i].tim--;
-	for(int i=0;i<(buffmine->size());i++)
-		if((*buffmine)[i].tim==0)
+		system("cls");
+		cardsum=skillsum=0;
+		while(1)
 		{
-			buffmine->erase(buffmine->begin()+i);
-			i--;
-		}
-	int ddd=0;
-	if(*soulmine=="迷茫") ddd=ran(1,3)-2;
-	increasecost(costmine,costmaxmine,2+ddd);
-	if(foundbuff(buffmine,"持久")!=-1)
-		 increasecost(costmine,costmaxmine,1);
-	increasemana(manamine,manamaxmine,10);
-	bool theflag=0;
-	if(*soulmine=="暴戾" and cardmine->size()==*handcardmaxmine) theflag=1;
-	addhandcard(cardmine,drawcard(),handcardmaxmine,&buffclear);
-	if(*soulmine=="暴戾" and !theflag)
-		while((*cardmine)[(cardmine->size())-1].cost%2==0)
-		{
-			throwcard(cardmine,cardmine->size());
-			addhandcard(cardmine,drawcard(),handcardmaxmine,&buffclear);
-		}
-	if(tim==3) 
-	{
-		bool theflag2=0;
-		if(*soulmine=="暴戾" and cardmine->size()==*handcardmaxmine) theflag2=1;
-		addhandcard(cardmine,drawcard(),handcardmaxmine,&buffclear);
-		if(*soulmine=="暴戾" and !theflag2)
-			while((*cardmine)[(cardmine->size())-1].cost%2==0)
+			printground();
+			UI_other();
+			string whatt=recv_string2();
+			if(whatt=="Card")
 			{
-				throwcard(cardmine,cardmine->size());
-				addhandcard(cardmine,drawcard(),handcardmaxmine,&buffclear);
+				card g=recv_card();
+				othercardlist[++cardsum]=g;
+				otherlist[cardsum+skillsum]=1;	
 			}
-	}
-	if(*soulmine=="暴戾" and !theflag)
-		while((*cardmine)[(cardmine->size())-1].cost%2==0)
-		{
-			throwcard(cardmine,cardmine->size());
-			addhandcard(cardmine,drawcard(),handcardmaxmine,&buffclear);
-		}
-	if(*soulmine=="谔谔")
-	{
-		if(ran(1,10)<=6)
-		{
-			vector<int> ee;ee.clear();
-			for(int i=0;i<(cardmine->size());i++)
-				if(!found((*cardmine)[i].speffect,"加边！加边！加边！"))
-					ee.push_back(i);
-			if(ee.size())
-				(*cardmine)[ee[ran(0,ee.size()-1)]].speffect.push_back("加边！加边！加边！");	
-		}
-		bool eee=1;
-		for(int i=0;i<(cardmine->size());i++)
-			if(found((*cardmine)[i].speffect,"加边！加边！加边！"))
+			if(whatt=="Skill")
 			{
-				eee=0;
-				break;
+				skill g=recv_skill();
+				otherskilllist[++skillsum]=g;
+				otherlist[cardsum+skillsum]=2;
 			}
-		if(eee) increasecost(costmine,costmaxmine,1);
-	}
-	if(tim==1) increasecost(costmine,costmaxmine,1);
-	int fashi=0;
-	for(int i=0;i<(cardmine->size());i++)
-		if(found((*cardmine)[i].speffect,"法师的恩赐"))
-			fashi++;
-	if(ran(1,10)<=fashi)
-	{
-		increasecost(costmine,costmaxmine,1);
-		buff s;s.set_up("法师的恩赐",1);
-		buffmine->push_back(s);
-	}
-	int emo=0;
-	for(int i=0;i<(cardmine->size());i++)
-		if(found((*cardmine)[i].speffect,"恶魔的恩赐"))
-			emo++;
-	if(ran(1,10)<=emo)
-	{
-		throwcard(cardmine,ran(1,cardmine->size()));
-		buff s;s.set_up("恶魔的恩赐",1);
-		buffmine->push_back(s);
-	}
-	if(gamemode==2)
-	{
-		bool theflag2=0;
-		if(*soulmine=="暴戾" and cardmine->size()==*handcardmaxmine) theflag2=1;
-		addhandcard(cardmine,drawcard(),handcardmaxmine,&buffclear);
-		if(*soulmine=="暴戾" and !theflag2)
-			while((*cardmine)[(cardmine->size())-1].cost%2==0)
+			if(whatt=="Situation")
+				recv_situation();
+			if(whatt=="Win")
 			{
-				throwcard(cardmine,cardmine->size());
-				addhandcard(cardmine,drawcard(),handcardmaxmine,&buffclear);
-			}
-	}
-	sure_to_use=0;sure_to_magic=0;sure_to_end=0;
-	handkind=1;
-	memset(visskill,0,sizeof(visskill));
-	system("cls");
-	char c='T';
-	Choose=1;
-	printground();
-	int lastchoose=1;
-	while(1)
-	{
-		choosechanged(lastchoose,Choose);
-		lastchoose=Choose;
-		c=getch();
-		moveto(0,1);print(string(24,' '));
-		if(handkind==1)
-		{
-			if(sure_to_end==1 or sure_to_magic==1) moveto(10,27),print(string(18,' '));
-			if(upc(c) or leftc(c)) Choose--,sure_to_use=0,sure_to_magic=0,sure_to_end=0;
-			if(downc(c) or rightc(c)) Choose++,sure_to_use=0,sure_to_magic=0,sure_to_end=0;
-			if(Choose==0) Choose=cardmine->size();
-			if(Choose==(cardmine->size())+1) Choose=1;
-			if(usec(c)) sure_to_use++,sure_to_magic=0,sure_to_end=0;
-			if(surec(c)) sure_to_end++,sure_to_magic=0,sure_to_use=0;
-			if(magicc(c)) sure_to_magic++,sure_to_use=0,sure_to_end=0;
-			if(sure_to_use==2)
-			{
-				moveto(0,1);
-				if((*cardmine)[Choose-1].cost>*costmine) print("费用不足无法使用此牌！");
-				else
-				{
-					print(string(24,' '));
-					*costmine-=(*cardmine)[Choose-1].cost;
-					usecard((*cardmine)[Choose-1],Choose);
-					if(tim==2)
-						if(ran(1,10)<=twelveam)
-							increasecost(costmine,costmaxmine,1);
-					recheck();
-					if(Choose>=(cardmine->size())) Choose=cardmine->size();
-					lastchoose=Choose;
-					printground();
-				}
-				sure_to_use=0;
-			}
-			if(sure_to_magic==1)
-			{
-				moveto(10,27);
-				print("确定要切换模式吗？");
-			}
-			if(sure_to_magic==2)
-			{
-				handkind=2;
-				lastchoose=Choose=1;
-				sure_to_magic=0;
 				system("cls");
-				printground(); 
-			}
-			if(sure_to_end==1)
-			{
-				moveto(10,27);
-				print("确定要结束回合吗？");
-			}
-			if(sure_to_end==2)
-				break;	
-		}
-		else if(handkind==2)
-		{
-			if(sure_to_end==1 or sure_to_magic==1) moveto(10,27),print(string(18,' '));
-			if(upc(c) or leftc(c)) Choose--,sure_to_use=0,sure_to_magic=0,sure_to_end=0;
-			if(downc(c) or rightc(c)) Choose++,sure_to_use=0,sure_to_magic=0,sure_to_end=0;
-			if(Choose==0) Choose=simpleskillsmine->size();
-			if(Choose==(simpleskillsmine->size())+1) Choose=1;
-			if(usec(c)) sure_to_use++,sure_to_magic=0,sure_to_end=0;
-			if(surec(c)) sure_to_end++,sure_to_magic=0,sure_to_use=0;
-			if(magicc(c)) sure_to_magic++,sure_to_use=0,sure_to_end=0;
-			if(sure_to_use==2)
-			{
-				moveto(0,1);
-				if((*simpleskillsmine)[Choose-1].mana>*manamine) print("魔法不足无法使用该技能！");
-				else if(visskill[Choose-1]) print("此回合已经使用过该技能！");
+				int g=recv_int2();
+				if(g==3)
+					print("平局\n");
 				else
-				{
-					print(string(24,' '));
-					*manamine-=(*simpleskillsmine)[Choose-1].mana;
-					usemagic((*simpleskillsmine)[Choose-1]);	
-					visskill[Choose-1]=1;	
-					printground();
-				}
-				sure_to_use=0;
+					print("P"+change(g)+"胜利\n");
+				exit(0);
 			}
-			if(sure_to_magic==1)
-			{
-				moveto(10,27);
-				print("确定要切换模式吗？");
-			}
-			if(sure_to_magic==2)
-			{
-				handkind=1;
-				lastchoose=Choose=1;
-				sure_to_magic=0;
-				system("cls");
-				printground(); 
-			}
-			if(sure_to_end==1)
-			{
-				moveto(10,27);
-				print("确定要结束回合吗？");
-			}
-			if(sure_to_end==2)
+			if(whatt=="End")
 				break;	
 		}
 	}
-	ending();
 	turn=3-turn;
-	if(timemode)
-	{
-		if(ran(1,10)<=timrate)
-		{
-			tim++;
-			if(tim==5) tim=1;
-			timrate=0;
-		}
-		else timrate=min(timrate+1,10);
-	}
 	game();
 }
 iv choosesoul()
 {
-	for(int i=1;i<=2;i++)
-	{ 
-		vector<skill> *skills,*simpleskills;
-		string *thesoul;
-		if(i==1) skills=&skills1,simpleskills=&simpleskills1,thesoul=&soul1;
-		if(i==2) skills=&skills2,simpleskills=&simpleskills2,thesoul=&soul2;
+	vector<skill> *skills,*simpleskills;
+	string *thesoul;
+	if(server_mode==1) skills=&skills1,simpleskills=&simpleskills1,thesoul=&soul1;
+	if(server_mode==2) skills=&skills2,simpleskills=&simpleskills2,thesoul=&soul2;
 		
-		system("cls");
-		print("        选择P"+change(i)+"的灵魂特质：");
-		char c='T';
-		int choose=1,sure_to_choose=0;
-		while(1)
-		{
-			for(int j=1;j<=soullong;j++)
-				moveto(4,j),print("  "+change(j)+" "+soullist[j]+" | "+soulexplanation[j]);
-			moveto(4,choose);
-			if(sure_to_choose==0) print("◎");
-			if(sure_to_choose==1) print("●"); 
-			green(change(choose)+" "+soullist[choose]+" | "+soulexplanation[choose]);
+	system("cls");
+	print("        选择P"+change(server_mode)+"的灵魂特质：");
+	char c='T';
+	int choose=1,sure_to_choose=0;
+	while(1)
+	{
+		for(int j=1;j<=soullong;j++)
+			moveto(4,j),print("  "+change(j)+" "+soullist[j]+" | "+soulexplanation[j]);
+		moveto(4,choose);
+		if(sure_to_choose==0) print("◎");
+		if(sure_to_choose==1) print("●"); 
+		green(change(choose)+" "+soullist[choose]+" | "+soulexplanation[choose]);
 			
-			moveto(0,10);REP(5) print(string(75,' ')+"\n");moveto(0,10); 
-			for(int j=0;j<soulskill[choose].size();j++)
-			{
-				string activeword="";
-				if(soulskill[choose][j].active) activeword="("+change(soulskill[choose][j].mana)+"■)";
-				print(change(j+1)+".["+soulskill[choose][j].name+"]"+skillexplanation[soulskill[choose][j].effect]+activeword+"\n");
-			}
-			
-			c=getch();
-			if(upc(c) or leftc(c)) choose--,sure_to_choose=0;
-			if(downc(c) or rightc(c)) choose++,sure_to_choose=0;
-			if(usec(c) or surec(c)) sure_to_choose++;
-			if('1'<=c and c<='6') choose=c-'0';
-			if(sure_to_choose==2)
-				break;
-			if(choose==soullong+1) choose=1;
-			if(choose==0) choose=soullong;
-		}
-		if(choose==soullong) choose=ran(1,soullong-1);
-		*thesoul=soullist[choose];
+		moveto(0,10);REP(5) print(string(75,' ')+"\n");moveto(0,10); 
 		for(int j=0;j<soulskill[choose].size();j++)
-			skills->push_back(soulskill[choose][j]);
-		for(int j=0;j<(skills->size());j++)
-			if((*skills)[j].active)
-				simpleskills->push_back((*skills)[j]);
+		{
+			string activeword="";
+			if(soulskill[choose][j].active) activeword="("+change(soulskill[choose][j].mana)+"■)";
+			print(change(j+1)+".["+soulskill[choose][j].name+"]"+skillexplanation[soulskill[choose][j].effect]+activeword+"\n");
+		}
+			
+		c=getch();
+		if(upc(c) or leftc(c)) choose--,sure_to_choose=0;
+		if(downc(c) or rightc(c)) choose++,sure_to_choose=0;
+		if(usec(c) or surec(c)) sure_to_choose++;
+		if('1'<=c and c<='6') choose=c-'0';
+		if(sure_to_choose==2)
+			break;
+		if(choose==soullong+1) choose=1;
+		if(choose==0) choose=soullong;
+	}
+	if(choose==soullong) choose=ran(1,soullong-1);
+	*thesoul=soullist[choose];
+	for(int j=1;j<=soullong;j++)
+		moveto(4,j),print("  "+change(j)+" "+soullist[j]+" | "+soulexplanation[j]);
+	moveto(0,15);print("你选择了"+(*thesoul));
+	for(int j=0;j<soulskill[choose].size();j++)
+		skills->push_back(soulskill[choose][j]);
+	for(int j=0;j<(skills->size());j++)
+		if((*skills)[j].active)
+			simpleskills->push_back((*skills)[j]);
+	if(server_mode==2)
+	{
+		send_string2(soul2);
+		send_vector_skill(skills2);
+		send_vector_skill(simpleskills2);
+	}
+	if(server_mode==1)
+	{
+		soul2=recv_string2();
+		skills2=recv_vector_skill();
+		simpleskills2=recv_vector_skill();
 	}
 }
 iv init_introduce()
@@ -1101,7 +1333,7 @@ iv option()
 		else
 			if(timemode) red("  时间系统 开");
 			else red("  时间系统 关");
-		moveto(0,3);
+		moveto(0,3);print(string(26,' '));moveto(0,3);
 		if(choose==3)
 		{
 			green("> 游戏模式 "+gamemodename[gamemode]);
@@ -1131,7 +1363,10 @@ iv option()
 				thecardsyst[2]=timemode; 
 			}
 			if(choose==3)
+			{
 				gamemode++;
+				thecardsyst[4]=int(gamemode==3);
+			}
 			if(choose==4)
 			{
 				cardsystem();
@@ -1178,6 +1413,8 @@ iv cardsystem()
 				if(timemode) thecardsyst[2]=1-thecardsyst[2];
 			if(choose==3)
 				thecardsyst[3]=1-thecardsyst[3];
+			if(choose==4)
+				if(gamemode==3) thecardsyst[4]=1-thecardsyst[4];
 		}
 		if(surec(c) or magicc(c)) break;
 		if(choose==0) choose=cardsystlong;
@@ -1205,16 +1442,87 @@ iv title()
 	}
 	if(choose==1)
 	{
-		choosesoul();
-		startgame();
+		if(gamemode==3)
+		{
+			system("cls");
+			wolf();
+			char c='T';
+			while(!surec(c)) c=getch();
+		}
+		init_server();
+		if(server_mode==1)
+		{
+			send_int2(timemode);
+			send_int2(gamemode);
+			for(int i=1;i<=cardsystlong;i++)
+				send_int2(int(thecardsyst[i]));
+		}
+		if(server_mode==2)
+		{
+			timemode=recv_int2();
+			gamemode=recv_int2();
+			for(int i=1;i<=cardsystlong;i++)
+				thecardsyst[i]=bool(recv_int2());
+		}
 	}
 	if(choose==2) option();
 }
+iv init_server()
+{
+	system("cls");
+	server_mode=1;
+	cyan("联网对战\n");
+	char c='T';
+	while(!(usec(c) or surec(c)))
+	{
+		moveto(0,1);
+		red("  创建服务端\n  加入其他游戏");
+		moveto(0,server_mode);
+		if(server_mode==1) green("> 创建服务端");
+		if(server_mode==2) green("> 加入其他游戏");
+		c=getch();
+		if(upc(c) or leftc(c)) server_mode--;
+		if(downc(c) or rightc(c)) server_mode++;
+		if(server_mode==0) server_mode=2;
+		if(server_mode==3) server_mode=1;
+	}
+	moveto(0,3);
+	WSAstart();
+	if(server_mode==1)
+	{
+		char hostname[256]={0},ip[256]={0};
+		gethostname(hostname,sizeof(hostname));
+		HOSTENT* host=gethostbyname(hostname);
+		strcpy(ip,inet_ntoa(*(in_addr*)*host->h_addr_list));
+		printf("你的ip地址是:%s\n",ip);   
+	}
+	if(server_mode==2)
+		printf("input ip:");
+	TCP_initialize(server_mode);
+}
+iv version2_0_0_introduce()
+{
+	print("这里是 V2.0.0 版本的介绍\n\n");
+	print("1.这是某个人趁着 9.13 放假的时间匆忙写下的联机版本，所以有很多细节还需要优化\n");
+	print("2.这个版本应该还存在许多 bug，可以提出，我找个时间一个个修\n");
+	print("3.在对方回合的时候按键盘输入的字符会进入缓存区，所以最好这时不要动键盘（求教清除输入缓存区方法）\n"); 
+	print("4.本地战斗的版本过几天会重新加入\n");
+	print("5.联系 Luogu @时律！\n");
+	print("6.最好用 Dev-C++ 打开，在编译选项里加入 -lwsock32\n");
+	print("7.时律是菜鸡\n");
+	print("8.没了\n");
+	print("9.按任意键继续");
+	getch();
+}
 int main()
 {
-	SetConsoleTitle("ANOTHER-CARD-GAME v1.1.6");
+	SetConsoleTitle("ANOTHER-CARD-GAME v2.0.0");
 	//init_introduce();
 	init();
+	version2_0_0_introduce();
 	title();
+	choosesoul();
+	startgame();
 	game();
 }
+//你需要在编译选项里加入 -lwsock32 才能进行编译 
