@@ -57,6 +57,11 @@ struct card{
 	card(string name_,int cost_,int effect_):
 		name(name_),cost(cost_),effect(effect_){} 
 };
+card thethrowcard(card t)
+{
+	t.cost=-1;
+	return t;
+}
 struct skill{
 	string name;
 	int mana,active,effect;
@@ -106,6 +111,7 @@ int trunk1,trunk2;
 int clocks=0,clocksum=0;
 int tim=0,twelveam=0,timrate=0;
 int turn;
+int server_mode;
 
 string explanation[114];skill theskill[514];
 string skillexplanation[114];
@@ -123,7 +129,7 @@ iv init()
 	srand(time(NULL));
 	mouse(0);
 	
-	cardlong=34;
+	cardlong=35;
 	cardname[1]="惩罚";
 	cardname[2]="附带弃置";
 	cardname[3]="埋伏";
@@ -158,6 +164,7 @@ iv init()
 	cardname[32]="刚躯糖";
 	cardname[33]="苇名十字斩"; 
 	cardname[34]="不死斩";
+	cardname[35]="画地为牢"; 
 	
 	//牌面 
 	explanation[1]="令对手从牌库中抽一张牌";
@@ -194,6 +201,7 @@ iv init()
 	explanation[32]="减少20点躯干条";
 	explanation[33]="（打出此牌后）对方增加 双方手牌数量差*6 的躯干条";
 	explanation[34]="对方增加 (100-对方躯干条)/2 的躯干条";
+	explanation[35]="对方获得一回合的【画地为牢】效果（自己的回合只能主动打出至多两张牌）";
 	
 	theskill[1].set_up("自由意志",40,1,1);
 	theskill[2].set_up("命运指针",70,1,2);
@@ -211,6 +219,9 @@ iv init()
 	theskill[14].set_up("底线",0,0,14);
 	theskill[15].set_up("偿还",0,0,15);
 	theskill[16].set_up("坠落",80,1,16);
+	theskill[17].set_up("庇护",0,0,17);
+	theskill[18].set_up("祈祷",60,1,18); 
+	theskill[19].set_up("觉醒",10,1,19);
 	
 	skillexplanation[1]="将牌堆顶的牌的费用化为0并加入手牌";
 	skillexplanation[2]="将自己的随机一张牌给予对方";
@@ -228,8 +239,11 @@ iv init()
 	skillexplanation[14]="初始时手牌上限-2";
 	skillexplanation[15]="因超过手牌上限而被弃掉的牌50%概率交给对手";
 	skillexplanation[16]="手牌上限-1";
+	skillexplanation[17]="你的回合开始摸牌时如果摸到◆>3的牌则将其弃置"; 
+	skillexplanation[18]="对方随机一张手牌◆+1";
+	skillexplanation[19]="每使用一次费用+10,使用后永久获得1回合【觉醒】buff，然后使用任意技能时有【觉醒】层数*10%返还魔法";
 	
-	soullong=7;
+	soullong=8;
 	soullist[1]="自由";
 	soulskill[1].push_back(theskill[1]);
 	soulskill[1].push_back(theskill[2]);
@@ -238,12 +252,12 @@ iv init()
 	soulskill[2].push_back(theskill[3]);
 	soulskill[2].push_back(theskill[4]);
 	soulskill[2].push_back(theskill[10]);
-	soulexplanation[2]="需要技巧性出牌，尽量发动被动";
+	soulexplanation[2]="需要技巧性出牌，发动被动弃置费用大的牌";
 	soullist[3]="暴戾";
 	soulskill[3].push_back(theskill[5]);
 	soulskill[3].push_back(theskill[6]);
 	soulskill[3].push_back(theskill[13]);
-	soulexplanation[3]="积累费用，稳健进攻";
+	soulexplanation[3]="积累费用，稳健进攻，还可防守";
 	soullist[4]="谔谔";
 	soulskill[4].push_back(theskill[7]);
 	soulskill[4].push_back(theskill[8]);
@@ -252,14 +266,19 @@ iv init()
 	soullist[5]="迷茫";
 	soulskill[5].push_back(theskill[11]);
 	soulskill[5].push_back(theskill[12]);
-	soulexplanation[5]="比较靠运气，能快速积攒费用";
+	soulexplanation[5]="快速积攒费用，同时说不定能摸到好牌";
 	soullist[6]="冷静";
 	soulskill[6].push_back(theskill[14]);
 	soulskill[6].push_back(theskill[15]);
 	soulskill[6].push_back(theskill[16]);
-	soulexplanation[6]="逐渐减少手牌上限";
-	soullist[7]="rand";
-	soulexplanation[7]="？？？";
+	soulexplanation[6]="逐渐降低自己的限度，反击敌人";
+	soullist[7]="虔诚";
+	soulskill[7].push_back(theskill[17]);
+	soulskill[7].push_back(theskill[18]);
+	soulskill[7].push_back(theskill[19]); 
+	soulexplanation[7]="自战斗中觉醒，逐渐强大";
+	soullist[8]="rand";
+	soulexplanation[8]="？？？";
 	
 	speffectexplanation["加边！加边！加边！"]="使用【并查集查询】时此牌将被弃置";
 	speffectexplanation["浪人的恩赐"]="当你拥有恩赐的手牌总数>3时这张牌将被弃置";

@@ -9,14 +9,14 @@ SOCKADDR_IN addrServer,addrClient;
 SOCKET Client;
 WORD w_req;
 WSADATA wsadata;
-const int MAX_BUFF_LEN = 2048;
+const int MAX_BUFF_LEN = 512;
 char buffer[MAX_BUFF_LEN];
 int WSAstart()
 {
     w_req=MAKEWORD(2,2);
 	return WSAStartup(w_req, &wsadata);
 }
-int TCP_initialize(int server_mode)
+int TCP_initialize()
 {
 	closesocket(Client);
     if(server_mode==1)
@@ -276,4 +276,33 @@ void recv_situation()
 	clocks=recv_int2();clocksum=recv_int2();
 	tim=recv_int2();twelveam=recv_int2();timrate=recv_int2();
 	turn=recv_int2();
+}
+void send_a_card(card t)
+{
+	if(server_mode<3)
+	{
+		send_string2("Card");
+		send_card(t);
+	}
+}
+void send_a_skill(skill t)
+{
+	if(server_mode<3)
+	{
+		send_string2("Skill");
+		send_skill(t);
+	}
+}
+void send_a_situation()
+{
+	if(server_mode<3)
+	{
+		send_string2("Situation");
+		send_situation();
+	}
+}
+void send_a_shake()
+{
+	if(server_mode<3)
+		send_string2("Shake");
 }
