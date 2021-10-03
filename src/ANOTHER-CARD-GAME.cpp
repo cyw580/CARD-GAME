@@ -840,9 +840,23 @@ iv usecard(card t,int pos)
 	if(t.effect==31)
 	{
 		if(turn==1 and trunk2==100)
-			win_screen(2);
-		if(turn==2 and trunk1==100)
+		{
+			if(server_mode<3)
+			{
+				send_string2("Win");
+				send_int2(1);	
+			}
 			win_screen(1);
+		}
+		if(turn==2 and trunk1==100)
+		{
+			if(server_mode<3)
+			{
+				send_string2("Win");
+				send_int2(2);	
+			}
+			win_screen(2);
+		}
 	}
 	if(t.effect==32)
 	{
