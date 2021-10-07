@@ -1703,6 +1703,7 @@ iv maingame()
 }
 int main()
 {
+	system("mode con cols=130 lines=30");
 	SetConsoleTitle("ANOTHER-CARD-GAME v2.0.1");
 	init();
 	maingame();
