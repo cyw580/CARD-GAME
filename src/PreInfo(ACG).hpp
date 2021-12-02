@@ -129,7 +129,7 @@ iv init()
 	srand(time(NULL));
 	mouse(0);
 	
-	cardlong=35;
+	cardlong=37;
 	cardname[1]="惩罚";
 	cardname[2]="附带弃置";
 	cardname[3]="埋伏";
@@ -162,9 +162,14 @@ iv init()
 	cardname[30]="埋伏II";
 	cardname[31]="忍杀";
 	cardname[32]="刚躯糖";
-	cardname[33]="苇名十字斩"; 
-	cardname[34]="不死斩";
-	cardname[35]="画地为牢"; 
+	cardname[33]="绝技·苇名十字斩"; 
+	cardname[34]="绝技·不死斩";
+	cardname[35]="画地为牢";
+	cardname[36]="绝技·巨型忍者突刺";
+	cardname[37]="苇名无心流";
+	cardname[38]="秘传·飞渡漩涡云";
+	cardname[39]="秘传·不死斩";
+	cardname[40]="秘传·巨型忍者落杀";
 	
 	//牌面 
 	explanation[1]="令对手从牌库中抽一张牌";
@@ -198,10 +203,15 @@ iv init()
 	explanation[29]="50%向对方手牌里加入一张【俄罗斯转盘】，否则清空自己的■";
 	explanation[30]="把牌堆顶的牌◆+2";
 	explanation[31]="在对方失衡时直接击杀对方，否则无效果";
-	explanation[32]="减少20点躯干条";
+	explanation[32]="减少30点躯干条，获得2回合【刚躯】buff：因得牌增加的躯干值减少三分之一";
 	explanation[33]="（打出此牌后）对方增加 双方手牌数量差*6 的躯干条";
 	explanation[34]="对方增加 (100-对方躯干条)/2 的躯干条";
-	explanation[35]="对方获得一回合的【画地为牢】效果（自己的回合只能主动打出至多两张牌）";
+	explanation[35]="对方获得1回合【画地为牢】buff：自己的回合只能主动打出至多两张牌";
+	explanation[36]="将牌堆顶的牌费用+1并令对方摸一张牌";
+	explanation[37]="将你手牌中的所有绝技升级为相应的秘传";
+	explanation[38]="（打出此牌后）对方增加 双方手牌数量差*12 的躯干条";
+	explanation[39]="对方增加 (100-对方躯干条)*2/3 的躯干条";
+	explanation[40]="将牌堆顶两张牌费用+1并令对方摸两张牌";
 	
 	theskill[1].set_up("自由意志",40,1,1);
 	theskill[2].set_up("命运指针",70,1,2);
@@ -222,12 +232,14 @@ iv init()
 	theskill[17].set_up("庇护",0,0,17);
 	theskill[18].set_up("祈祷",60,1,18); 
 	theskill[19].set_up("觉醒",10,1,19);
+	theskill[20].set_up("缥缈",0,0,20);
+	theskill[21].set_up("沉睡",50,1,21);
 	
 	skillexplanation[1]="将牌堆顶的牌的费用化为0并加入手牌";
 	skillexplanation[2]="将自己的随机一张牌给予对方";
 	skillexplanation[3]="在回合末时若有且仅有一张费用最大的牌则将其弃置";
 	skillexplanation[4]="将双方的手牌混在一起随机重组（手牌数不变）";
-	skillexplanation[5]="回合开始时不会抽到◆为偶数的牌"; 
+	skillexplanation[5]="回合开始时抽到◆为偶数的牌则弃置重摸"; 
 	skillexplanation[6]="+1◆";
 	skillexplanation[7]="回合初60%你的一张无此效果的手牌得到【加边！加边！加边！】";
 	skillexplanation[8]="回合初你没有带【加边！加边！加边！】的牌则+1◆";
@@ -242,8 +254,10 @@ iv init()
 	skillexplanation[17]="你的回合开始摸牌时如果摸到◆>3的牌则将其弃置"; 
 	skillexplanation[18]="对方随机一张手牌◆+1";
 	skillexplanation[19]="每使用一次费用+10,使用后永久获得1回合【觉醒】buff，然后使用任意技能时有【觉醒】层数*10%返还魔法";
+	skillexplanation[20]="回合初的摸牌变为从牌堆顶摸一张牌给对手再从对手手牌中摸一张牌";
+	skillexplanation[21]="使对方获得1回合【沉睡】buff：打出手牌后有35%概率结束回合";
 	
-	soullong=8;
+	soullong=9;
 	soullist[1]="自由";
 	soulskill[1].push_back(theskill[1]);
 	soulskill[1].push_back(theskill[2]);
@@ -277,8 +291,12 @@ iv init()
 	soulskill[7].push_back(theskill[18]);
 	soulskill[7].push_back(theskill[19]); 
 	soulexplanation[7]="自战斗中觉醒，逐渐强大";
-	soullist[8]="rand";
-	soulexplanation[8]="？？？";
+	soullist[8]="幻想";
+	soulskill[8].push_back(theskill[20]);
+	soulskill[8].push_back(theskill[21]);
+	soulexplanation[8]="在缥缈的虚无中战斗着";
+	soullist[9]="rand";
+	soulexplanation[9]="？？？";
 	
 	speffectexplanation["加边！加边！加边！"]="使用【并查集查询】时此牌将被弃置";
 	speffectexplanation["浪人的恩赐"]="当你拥有恩赐的手牌总数>3时这张牌将被弃置";
@@ -318,7 +336,7 @@ void wolf()
 	printf("请仔细阅读游戏规则:\n\n");
 	printf("1.只狼模式下双方存在满格为100的躯干条，躯干条充满时将失去平衡\n\n");
 	printf("2.在对方失衡时可以用【忍杀】直接击杀对方获得胜利\n\n");
-	printf("3.每得到一张手牌则增加 手牌费用*8 的躯干条\n\n");
+	printf("3.每得到一张手牌则增加 手牌费用*6 的躯干条\n\n");
 	printf("4.每回合初（摸牌前）减少 20*(手牌上限-手牌数量)/手牌数量的躯干条\n\n");
 	printf("5.只狼套牌里存在一些牌可以对躯干条造成影响\n\n");
 	printf("6.如果手牌打完不会直接胜利，而是再摸一张牌并且对方增加 20 躯干条\n\n");

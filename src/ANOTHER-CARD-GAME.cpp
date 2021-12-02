@@ -9,7 +9,7 @@
 #define REP(x) for(int i=1;i<=x;i++)
 using namespace std;
 using namespace __gnu_pbds;
-string version="2.0.1";
+string version="2.0.2";
 iv printhandcard(int choose);
 iv title();
 iv cardsystem();
@@ -96,10 +96,12 @@ iv dealcard() //·¢ÅÆ
 	}
 	if(thecardsyst[4])
 	{
-		REP(10) addcard(1,card("ÈÌÉ±",1,31));
-		REP(8) addcard(1,card("¸ÕÇûÌÇ",2,32));
-		REP(5) addcard(1,card("Î­ÃûÊ®×ÖÕ¶",2,33));
-		REP(3) addcard(1,card("²»ËÀÕ¶",2,34));
+		REP(13) addcard(1,card("ÈÌÉ±",1,31));
+		REP(9) addcard(1,card("¸ÕÇûÌÇ",2,32));
+		REP(5) addcard(1,card("¾ø¼¼¡¤Î­ÃûÊ®×ÖÕ¶",2,33));
+		REP(5) addcard(1,card("¾ø¼¼¡¤²»ËÀÕ¶",2,34));
+		REP(5) addcard(1,card("¾ø¼¼¡¤¾ÞÐÍÈÌÕßÍ»´Ì",2,36));
+		REP(4) addcard(1,card("Î­ÃûÎÞÐÄÁ÷",1,37));
 	}
 }
 card drawcard() //³éÅÆ 
@@ -195,6 +197,8 @@ iv printground()
 		if(buff1[i].name=="·ßÅ­") red("·ßÅ­ "+change(buff1[i].tim));
 		if(buff1[i].name=="¾õÐÑ") yellow("¾õÐÑ "+change(buff1[i].tim));
 		if(buff1[i].name=="»­µØÎªÀÎ") grey("»­µØÎªÀÎ "+change(buff1[i].tim));
+		if(buff1[i].name=="³ÁË¯") blue("³ÁË¯ "+change(buff1[i].tim));
+		if(buff1[i].name=="¸ÕÇû") yellow("¸ÕÇû "+change(buff1[i].tim));
 	}
 
 	moveto(6,6);print("#2");
@@ -231,6 +235,8 @@ iv printground()
 		if(buff2[i].name=="·ßÅ­") red("·ßÅ­ "+change(buff2[i].tim));
 		if(buff2[i].name=="¾õÐÑ") yellow("¾õÐÑ "+change(buff2[i].tim));
 		if(buff2[i].name=="»­µØÎªÀÎ") grey("»­µØÎªÀÎ "+change(buff2[i].tim));
+		if(buff2[i].name=="³ÁË¯") blue("³ÁË¯ "+change(buff2[i].tim));
+		if(buff2[i].name=="¸ÕÇû") yellow("¸ÕÇû "+change(buff2[i].tim));
 	}
 	
 	moveto(0,11);print("P"+change(turn));
@@ -549,9 +555,15 @@ iv addhandcard(vector<card> *t,card t2,int *handcardmax,vector<buff> *thebuff)
 	else if(gamemode==3)
 	{
 		if(t==&handcard1)
-			trunk1+=t2.cost*8;
+		{
+			if(foundbuff(&buff1,"¸ÕÇû")!=-1) trunk1+=t2.cost*4;
+			else trunk1+=t2.cost*6;
+		}
 		else
-			trunk2+=t2.cost*8;
+		{
+			if(foundbuff(&buff2,"¸ÕÇû")!=-1) trunk2+=t2.cost*4;
+			else trunk2+=t2.cost*6;
+		}
 		if(trunk1>100) trunk1=100;
 		if(trunk2>100) trunk2=100;
 	}
@@ -665,7 +677,7 @@ iv usecard(card t,int pos)
 	if(t.effect==12)
 	{
 		int s=ran(1,cardlong);
-		while(s==12 or (15<=s and s<=17 and !thecardsyst[2]) or (20<=s and s<=28 and !thecardsyst[3]) or (31<=s and s<=34 and !thecardsyst[4])) s=ran(1,cardlong);
+		while(s==12 or (15<=s and s<=17 and !thecardsyst[2]) or (20<=s and s<=28 and !thecardsyst[3]) or (((31<=s and s<=34) or (36<=s and s<=40)) and !thecardsyst[4])) s=ran(1,cardlong);
 		usecard(card(cardname[s],0,s),114514);
 		moveto(0,1);print("ÄãÊ¹ÓÃÁË¡¾"+cardname[s]+"¡¿");
 	}
@@ -829,7 +841,10 @@ iv usecard(card t,int pos)
 	if(t.effect==29)
 	{
 		if(prob==1)
-			addhandcard(cardhis,card("¶íÂÞË¹×ªÅÌ",2,29),handcardmaxhis,buffhis);
+		{
+			addhandcard(cardhis,recardheap[recardheap.size()-1],handcardmaxhis,buffhis);
+			recardheap.pop_back();
+		}
 		else
 			increasemana(manamine,manamaxmine,-114514);
 	}
@@ -860,8 +875,16 @@ iv usecard(card t,int pos)
 	}
 	if(t.effect==32)
 	{
-		if(turn==1) trunk1=max(trunk1-20,0);
-		if(turn==2) trunk2=max(trunk2-20,0);
+		if(turn==1) trunk1=max(trunk1-30,0);
+		if(turn==2) trunk2=max(trunk2-30,0);
+		int del=0;
+		if(foundbuff(buffmine,"¸ÕÇû")==-1)
+		{
+			buff s;s.set_up("¸ÕÇû",0);
+			buffmine->push_back(s);
+			del=1;
+		}
+		(*buffmine)[foundbuff(buffmine,"¸ÕÇû")].tim+=2+del;
 	}
 	if(t.effect==33)
 	{
@@ -885,6 +908,41 @@ iv usecard(card t,int pos)
 			del=1;
 		}
 		(*buffhis)[foundbuff(buffhis,"»­µØÎªÀÎ")].tim+=1+del;
+	}
+	if(t.effect==36)
+	{
+		card s=drawcard();s.cost++;
+		addhandcard(cardhis,s,handcardmaxhis,&buffclear);	
+	}
+	if(t.effect==37)
+	{
+		for(int i=0;i<(cardmine->size());i++)
+		{
+			if((*cardmine)[i].effect==33)
+				(*cardmine)[i].effect=38,(*cardmine)[i].name=cardname[38];
+			if((*cardmine)[i].effect==34)
+				(*cardmine)[i].effect=39,(*cardmine)[i].name=cardname[39];
+			if((*cardmine)[i].effect==36)
+				(*cardmine)[i].effect=40,(*cardmine)[i].name=cardname[40];
+		}
+	}
+	if(t.effect==38)
+	{
+		int yjjakioi=handcard1.size()-handcard2.size();
+		if(yjjakioi<0) yjjakioi=-yjjakioi;
+		if(turn==1) trunk2=min(trunk2+12*yjjakioi,100);
+		if(turn==2) trunk1=min(trunk1+12*yjjakioi,100);
+	}
+	if(t.effect==39)
+	{
+		if(turn==1) trunk2+=(100-trunk2)*2/3;
+		if(turn==2) trunk1+=(100-trunk1)*2/3;
+	}
+	if(t.effect==40)
+	{
+		card s=drawcard();s.cost++;
+		addhandcard(cardhis,s,handcardmaxhis,&buffclear);	
+		addhandcard(cardhis,drawcard(),handcardmaxhis,&buffclear);	
 	}
 }
 iv usemagic(skill t)
@@ -970,12 +1028,21 @@ iv usemagic(skill t)
 		}
 		(*buffmine)[foundbuff(buffmine,"¾õÐÑ")].tim++;
 	}
+	if(t.effect==21)
+	{
+		if(foundbuff(buffhis,"³ÁË¯")==-1)
+		{
+			buff s;s.set_up("³ÁË¯",1);
+			buffhis->push_back(s);
+		}
+		(*buffhis)[foundbuff(buffhis,"³ÁË¯")].tim++;
+	}
 }
 iv drawturnstartcard()
 {
 	bool theflag=0;
 	if((*soulmine=="±©ìå" or *soulmine=="ò¯³Ï") and cardmine->size()==*handcardmaxmine) theflag=1;
-	addhandcard(cardmine,drawcard(),handcardmaxmine,&buffclear);
+	if(*soulmine!="»ÃÏë") addhandcard(cardmine,drawcard(),handcardmaxmine,&buffclear);
 	if(*soulmine=="ò¯³Ï" and !theflag and (*cardmine)[(cardmine->size())-1].cost>3)
 	{
 		send_a_skill(theskill[17]);
@@ -988,6 +1055,15 @@ iv drawturnstartcard()
 			throwcard(cardmine,cardmine->size());
 			addhandcard(cardmine,drawcard(),handcardmaxmine,&buffclear);
 		}
+	if(*soulmine=="»ÃÏë")
+	{
+		send_a_skill(theskill[20]);
+		addhandcard(cardhis,drawcard(),handcardmaxhis,buffhis);
+		int cnakioi=ran(1,cardhis->size());
+		addhandcard(cardmine,(*cardhis)[cnakioi-1],handcardmaxmine,buffmine);
+		throwcard(cardhis,cnakioi);
+		recardheap.pop_back();
+	} 
 }
 iv beginning()
 {
@@ -1229,6 +1305,8 @@ iv game()
 						printground();
 						send_a_situation();
 						if(foundbuff(buffmine,"»­µØÎªÀÎ")!=-1) prisonsum++;
+						if(foundbuff(buffmine,"³ÁË¯")!=-1 and ran(1,20)<=7) 
+							break;
 					}
 					sure_to_use=0;
 				}
@@ -1648,6 +1726,11 @@ iv init_server()
 			if(downc(c) or rightc(c)) server_mode++;
 			if(server_mode==0) server_mode=3;
 			if(server_mode==4) server_mode=1;
+			if(magicc(c))
+			{
+				title();
+				return;
+			} 
 		}
 		if(server_mode==3) break;
 		moveto(0,4);
@@ -1704,7 +1787,7 @@ iv maingame()
 int main()
 {
 	system("mode con cols=130 lines=30");
-	SetConsoleTitle("ANOTHER-CARD-GAME v2.0.1");
+	SetConsoleTitle("ANOTHER-CARD-GAME v2.0.2");
 	init();
 	maingame();
 }
