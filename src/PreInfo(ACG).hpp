@@ -107,7 +107,7 @@ string soul1,soul2;
 int cost1,cost2,costmax1,costmax2;
 int mana1,mana2,manamax1,manamax2;
 int handcardmax1,handcardmax2;
-int trunk1,trunk2;
+int trunk1,trunk2,sekiroblood1,sekiroblood2,bloodsure1,bloodsure2;
 int clocks=0,clocksum=0;
 int tim=0,twelveam=0,timrate=0;
 int turn;
@@ -129,7 +129,7 @@ iv init()
 	srand(time(NULL));
 	mouse(0);
 	
-	cardlong=37;
+	cardlong=49;
 	cardname[1]="惩罚";
 	cardname[2]="附带弃置";
 	cardname[3]="埋伏";
@@ -170,9 +170,18 @@ iv init()
 	cardname[38]="秘传·飞渡漩涡云";
 	cardname[39]="秘传·不死斩";
 	cardname[40]="秘传·巨型忍者落杀";
+	cardname[41]="巴之雷";
+	cardname[42]="雷电奉还";
+	cardname[43]="秘传·樱舞"; 
+	cardname[44]="绝技·飞渡浮舟";
+	cardname[45]="秘传·一心";
+	cardname[46]="龙胤露滴";
+	cardname[47]="一字斩";
+	cardname[48]="一字斩·二连";
+	cardname[49]="秘传·龙闪";
 	
 	//牌面 
-	explanation[1]="令对手从牌库中抽一张牌";
+	explanation[1]="令对手从牌堆顶摸一张牌";
 	explanation[2]="（打出此牌后）随机弃掉自己手牌中另一张牌";
 	explanation[3]="向牌堆顶加入一张【阻碍】";
 	explanation[4]="+20■";
@@ -203,15 +212,24 @@ iv init()
 	explanation[29]="50%向对方手牌里加入一张【俄罗斯转盘】，否则清空自己的■";
 	explanation[30]="把牌堆顶的牌◆+2";
 	explanation[31]="在对方失衡时直接击杀对方，否则无效果";
-	explanation[32]="减少30点躯干条，获得2回合【刚躯】buff：因得牌增加的躯干值减少三分之一";
-	explanation[33]="（打出此牌后）对方增加 双方手牌数量差*6 的躯干条";
-	explanation[34]="对方增加 (100-对方躯干条)/2 的躯干条";
+	explanation[32]="减少30点躯干值，获得2回合【刚躯】buff：因得牌增加的躯干值减少三分之一";
+	explanation[33]="（打出此牌后）对方增加 双方手牌数量差*6 的躯干值";
+	explanation[34]="对方增加 (100-对方躯干值)/2 的躯干值";
 	explanation[35]="对方获得1回合【画地为牢】buff：自己的回合只能主动打出至多两张牌";
 	explanation[36]="将牌堆顶的牌费用+1并令对方摸一张牌";
 	explanation[37]="将你手牌中的所有绝技升级为相应的秘传";
-	explanation[38]="（打出此牌后）对方增加 双方手牌数量差*12 的躯干条";
-	explanation[39]="对方增加 (100-对方躯干条)*2/3 的躯干条";
-	explanation[40]="将牌堆顶两张牌费用+1并令对方摸两张牌";
+	explanation[38]="获得9层【飞渡漩涡云】buff：出牌恢复5点躯干值，且对手增加5点躯干值";
+	explanation[39]="对方增加 (100-对方躯干值)*2/3 的躯干值";
+	explanation[40]="将牌堆顶的牌费用+1并令对方摸两张牌";
+	explanation[41]="使对方获得【雷电】buff：回合结束时若有【雷电】buff则其消失并摸两张牌";
+	explanation[42]="若自己有【雷电】buff，将其传递给对手";
+	explanation[43]="令对手从牌堆顶摸一张牌同时施展【雷电奉还】";
+	explanation[44]="获得5层【飞渡浮舟】buff：出牌恢复5点躯干值（每出一张消耗一层）";
+	explanation[45]="（打出此牌后）若对手手牌数量少于自己，则令其摸双方手牌差张牌";
+	explanation[46]="解锁自己的起死回生之力";
+	explanation[47]="对方增加 10 点躯干值，自己恢复 5 点躯干值";
+	explanation[48]="对方增加 15 点躯干值，自己恢复 10 点躯干值";
+	explanation[49]="削减对方 50 点魔法，多余的点数等量增加至对方的躯干值";
 	
 	theskill[1].set_up("自由意志",40,1,1);
 	theskill[2].set_up("命运指针",70,1,2);
@@ -250,7 +268,7 @@ iv init()
 	skillexplanation[13]="获得2回合【愤怒】buff：因对方手牌效果获得的手牌被弃置";
 	skillexplanation[14]="初始时手牌上限-2";
 	skillexplanation[15]="因超过手牌上限而被弃掉的牌50%概率交给对手";
-	skillexplanation[16]="手牌上限-1";
+	skillexplanation[16]="手牌上限-1（最低为3，若已为3效果转为◆+2）";
 	skillexplanation[17]="你的回合开始摸牌时如果摸到◆>3的牌则将其弃置"; 
 	skillexplanation[18]="对方随机一张手牌◆+1";
 	skillexplanation[19]="每使用一次费用+10,使用后永久获得1回合【觉醒】buff，然后使用任意技能时有【觉醒】层数*10%返还魔法";
@@ -314,7 +332,7 @@ iv init()
 	cardsyst[3]="恩赐套牌";
 	cardsyst[4]="只狼套牌";
 	
-	cardsystexplanation[1]="最为基础的牌型，不可关闭";
+	cardsystexplanation[1]="最为基础的牌型";
 	cardsystexplanation[2]="需要打开时间模式才能打开";
 	cardsystexplanation[3]="来自 CARD-GAME 各职业人物的恩赐";
 	cardsystexplanation[4]="需要进入 娱乐模式：只狼 才可打开";
@@ -328,19 +346,21 @@ iv init()
 	
 	gamemodeexplanation[1]="最经典的游戏模式";
 	gamemodeexplanation[2]="每回合开局多摸1张牌，在20回合后手牌数量少的人获胜";
-	gamemodeexplanation[3]="每得到一张手牌便增加躯干条，躯干条充满将被对方忍杀";
+	gamemodeexplanation[3]="每得到一张手牌便增加躯干值，躯干值充满将被对方忍杀";
 }
 
 void wolf()
 {
 	printf("请仔细阅读游戏规则:\n\n");
-	printf("1.只狼模式下双方存在满格为100的躯干条，躯干条充满时将失去平衡\n\n");
-	printf("2.在对方失衡时可以用【忍杀】直接击杀对方获得胜利\n\n");
-	printf("3.每得到一张手牌则增加 手牌费用*6 的躯干条\n\n");
-	printf("4.每回合初（摸牌前）减少 20*(手牌上限-手牌数量)/手牌数量的躯干条\n\n");
-	printf("5.只狼套牌里存在一些牌可以对躯干条造成影响\n\n");
-	printf("6.如果手牌打完不会直接胜利，而是再摸一张牌并且对方增加 20 躯干条\n\n");
-	printf("7.按下空格或者Enter继续");
+	printf("1.只狼模式下双方存在满格为100的躯干值，躯干值充满时将失去平衡\n\n");
+	printf("2.每得到一张手牌则增加 手牌费用*6 的躯干值\n\n");
+	printf("3.每回合初（摸牌前）减少 20*(手牌上限-手牌数量)/手牌数量的躯干值\n\n");
+	printf("4.只狼套牌里存在一些牌可以对躯干值造成影响\n\n");
+	printf("5.如果手牌打完不会直接胜利，而是再摸一张牌并且对方增加 20 躯干值\n\n");
+	printf("6.当对方失衡时可使用【忍杀】击杀对方\n  若此时对方拥有未被封印（呈现红色）的起死回生之力将复活并且躯干值回到0，同时起死回生之力少去一点被封印（呈现灰色）");
+	printf("\n  用【忍杀】击杀对方可以回复自己的 20 点躯干值并解锁自己的起死回生之力\n\n");
+	printf("7.回合结束时若手牌数等于手牌上限则增加 10 点躯干值\n\n");
+	printf("8.按下空格或者Enter继续");
 }
 
 //From PreInfo.h

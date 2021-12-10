@@ -256,7 +256,7 @@ void send_situation()
 	send_int2(cost1);send_int2(cost2);send_int2(costmax1);send_int2(costmax2);
 	send_int2(mana1);send_int2(mana2);send_int2(manamax1);send_int2(manamax2);
 	send_int2(handcardmax1);send_int2(handcardmax2);
-	send_int2(trunk1);send_int2(trunk2);
+	send_int2(trunk1);send_int2(trunk2);send_int2(sekiroblood1);send_int2(sekiroblood2);send_int2(bloodsure1);send_int2(bloodsure2);
 	send_int2(clocks);send_int2(clocksum);
 	send_int2(tim);send_int2(twelveam);send_int2(timrate);
 	send_int2(turn);
@@ -272,7 +272,7 @@ void recv_situation()
 	cost1=recv_int2();cost2=recv_int2();costmax1=recv_int2();costmax2=recv_int2();
 	mana1=recv_int2();mana2=recv_int2();manamax1=recv_int2();manamax2=recv_int2();
 	handcardmax1=recv_int2();handcardmax2=recv_int2();
-	trunk1=recv_int2();trunk2=recv_int2();
+	trunk1=recv_int2();trunk2=recv_int2();sekiroblood1=recv_int2();sekiroblood2=recv_int2();bloodsure1=recv_int2();bloodsure2=recv_int2();
 	clocks=recv_int2();clocksum=recv_int2();
 	tim=recv_int2();twelveam=recv_int2();timrate=recv_int2();
 	turn=recv_int2();

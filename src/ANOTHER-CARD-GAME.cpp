@@ -9,7 +9,7 @@
 #define REP(x) for(int i=1;i<=x;i++)
 using namespace std;
 using namespace __gnu_pbds;
-string version="2.0.2";
+string version="2.0.3";
 iv printhandcard(int choose);
 iv title();
 iv cardsystem();
@@ -56,26 +56,29 @@ iv addcard(int kind,card t) //ÍùÅÆ¶ÑÀï¼ÓÅÆ
 iv dealcard() //·¢ÅÆ
 {
 	cardheap.clear();
-	REP(21) addcard(1,card("³Í·£",1,1));
-	REP(6) addcard(1,card("¸½´øÆúÖÃ",2,2));
-	REP(4) addcard(1,card("Âñ·ü",1,3));
-	REP(5) addcard(1,card("Î¢Ð¡·¨Á¦",1,4));
-	REP(4) addcard(1,card("ºÏ×÷¹²Ó®",1,5)); 
-	REP(5) addcard(1,card("ÖÐµÈ·¨Á¦",2,6));
-	REP(5) addcard(1,card("ÒâÖ¾´Ý»Ù",2,7));
-	REP(7) addcard(1,card("ÌìµÀÂÖ»Ø",1,8));
-	REP(3) addcard(1,card("ÖÕ¼«³Í½ä",2,9));
-	REP(4) addcard(1,card("Ä§»Ã°ÑÏ·",1,10));
-	REP(5) addcard(1,card("¿É³Ö¾Ã»¯",1,11));
-	REP(3) addcard(1,card("1919810",1,12));
-	REP(9) addcard(1,card("Ò»ÐÄÍ¬Ìå",2,13));
-	REP(4) addcard(1,card("ÍòÐÄÍ¬Ìå",1,14));
-	REP(4) addcard(1,card("¹«Æ½¾ºÕù",2,18));
-	REP(5) addcard(1,card("±ä±¾¼ÓÀ÷",2,19));
-	REP(3) addcard(1,card("¶íÂÞË¹×ªÅÌ",2,29));
-	REP(2) addcard(1,card("Âñ·üII",3,30));
-	REP(4) addcard(1,card("»­µØÎªÀÎ",1,35));
-	addcard(1,card("×è°­",3,0));
+	if(thecardsyst[1])
+	{
+		REP(21) addcard(1,card("³Í·£",1,1));
+		REP(6) addcard(1,card("¸½´øÆúÖÃ",2,2));
+		REP(4) addcard(1,card("Âñ·ü",1,3));
+		REP(5) addcard(1,card("Î¢Ð¡·¨Á¦",1,4));
+		REP(4) addcard(1,card("ºÏ×÷¹²Ó®",1,5)); 
+		REP(5) addcard(1,card("ÖÐµÈ·¨Á¦",2,6));
+		REP(5) addcard(1,card("ÒâÖ¾´Ý»Ù",2,7));
+		REP(7) addcard(1,card("ÌìµÀÂÖ»Ø",1,8));
+		REP(3) addcard(1,card("ÖÕ¼«³Í½ä",2,9));
+		REP(4) addcard(1,card("Ä§»Ã°ÑÏ·",1,10));
+		REP(5) addcard(1,card("¿É³Ö¾Ã»¯",1,11));
+		REP(3) addcard(1,card("1919810",1,12));
+		REP(9) addcard(1,card("Ò»ÐÄÍ¬Ìå",2,13));
+		REP(4) addcard(1,card("ÍòÐÄÍ¬Ìå",1,14));
+		REP(4) addcard(1,card("¹«Æ½¾ºÕù",2,18));
+		REP(5) addcard(1,card("±ä±¾¼ÓÀ÷",2,19));
+		REP(3) addcard(1,card("¶íÂÞË¹×ªÅÌ",2,29));
+		REP(2) addcard(1,card("Âñ·üII",3,30));
+		REP(4) addcard(1,card("»­µØÎªÀÎ",1,35));
+		addcard(1,card("×è°­",3,0));	
+	}
 	if(thecardsyst[2])
 	{
 		REP(6) addcard(1,card("ÔÞÃÀÌ«Ñô",2,15));
@@ -84,24 +87,32 @@ iv dealcard() //·¢ÅÆ
 	}
 	if(thecardsyst[3])
 	{
-		REP(3) addcard(1,card("ÀËÈËµÄ¶÷´Í",1,20));
-		REP(3) addcard(1,card("ÊõÊ¿µÄ¶÷´Í",1,21));
-		REP(3) addcard(1,card("·¨Ê¦µÄ¶÷´Í",2,22));
-		REP(4) addcard(1,card("Õ½Ê¿µÄ¶÷´Í",2,23));
-		REP(5) addcard(1,card("µØ¾«µÄ¶÷´Í",1,24));
-		REP(3) addcard(1,card("¶ñÄ§µÄ¶÷´Í",2,25));
-		REP(3) addcard(1,card("ÄÁÊ¦µÄ¶÷´Í",1,26));
-		REP(2) addcard(1,card("ÓãÈËµÄ¶÷´Í",1,27));	
-		REP(2) addcard(1,card("ËæÔµµÄ¶÷´Í",1,28));	
+		REP(2) addcard(1,card("ÀËÈËµÄ¶÷´Í",1,20));
+		REP(2) addcard(1,card("ÊõÊ¿µÄ¶÷´Í",1,21));
+		REP(2) addcard(1,card("·¨Ê¦µÄ¶÷´Í",2,22));
+		REP(3) addcard(1,card("Õ½Ê¿µÄ¶÷´Í",2,23));
+		REP(3) addcard(1,card("µØ¾«µÄ¶÷´Í",1,24));
+		REP(2) addcard(1,card("¶ñÄ§µÄ¶÷´Í",2,25));
+		REP(2) addcard(1,card("ÄÁÊ¦µÄ¶÷´Í",1,26));
+		REP(1) addcard(1,card("ÓãÈËµÄ¶÷´Í",1,27));	
+		REP(1) addcard(1,card("ËæÔµµÄ¶÷´Í",1,28));	
 	}
 	if(thecardsyst[4])
 	{
-		REP(13) addcard(1,card("ÈÌÉ±",1,31));
-		REP(9) addcard(1,card("¸ÕÇûÌÇ",2,32));
+		REP(9) addcard(1,card("ÈÌÉ±",1,31));
+		REP(6) addcard(1,card("¸ÕÇûÌÇ",2,32));
 		REP(5) addcard(1,card("¾ø¼¼¡¤Î­ÃûÊ®×ÖÕ¶",2,33));
 		REP(5) addcard(1,card("¾ø¼¼¡¤²»ËÀÕ¶",2,34));
 		REP(5) addcard(1,card("¾ø¼¼¡¤¾ÞÐÍÈÌÕßÍ»´Ì",2,36));
 		REP(4) addcard(1,card("Î­ÃûÎÞÐÄÁ÷",1,37));
+		REP(3) addcard(1,card("°ÍÖ®À×",1,41));
+		REP(3) addcard(1,card("À×µç·î»¹",1,42));
+		REP(2) addcard(1,card("ÃØ´«¡¤Ó£Îè",1,43));
+		REP(3) addcard(1,card("¾ø¼¼¡¤·É¶É¸¡ÖÛ",1,44));
+		addcard(1,card("ÁúØ·Â¶µÎ",1,46));
+		REP(2) addcard(1,card("Ò»×ÖÕ¶",1,47));
+		REP(2) addcard(1,card("Ò»×ÖÕ¶¡¤¶þÁ¬",1,48));
+		REP(2) addcard(1,card("ÃØ´«¡¤ÁúÉÁ",2,49));
 	}
 }
 card drawcard() //³éÅÆ 
@@ -131,7 +142,7 @@ iv startgame() //¿ªÊ¼ÓÎÏ·
 		REP(4) addhandcard(&handcard2,drawcard(),&handcardmax2,&buff2);
 		if(soul1=="»ìãç") addhandcard(&handcard1,drawcard(),&handcardmax1,&buff1);
 		if(soul2=="»ìãç") addhandcard(&handcard2,drawcard(),&handcardmax2,&buff2);
-		trunk1=trunk2=0;	
+		trunk1=trunk2=0;sekiroblood1=sekiroblood2=3;bloodsure1=bloodsure2=1;
 		if(server_mode==1) send_situation();
 	}
 	if(server_mode==2)
@@ -176,6 +187,9 @@ iv printground()
 	moveto(14,4);print(change(handcard1.size())+"/"+change(handcardmax1));
 	if(gamemode==3)
 	{
+		moveto(40,2);print("            ");moveto(40,2);
+		if(bloodsure1==1) REP(sekiroblood1) red("¡ñ");
+		else REP(sekiroblood1) grey("¡ñ");
 		moveto(6,4);print("       ");
 		moveto(6,4);
 		if(trunk1==100) red("Ê§ºâ");else yellow(change(trunk1)+"/100");	
@@ -186,7 +200,7 @@ iv printground()
 		if(trunk1>=90) moveto(42,3),red("¡ö"),moveto(76,3),red("¡ö");
 		if(trunk1>=100) moveto(40,3),red("¡ö"),moveto(78,3),red("¡ö");
 	}
-	moveto(24,4);print(string(70,' '));moveto(24,4);
+	moveto(24,4);print(string(100,' '));moveto(24,4);
 	for(int i=0;i<buff1.size();i++)
 	{
 		if(i) print(" | ");
@@ -199,6 +213,9 @@ iv printground()
 		if(buff1[i].name=="»­µØÎªÀÎ") grey("»­µØÎªÀÎ "+change(buff1[i].tim));
 		if(buff1[i].name=="³ÁË¯") blue("³ÁË¯ "+change(buff1[i].tim));
 		if(buff1[i].name=="¸ÕÇû") yellow("¸ÕÇû "+change(buff1[i].tim));
+		if(buff1[i].name=="À×µç") yellow("À×µç"); 
+		if(buff1[i].name=="·É¶É¸¡ÖÛ") cyan("·É¶É¸¡ÖÛ "+change(buff1[i].tim));
+		if(buff1[i].name=="·É¶ÉäöÎÐÔÆ") cyan("·É¶ÉäöÎÐÔÆ "+change(buff1[i].tim));
 	}
 
 	moveto(6,6);print("#2");
@@ -214,6 +231,9 @@ iv printground()
 	moveto(14,8);print(change(handcard2.size())+"/"+change(handcardmax2));
 	if(gamemode==3)
 	{
+		moveto(40,6);print("            ");moveto(40,6);
+		if(bloodsure2==1) REP(sekiroblood2) red("¡ñ");
+		else REP(sekiroblood2) grey("¡ñ");
 		moveto(6,8);print("       ");
 		moveto(6,8);
 		if(trunk2==100) red("Ê§ºâ");else yellow(change(trunk2)+"/100");	
@@ -224,7 +244,7 @@ iv printground()
 		if(trunk2>=90) moveto(42,7),red("¡ö"),moveto(76,7),red("¡ö");
 		if(trunk2>=100) moveto(40,7),red("¡ö"),moveto(78,7),red("¡ö");
 	}
-	moveto(24,8);print(string(70,' '));moveto(24,8);
+	moveto(24,8);print(string(100,' '));moveto(24,8);
 	for(int i=0;i<buff2.size();i++)
 	{
 		if(i) print(" | ");
@@ -237,6 +257,9 @@ iv printground()
 		if(buff2[i].name=="»­µØÎªÀÎ") grey("»­µØÎªÀÎ "+change(buff2[i].tim));
 		if(buff2[i].name=="³ÁË¯") blue("³ÁË¯ "+change(buff2[i].tim));
 		if(buff2[i].name=="¸ÕÇû") yellow("¸ÕÇû "+change(buff2[i].tim));
+		if(buff2[i].name=="À×µç") yellow("À×µç"); 
+		if(buff2[i].name=="·É¶É¸¡ÖÛ") cyan("·É¶É¸¡ÖÛ "+change(buff2[i].tim));
+		if(buff2[i].name=="·É¶ÉäöÎÐÔÆ") cyan("·É¶ÉäöÎÐÔÆ "+change(buff2[i].tim));
 	}
 	
 	moveto(0,11);print("P"+change(turn));
@@ -598,7 +621,27 @@ iv usecard(card t,int pos)
 	if(found(t.speffect,"ÓãÈËµÄ¶÷´Í"))
 		increasemana(manamine,manamaxmine,5);
 	if(pos!=114514)
+	{
 		throwcard(cardmine,pos);
+		if(foundbuff(buffmine,"·É¶É¸¡ÖÛ")!=-1)
+		{
+			if(turn==1) trunk1-=5;
+			if(turn==2) trunk2-=5;
+			(*buffmine)[foundbuff(buffmine,"·É¶É¸¡ÖÛ")].tim--;
+			if((*buffmine)[foundbuff(buffmine,"·É¶É¸¡ÖÛ")].tim==0) buffmine->erase(buffmine->begin()+foundbuff(buffmine,"·É¶É¸¡ÖÛ"));
+		}
+		if(foundbuff(buffmine,"·É¶ÉäöÎÐÔÆ")!=-1)
+		{
+			if(turn==1) trunk1-=5,trunk2+=5;
+			if(turn==2) trunk2-=5,trunk1+=5;
+			(*buffmine)[foundbuff(buffmine,"·É¶ÉäöÎÐÔÆ")].tim--;
+			if((*buffmine)[foundbuff(buffmine,"·É¶ÉäöÎÐÔÆ")].tim==0) buffmine->erase(buffmine->begin()+foundbuff(buffmine,"·É¶ÉäöÎÐÔÆ"));
+		}
+		if(trunk1>100) trunk1=100;
+		if(trunk2>100) trunk2=100;
+		if(trunk1<0) trunk1=0;
+		if(trunk2<0) trunk2=0;
+	} 
 	if(t.effect==1) 
 	{
 		for(int i=0;i<(cardhis->size());i++)
@@ -677,7 +720,7 @@ iv usecard(card t,int pos)
 	if(t.effect==12)
 	{
 		int s=ran(1,cardlong);
-		while(s==12 or (15<=s and s<=17 and !thecardsyst[2]) or (20<=s and s<=28 and !thecardsyst[3]) or (((31<=s and s<=34) or (36<=s and s<=40)) and !thecardsyst[4])) s=ran(1,cardlong);
+		while(s==12 or (15<=s and s<=17 and !thecardsyst[2]) or (20<=s and s<=28 and !thecardsyst[3]) or (((31<=s and s<=34) or (36<=s and s<=49)) and !thecardsyst[4])) s=ran(1,cardlong);
 		usecard(card(cardname[s],0,s),114514);
 		moveto(0,1);print("ÄãÊ¹ÓÃÁË¡¾"+cardname[s]+"¡¿");
 	}
@@ -856,21 +899,49 @@ iv usecard(card t,int pos)
 	{
 		if(turn==1 and trunk2==100)
 		{
-			if(server_mode<3)
+			if(sekiroblood2==0 or bloodsure2==0)
 			{
-				send_string2("Win");
-				send_int2(1);	
+				if(server_mode<3)
+				{
+					send_string2("Win");
+					send_int2(1);	
+				}
+				win_screen(1);	
 			}
-			win_screen(1);
+			else
+			{
+				bloodsure2=0;
+				bloodsure1=1;
+				sekiroblood2--;
+				trunk2=0;
+				trunk1-=20;
+				if(trunk1<0) trunk1=0;
+				send_a_shake();
+				Shake(3,1);
+			}	
 		}
 		if(turn==2 and trunk1==100)
 		{
-			if(server_mode<3)
+			if(sekiroblood1==0 or bloodsure1==0)
 			{
-				send_string2("Win");
-				send_int2(2);	
+				if(server_mode<3)
+				{
+					send_string2("Win");
+					send_int2(1);	
+				}
+				win_screen(2);	
 			}
-			win_screen(2);
+			else
+			{
+				bloodsure1=0;
+				bloodsure2=1;
+				sekiroblood1--;
+				trunk1=0;
+				trunk2-=20;
+				if(trunk2<0) trunk2=0;
+				send_a_shake();
+				Shake(3,1);
+			}	
 		}
 	}
 	if(t.effect==32)
@@ -919,19 +990,24 @@ iv usecard(card t,int pos)
 		for(int i=0;i<(cardmine->size());i++)
 		{
 			if((*cardmine)[i].effect==33)
-				(*cardmine)[i].effect=38,(*cardmine)[i].name=cardname[38];
+				(*cardmine)[i].cost++,(*cardmine)[i].effect=45,(*cardmine)[i].name=cardname[45];
 			if((*cardmine)[i].effect==34)
 				(*cardmine)[i].effect=39,(*cardmine)[i].name=cardname[39];
 			if((*cardmine)[i].effect==36)
 				(*cardmine)[i].effect=40,(*cardmine)[i].name=cardname[40];
+			if((*cardmine)[i].effect==44)
+				(*cardmine)[i].effect=38,(*cardmine)[i].name=cardname[38];
 		}
 	}
 	if(t.effect==38)
 	{
-		int yjjakioi=handcard1.size()-handcard2.size();
-		if(yjjakioi<0) yjjakioi=-yjjakioi;
-		if(turn==1) trunk2=min(trunk2+12*yjjakioi,100);
-		if(turn==2) trunk1=min(trunk1+12*yjjakioi,100);
+		int del=0;
+		if(foundbuff(buffmine,"·É¶ÉäöÎÐÔÆ")==-1)
+		{
+			buff s;s.set_up("·É¶ÉäöÎÐÔÆ",0);
+			buffmine->push_back(s);
+		}
+		(*buffmine)[foundbuff(buffmine,"·É¶ÉäöÎÐÔÆ")].tim+=9;
 	}
 	if(t.effect==39)
 	{
@@ -943,6 +1019,99 @@ iv usecard(card t,int pos)
 		card s=drawcard();s.cost++;
 		addhandcard(cardhis,s,handcardmaxhis,&buffclear);	
 		addhandcard(cardhis,drawcard(),handcardmaxhis,&buffclear);	
+	}
+	if(t.effect==41)
+	{
+		if(foundbuff(buffhis,"À×µç")==-1)
+		{
+			buff s;s.set_up("À×µç",1);
+			buffhis->push_back(s);
+		}
+	}
+	if(t.effect==42)
+	{
+		if(foundbuff(buffmine,"À×µç")!=-1)
+		{
+			buffmine->erase(buffmine->begin()+(foundbuff(buffmine,"À×µç")));
+			if(foundbuff(buffhis,"À×µç")==-1)
+			{
+				buff s;s.set_up("À×µç",1);
+				buffhis->push_back(s);
+			}
+		}
+	}
+	if(t.effect==43)
+	{
+		addhandcard(cardhis,drawcard(),handcardmaxhis,buffhis);
+		if(foundbuff(buffmine,"À×µç")!=-1)
+		{
+			buffmine->erase(buffmine->begin()+(foundbuff(buffmine,"À×µç")));
+			if(foundbuff(buffhis,"À×µç")==-1)
+			{
+				buff s;s.set_up("À×µç",1);
+				buffhis->push_back(s);
+			}
+		}
+	}
+	if(t.effect==44)
+	{
+		int del=0;
+		if(foundbuff(buffmine,"·É¶É¸¡ÖÛ")==-1)
+		{
+			buff s;s.set_up("·É¶É¸¡ÖÛ",0);
+			buffmine->push_back(s);
+		}
+		(*buffmine)[foundbuff(buffmine,"·É¶É¸¡ÖÛ")].tim+=5;
+	}
+	if(t.effect==45)
+	{
+		int g=(cardmine->size())-(cardhis->size());
+		if(g>0) REP(g) addhandcard(cardhis,drawcard(),handcardmaxhis,&buffclear);
+	}
+	if(t.effect==46)
+	{
+		if(turn==1) bloodsure1=1;
+		if(turn==2) bloodsure2=1;
+	}
+	if(t.effect==47)
+	{
+		if(turn==1)
+		{
+			trunk1=max(0,trunk1-5);
+			trunk2=min(100,trunk2+10);
+		}
+		if(turn==2)
+		{
+			trunk2=max(0,trunk2-5);
+			trunk1=min(100,trunk1+10);
+		}
+	}
+	if(t.effect==48)
+	{
+		if(turn==1)
+		{
+			trunk1=max(0,trunk1-10);
+			trunk2=min(100,trunk2+15);
+		}
+		if(turn==2)
+		{
+			trunk2=max(0,trunk2-10);
+			trunk1=min(100,trunk1+15);
+		}
+	}
+	if(t.effect==49)
+	{
+		if(turn==1)
+		{
+			int g=max(50-mana2,0);
+			trunk2=min(100,trunk2+g);	
+		}
+		if(turn==2)
+		{
+			int g=max(50-mana1,0);
+			trunk1=min(100,trunk1+g);	
+		}
+		increasemana(manahis,manamaxhis,-50);
 	}
 }
 iv usemagic(skill t)
@@ -1012,8 +1181,12 @@ iv usemagic(skill t)
 	}
 	if(t.effect==16)
 	{
-		if(cardmine->size()==*handcardmaxmine) throwcard(cardmine,*handcardmaxmine);
-		(*handcardmaxmine)--;
+		if((*handcardmaxmine)>3)
+		{
+			if(cardmine->size()==*handcardmaxmine) throwcard(cardmine,*handcardmaxmine);
+			(*handcardmaxmine)--;
+		}
+		else increasecost(costmine,costmaxmine,2);
 	}
 	if(t.effect==18)
 	{
@@ -1075,7 +1248,7 @@ iv beginning()
 		if(trunk2<0) trunk2=0;
 	}
 	for(int i=0;i<(buffmine->size());i++)
-		if((*buffmine)[i].name!="¾õÐÑ") (*buffmine)[i].tim--;
+		if((*buffmine)[i].name!="¾õÐÑ" and (*buffmine)[i].name!="À×µç" and (*buffmine)[i].name!="·É¶É¸¡ÖÛ" and (*buffmine)[i].name!="·É¶ÉäöÎÐÔÆ") (*buffmine)[i].tim--;
 	for(int i=0;i<(buffmine->size());i++)
 		if((*buffmine)[i].tim==0)
 		{
@@ -1173,6 +1346,16 @@ iv ending()
 				}
 			}
 		}
+	if(foundbuff(buffmine,"À×µç")!=-1)
+	{
+		buffmine->erase(buffmine->begin()+foundbuff(buffmine,"À×µç"));
+		REP(2) addhandcard(cardmine,drawcard(),handcardmaxmine,&buffclear);
+	}
+	if(gamemode==3 and cardmine->size()==(*handcardmaxmine))
+	{
+		if(turn==1) trunk1+=10;
+		if(turn==2) trunk2+=10;
+	}
 }
 iv recheck()
 {
@@ -1454,8 +1637,7 @@ iv game()
 				Sleep(500);
 				while(_kbhit()) getch();
 				break;	
-			}
-				
+			}		
 		}
 	}
 	turn=3-turn;
@@ -1631,10 +1813,13 @@ iv cardsystem()
 		moveto(10,24);print(string(50,' '));
 		moveto(10,24);print(cardsystexplanation[choose]);
 		char c=getch();
+		moveto(10,25);print(string(50,' '));
 		if(upc(c) or leftc(c)) choose--;
 		if(downc(c) or rightc(c)) choose++;
 		if(usec(c))
 		{
+			if(choose==1)
+				thecardsyst[1]=1-thecardsyst[1];
 			if(choose==2)
 				if(timemode) thecardsyst[2]=1-thecardsyst[2];
 			if(choose==3)
@@ -1642,7 +1827,12 @@ iv cardsystem()
 			if(choose==4)
 				if(gamemode==3) thecardsyst[4]=1-thecardsyst[4];
 		}
-		if(surec(c) or magicc(c)) break;
+		if(surec(c) or magicc(c)) 
+		{
+			if(!(thecardsyst[1] or thecardsyst[2] or thecardsyst[3] or thecardsyst[4]))
+				moveto(10,25),print("Äã±ØÐëÒª¿ªÆôÖÁÉÙÒ»Ì×Ì×ÅÆ");
+			else break;
+		}
 		if(choose==0) choose=cardsystlong;
 		if(choose==cardsystlong+1) choose=1; 
 	}
@@ -1787,7 +1977,7 @@ iv maingame()
 int main()
 {
 	system("mode con cols=130 lines=30");
-	SetConsoleTitle("ANOTHER-CARD-GAME v2.0.2");
+	SetConsoleTitle("ANOTHER-CARD-GAME v2.0.3");
 	init();
 	maingame();
 }
