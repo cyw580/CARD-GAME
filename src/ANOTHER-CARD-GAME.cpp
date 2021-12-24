@@ -9,13 +9,14 @@
 #define REP(x) for(int i=1;i<=x;i++)
 using namespace std;
 using namespace __gnu_pbds;
-string version="2.0.3";
+string version="2.0.4";
 iv printhandcard(int choose);
 iv title();
 iv cardsystem();
 iv addhandcard(vector<card> *t,card t2,int *handcardmax,vector<buff> *thebuff);
 iv init_server();
 iv maingame();
+iv update_code();
 bool visskill[114];
 int firsthand=3;
 int timemode=1;
@@ -77,6 +78,7 @@ iv dealcard() //发牌
 		REP(3) addcard(1,card("俄罗斯转盘",2,29));
 		REP(2) addcard(1,card("埋伏II",3,30));
 		REP(4) addcard(1,card("画地为牢",1,35));
+		REP(3) addcard(1,card("OBJECTION",2,50));
 		addcard(1,card("阻碍",3,0));	
 	}
 	if(thecardsyst[2])
@@ -99,19 +101,19 @@ iv dealcard() //发牌
 	}
 	if(thecardsyst[4])
 	{
-		REP(9) addcard(1,card("忍杀",1,31));
+		REP(8) addcard(1,card("忍杀",1,31));
 		REP(6) addcard(1,card("刚躯糖",2,32));
-		REP(5) addcard(1,card("绝技·苇名十字斩",2,33));
-		REP(5) addcard(1,card("绝技·不死斩",2,34));
-		REP(5) addcard(1,card("绝技·巨型忍者突刺",2,36));
+		REP(4) addcard(1,card("绝技·苇名十字斩",2,33));
+		REP(4) addcard(1,card("绝技·不死斩",2,34));
+		REP(4) addcard(1,card("绝技·巨型忍者突刺",2,36));
 		REP(4) addcard(1,card("苇名无心流",1,37));
 		REP(3) addcard(1,card("巴之雷",1,41));
-		REP(3) addcard(1,card("雷电奉还",1,42));
+		REP(2) addcard(1,card("雷电奉还",1,42));
 		REP(2) addcard(1,card("秘传·樱舞",1,43));
 		REP(3) addcard(1,card("绝技·飞渡浮舟",1,44));
 		addcard(1,card("龙胤露滴",1,46));
-		REP(2) addcard(1,card("一字斩",1,47));
-		REP(2) addcard(1,card("一字斩·二连",1,48));
+		REP(3) addcard(1,card("一字斩",1,47));
+		REP(3) addcard(1,card("一字斩·二连",1,48));
 		REP(2) addcard(1,card("秘传·龙闪",2,49));
 	}
 }
@@ -217,7 +219,7 @@ iv printground()
 		if(buff1[i].name=="飞渡浮舟") cyan("飞渡浮舟 "+change(buff1[i].tim));
 		if(buff1[i].name=="飞渡漩涡云") cyan("飞渡漩涡云 "+change(buff1[i].tim));
 	}
-
+	//qwq 
 	moveto(6,6);print("#2");
 	moveto(14,6);cyan(change(cost2)+"/"+change(costmax2));
 	moveto(24,6);REP(costmax2) cyan("◇");
@@ -261,7 +263,7 @@ iv printground()
 		if(buff2[i].name=="飞渡浮舟") cyan("飞渡浮舟 "+change(buff2[i].tim));
 		if(buff2[i].name=="飞渡漩涡云") cyan("飞渡漩涡云 "+change(buff2[i].tim));
 	}
-	
+	//qwq
 	moveto(0,11);print("P"+change(turn));
 	moveto(8,11);print("#");
 	moveto(12,11);
@@ -359,7 +361,7 @@ iv printhandcard(int choose)
 		moveto(30,11+choose);
 		for(int j=0;j<(*cardmine)[choose-1].speffect.size();j++)
 			green("["+(*cardmine)[choose-1].speffect[j]+"]");
-		
+		//qwq
 		moveto(10,24);print(string(80,' '));
 		moveto(10,24);
 		if((*cardmine)[choose-1].effect) print(explanation[(*cardmine)[choose-1].effect]);
@@ -397,7 +399,7 @@ iv printhandcard(int choose)
 		moveto(8,11+choose);green(change(choose));
 		moveto(12,11+choose);green(change((*simpleskillsmine)[choose-1].mana));
 		moveto(15,11+choose);green("["+(*simpleskillsmine)[choose-1].name+"]");
-		
+		//qwq
 		moveto(10,24);print(string(80,' '));
 		moveto(10,24);
 		if((*simpleskillsmine)[choose-1].effect) print(skillexplanation[(*simpleskillsmine)[choose-1].effect]);
@@ -413,7 +415,7 @@ iv choosechanged(int lastchoose,int choose)
 		moveto(30,11+lastchoose);
 		for(int j=0;j<(*cardmine)[lastchoose-1].speffect.size();j++)
 			print("["+(*cardmine)[lastchoose-1].speffect[j]+"]");
-			
+		//qwq
 		moveto(6,11+choose);
 		if(sure_to_use) print("●");
 		else print("◎");
@@ -423,7 +425,7 @@ iv choosechanged(int lastchoose,int choose)
 		moveto(30,11+choose);
 		for(int j=0;j<(*cardmine)[choose-1].speffect.size();j++)
 			green("["+(*cardmine)[choose-1].speffect[j]+"]");
-			
+		//qwq	
 		moveto(10,24);print(string(85,' '));
 		moveto(10,24);
 		if((*cardmine)[choose-1].effect) print(explanation[(*cardmine)[choose-1].effect]);
@@ -445,14 +447,14 @@ iv choosechanged(int lastchoose,int choose)
 		moveto(6,11+lastchoose);if(visskill[lastchoose-1]) red("  "+change(lastchoose));else print("  "+change(lastchoose));
 		moveto(12,11+lastchoose);if(visskill[lastchoose-1]) red(change((*simpleskillsmine)[lastchoose-1].mana));else blue(change((*simpleskillsmine)[lastchoose-1].mana));
 		moveto(15,11+lastchoose);if(visskill[lastchoose-1]) red("["+(*simpleskillsmine)[lastchoose-1].name+"]");else print("["+(*simpleskillsmine)[lastchoose-1].name+"]");
-		
+		//qwq
 		moveto(6,11+choose);
 		if(sure_to_use) print("●");
 		else print("◎");
 		moveto(8,11+choose);green(change(choose));
 		moveto(12,11+choose);green(change((*simpleskillsmine)[choose-1].mana));
 		moveto(15,11+choose);green("["+(*simpleskillsmine)[choose-1].name+"]");
-		
+		//qwq
 		moveto(10,24);print(string(100,' '));
 		moveto(10,24);
 		if((*simpleskillsmine)[choose-1].effect) print(skillexplanation[(*simpleskillsmine)[choose-1].effect]);
@@ -461,7 +463,7 @@ iv choosechanged(int lastchoose,int choose)
 iv win_screen(int kind)
 {
 	system("cls");
-	if(kind==4) red("您与对方的版本不同，无法联机……");
+	if(kind==4) red("您与对方的版本不同，无法联机……\n请尝试在临时更新传递选项中进行更新");
 	else if(kind==3) cyan("这场游戏的结局是平局");
 	else 
 	{
@@ -542,40 +544,9 @@ iv increasemana(int *man,int *manmax,int delta)
 	else if(*man+delta<0) *man=0;
 	else *man+=delta;
 }
-iv addhandcard(vector<card> *t,card t2,int *handcardmax,vector<buff> *thebuff)  
+iv update_trunk(vector<card> *t,card t2)
 {
-	t->push_back(t2);
-	if(handcard1.size()>handcardmax1 and soul1=="冷静")
-	{
-		if(ran(1,2)==1)
-		{
-			t->erase(t->begin()+t->size()-1);
-			if(turn==1)
-			{
-				send_a_skill(theskill[15]);	
-				send_a_card(thethrowcard(t2));
-			}
-			addhandcard(&handcard2,t2,&handcardmax2,&buff2);
-		}
-		else throwcard(t,t->size()); 
-	}
-	else if(handcard2.size()>handcardmax2 and soul2=="冷静")
-	{
-		if(ran(1,2)==1)
-		{
-			t->erase(t->begin()+t->size()-1);	
-			if(turn==2)
-			{
-				send_a_skill(theskill[15]);
-				send_a_card(thethrowcard(t2));
-			}	
-			addhandcard(&handcard1,t2,&handcardmax1,&buff1);
-		}
-		else throwcard(t,t->size()); 
-	}
-	else if(t->size()>*handcardmax or foundbuff(thebuff,"愤怒")!=-1)
-		throwcard(t,t->size());
-	else if(gamemode==3)
+	if(gamemode==3)
 	{
 		if(t==&handcard1)
 		{
@@ -590,6 +561,49 @@ iv addhandcard(vector<card> *t,card t2,int *handcardmax,vector<buff> *thebuff)
 		if(trunk1>100) trunk1=100;
 		if(trunk2>100) trunk2=100;
 	}
+}
+iv addhandcard(vector<card> *t,card t2,int *handcardmax,vector<buff> *thebuff)  
+{
+	t->push_back(t2);
+	if(handcard1.size()>handcardmax1 and soul1=="冷静")
+	{
+		update_trunk(t,t2);
+		if(ran(1,2)==1)
+		{
+			t->erase(t->begin()+t->size()-1);
+			if(turn==1)
+			{
+				send_a_skill(theskill[15]);	
+				send_a_card(thethrowcard(t2));
+			}
+			addhandcard(&handcard2,t2,&handcardmax2,&buff2);
+		}
+		else throwcard(t,t->size()); 
+	}
+	else if(handcard2.size()>handcardmax2 and soul2=="冷静")
+	{
+		update_trunk(t,t2);
+		if(ran(1,2)==1)
+		{
+			t->erase(t->begin()+t->size()-1);	
+			if(turn==2)
+			{
+				send_a_skill(theskill[15]);
+				send_a_card(thethrowcard(t2));
+			}	
+			addhandcard(&handcard1,t2,&handcardmax1,&buff1);
+		}
+		else throwcard(t,t->size()); 
+	}
+	else if(t->size()>*handcardmax)
+	{
+		update_trunk(t,t2);
+		throwcard(t,t->size());
+	}
+	else if(foundbuff(thebuff,"愤怒")!=-1)	
+		throwcard(t,t->size());
+	else if(gamemode==3)
+		update_trunk(t,t2);
 }
 iv usecard(card t,int pos)
 {
@@ -1113,6 +1127,29 @@ iv usecard(card t,int pos)
 		}
 		increasemana(manahis,manamaxhis,-50);
 	}
+	if(t.effect==50)
+	{
+		vector<buff> buffex1,buffex2;
+		buffex1.clear();buffex2.clear();
+		for(int i=0;i<buff1.size();i++)
+			if(buff1[i].name!="觉醒" and buff1[i].name!="愤怒" and buff1[i].name!="法师的恩赐" and buff1[i].name!="地精的恩赐")
+			{
+				buffex2.push_back(buff1[i]);
+				buff1.erase(buff1.begin()+i);
+				i--;
+			}
+		for(int i=0;i<buff2.size();i++)
+			if(buff2[i].name!="觉醒" and buff2[i].name!="愤怒" and buff2[i].name!="法师的恩赐" and buff2[i].name!="地精的恩赐")
+			{
+				buffex1.push_back(buff2[i]);
+				buff2.erase(buff2.begin()+i);
+				i--;
+			}
+		for(int i=0;i<buffex1.size();i++)
+			buff1.push_back(buffex1[i]);
+		for(int i=0;i<buffex2.size();i++)
+			buff2.push_back(buffex2[i]);
+	}
 }
 iv usemagic(skill t)
 {
@@ -1165,8 +1202,28 @@ iv usemagic(skill t)
 	}
 	if(t.effect==12)
 	{
-		increasecost(costmine,costmaxmine,1);
-		addhandcard(cardmine,drawcard(),handcardmaxmine,&buffclear);
+		vector<int> ths1,ths2;
+		ths1.clear();ths2.clear();
+		int lly1=-1,lly2=15;
+		for(int i=0;i<(cardmine->size());i++)
+		{
+			if((*cardmine)[i].cost>lly1)
+			{
+				lly1=(*cardmine)[i].cost;
+				ths1.clear();
+			}
+			if((*cardmine)[i].cost==lly1) ths1.push_back(i);
+		}
+		for(int i=0;i<(cardhis->size());i++)
+		{
+			if((*cardhis)[i].cost<lly2)
+			{
+				lly2=(*cardhis)[i].cost;
+				ths2.clear();
+			}
+			if((*cardhis)[i].cost==lly2) ths2.push_back(i);
+		}
+		swap((*cardmine)[ths1[ran(0,ths1.size()-1)]],(*cardhis)[ths2[ran(0,ths2.size()-1)]]);
 	}
 	if(t.effect==13)
 	{
@@ -1177,7 +1234,7 @@ iv usemagic(skill t)
 			buffmine->push_back(s);
 			del=1;
 		}
-		(*buffmine)[foundbuff(buffmine,"愤怒")].tim+=2+del;
+		(*buffmine)[foundbuff(buffmine,"愤怒")].tim+=3+del;
 	}
 	if(t.effect==16)
 	{
@@ -1256,7 +1313,7 @@ iv beginning()
 			i--;
 		}
 	int ddd=0;
-	if(*soulmine=="迷茫") ddd=ran(1,3)-2;
+	if(*soulmine=="迷惘") ddd=ran(1,3)-2;
 	increasecost(costmine,costmaxmine,2+ddd);
 	if(foundbuff(buffmine,"持久")!=-1)
 		 increasecost(costmine,costmaxmine,1);
@@ -1653,7 +1710,7 @@ iv choosesoul()
 	else sm=ser3;
 	if(sm==1) skills=&skills1,simpleskills=&simpleskills1,thesoul=&soul1;
 	if(sm==2) skills=&skills2,simpleskills=&simpleskills2,thesoul=&soul2;
-		
+	//qwq
 	system("cls");
 	print("        选择P"+change(sm)+"的灵魂特质：");
 	char c='T';
@@ -1666,7 +1723,7 @@ iv choosesoul()
 		if(sure_to_choose==0) print("◎");
 		if(sure_to_choose==1) print("●"); 
 		green(change(choose)+" "+soullist[choose]+" | "+soulexplanation[choose]);
-			
+		//qwq	
 		moveto(0,11);REP(5) print(string(120,' ')+"\n");moveto(0,11); 
 		for(int j=0;j<soulskill[choose].size();j++)
 		{
@@ -1674,7 +1731,7 @@ iv choosesoul()
 			if(soulskill[choose][j].active) activeword="("+change(soulskill[choose][j].mana)+"■)";
 			print(change(j+1)+".["+soulskill[choose][j].name+"]"+skillexplanation[soulskill[choose][j].effect]+activeword+"\n");
 		}
-			
+		//qwq	
 		c=getch();
 		if(upc(c) or leftc(c)) choose--,sure_to_choose=0;
 		if(downc(c) or rightc(c)) choose++,sure_to_choose=0;
@@ -1758,7 +1815,7 @@ iv option()
 			green("> 套牌系统");
 		else
 			red("  套牌系统");
-		
+		//qwq
 		c=getch();
 		if(upc(c) or leftc(c)) choose--;
 		if(downc(c) or rightc(c)) choose++;
@@ -1846,15 +1903,16 @@ iv title()
 	while(!(usec(c) or surec(c)))
 	{
 		moveto(0,1);
-		red("  开始游戏\n  游戏设置");
+		red("  开始游戏\n  游戏设置\n  临时更新传递");
 		moveto(0,choose);
 		if(choose==1) green("> 开始游戏");
 		if(choose==2) green("> 游戏设置");
+		if(choose==3) green("> 临时更新传递");
 		c=getch();
 		if(upc(c) or leftc(c)) choose--;
 		if(downc(c) or rightc(c)) choose++;
-		if(choose==0) choose=2;
-		if(choose==3) choose=1;
+		if(choose==0) choose=3;
+		if(choose==4) choose=1;
 	}
 	if(choose==1)
 	{
@@ -1892,6 +1950,7 @@ iv title()
 		}
 	}
 	if(choose==2) option();
+	if(choose==3) update_code();
 }
 iv init_server()
 {
@@ -1953,6 +2012,148 @@ iv init_server()
 		}	
 	}
 }
+iv update_code()
+{
+	server_mode=1;
+	bool connect_established=false;
+	while(!connect_established)
+	{
+		connect_established=1;
+		system("cls");
+		cyan("临时更新传递\n");
+		char c='T';
+		while(!(usec(c) or surec(c)))
+		{
+			moveto(0,1);
+			red("  创建服务端\n  连接服务端");
+			moveto(0,server_mode);
+			if(server_mode==1) green("> 创建服务端");
+			if(server_mode==2) green("> 连接服务端");
+			c=getch();
+			if(upc(c) or leftc(c)) server_mode--;
+			if(downc(c) or rightc(c)) server_mode++;
+			if(server_mode==0) server_mode=2;
+			if(server_mode==3) server_mode=1;
+			if(magicc(c))
+			{
+				title();
+				return;
+			} 
+		}
+		moveto(0,4);
+		WSAstart();
+		if(server_mode==1)
+		{
+			system("cls");
+			char hostname[256]={0},ip[256]={0};
+			gethostname(hostname,sizeof(hostname));
+			HOSTENT* host=gethostbyname(hostname);
+			strcpy(ip,inet_ntoa(*(in_addr*)*host->h_addr_list));
+			printf("你的ip地址是:%s\n\n等待玩家连入...",ip);   
+		}
+		if(server_mode==2)
+			printf("input ip:");
+		if(TCP_initialize()!=0)
+		{
+			connect_established=0;
+			system("cls");
+			if(server_mode==1)
+			{
+				print("无法设立服务端...请检查是否有同一程序正在运行或者稍后再试...\n");
+				getch();
+			}
+			else
+			{
+				print("无法连接至服务器...请检查网络状况及服务器是否正常启动...\n");
+				getch();
+			}
+		}	
+	}
+	if(server_mode==1)
+	{
+		system("cls");
+		red("请确保你的 ANOTHER-CARD-GAME.cpp，PreInfo(ACG).hpp 与 Socket(ACG).hpp 在同一根目录下\n按Y继续，或者关闭可执行文件\n");
+		char c=getch();
+		while(c!='Y') c=getch();
+		printf("已进行：");REP(10) print("□");
+		string s;
+		freopen("ANOTHER-CARD-GAME.cpp","r",stdin);
+		int t=0,total=2186+404+309;
+		while(1)
+		{
+			getline(cin,s);
+			send_string2(s);
+			int ggg=int(double(++t)/double(total))*100;
+			if(ggg/10!=int(double(t-1)/double(total))*10)
+			{
+				moveto(8,2);
+				REP(ggg/10) print("■");
+			} 
+			if(s.find("//为临时更新传递的实现请勿删除本行")==0) break;
+		}
+		fclose(stdin);
+		freopen("PreInfo(ACG).hpp","r",stdin);
+		while(1)
+		{
+			getline(cin,s);
+			send_string2(s);
+			int ggg=int(double(++t)/double(total))*100;
+			if(ggg/10!=int(double(t-1)/double(total))*10)
+			{
+				moveto(8,2);
+				REP(ggg/10) print("■");
+			} 
+			if(s.find("//为临时更新传递的实现请勿删除本行")==0) break;
+		}
+		fclose(stdin);
+		freopen("Socket(ACG).hpp","r",stdin);
+		while(1)
+		{
+			getline(cin,s);
+			send_string2(s);
+			int ggg=int(double(++t)/double(total))*100;
+			if(ggg/10!=int(double(t-1)/double(total))*10)
+			{
+				moveto(8,2);
+				REP(ggg/10) print("■");
+			} 
+			if(s.find("//为临时更新传递的实现请勿删除本行")==0) break;
+		}
+		fclose(stdin);
+		moveto(8,2);
+		REP(10) print("■");
+	}
+	if(server_mode==2)
+	{
+		system("cls");
+		printf("正在更新……");
+		freopen("ANOTHER-CARD-GAME.cpp","w",stdout);
+		while(1)
+		{
+			string s=recv_string2();
+			cout<<s<<endl;
+			if(s.find("//为临时更新传递的实现请勿删除本行")==0) break;
+		}
+		fclose(stdout);
+		freopen("PreInfo(ACG).hpp","w",stdout);
+		while(1)
+		{
+			string s=recv_string2();
+			cout<<s<<endl;
+			if(s.find("//为临时更新传递的实现请勿删除本行")==0) break;
+		}
+		fclose(stdout);
+		freopen("Socket(ACG).hpp","w",stdout);
+		while(1)
+		{
+			string s=recv_string2();
+			cout<<s<<endl;
+			if(s.find("//为临时更新传递的实现请勿删除本行")==0) break;
+		}
+		fclose(stdout);
+	}
+	exit(0);
+} 
 iv init_restart()
 {
 	server_mode=0;
@@ -1977,8 +2178,9 @@ iv maingame()
 int main()
 {
 	system("mode con cols=130 lines=30");
-	SetConsoleTitle("ANOTHER-CARD-GAME v2.0.3");
+	SetConsoleTitle("ANOTHER-CARD-GAME v2.0.4");
 	init();
 	maingame();
 }
 //你需要在编译选项里加入 -lwsock32 才能进行编译 
+//为临时更新传递的实现请勿删除本行 

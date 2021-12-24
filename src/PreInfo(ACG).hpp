@@ -98,7 +98,7 @@ bool rightc(char c){if(c=='D' or c=='d' or c==RIGHT) return true;return false;}
 bool surec(char c){if(c==SPACE or c==ENTER) return true;return false;}
 bool usec(char c){if(c=='Z' or c=='z' or c=='+') return true;return false;}
 bool magicc(char c){if(c=='X' or c=='x' or c=='-') return true;return false;}
-
+//qwq
 vector<card> cardheap,recardheap;
 vector<card> handcard1,handcard2;
 vector<skill> skills1,skills2,simpleskills1,simpleskills2;
@@ -112,7 +112,7 @@ int clocks=0,clocksum=0;
 int tim=0,twelveam=0,timrate=0;
 int turn;
 int server_mode;
-
+//qwq
 string explanation[114];skill theskill[514];
 string skillexplanation[114];
 string soullist[114];int soullong,cardlong;
@@ -128,8 +128,7 @@ iv init()
 {
 	srand(time(NULL));
 	mouse(0);
-	
-	cardlong=49;
+	cardlong=50;
 	cardname[1]="惩罚";
 	cardname[2]="附带弃置";
 	cardname[3]="埋伏";
@@ -179,7 +178,8 @@ iv init()
 	cardname[47]="一字斩";
 	cardname[48]="一字斩·二连";
 	cardname[49]="秘传·龙闪";
-	
+	cardname[50]="OBJECTION";
+	//qwq
 	//牌面 
 	explanation[1]="令对手从牌堆顶摸一张牌";
 	explanation[2]="（打出此牌后）随机弃掉自己手牌中另一张牌";
@@ -230,7 +230,8 @@ iv init()
 	explanation[47]="对方增加 10 点躯干值，自己恢复 5 点躯干值";
 	explanation[48]="对方增加 15 点躯干值，自己恢复 10 点躯干值";
 	explanation[49]="削减对方 50 点魔法，多余的点数等量增加至对方的躯干值";
-	
+	explanation[50]="交换双方buff（不包括觉醒、愤怒、法师的恩赐、恶魔的恩赐）";
+	//qwq
 	theskill[1].set_up("自由意志",40,1,1);
 	theskill[2].set_up("命运指针",70,1,2);
 	theskill[3].set_up("顶峰爆裂",0,0,3);
@@ -242,8 +243,8 @@ iv init()
 	theskill[9].set_up("并查集查询",70,1,9);
 	theskill[10].set_up("不稳定存在",0,0,10);
 	theskill[11].set_up("不明所以",0,0,11); 
-	theskill[12].set_up("不知所措",20,1,12);
-	theskill[13].set_up("燃烧怒火",80,1,13);
+	theskill[12].set_up("徘徊",60,1,12);
+	theskill[13].set_up("燃烧怒火",70,1,13);
 	theskill[14].set_up("底线",0,0,14);
 	theskill[15].set_up("偿还",0,0,15);
 	theskill[16].set_up("坠落",80,1,16);
@@ -252,7 +253,7 @@ iv init()
 	theskill[19].set_up("觉醒",10,1,19);
 	theskill[20].set_up("缥缈",0,0,20);
 	theskill[21].set_up("沉睡",50,1,21);
-	
+	//qwq
 	skillexplanation[1]="将牌堆顶的牌的费用化为0并加入手牌";
 	skillexplanation[2]="将自己的随机一张牌给予对方";
 	skillexplanation[3]="在回合末时若有且仅有一张费用最大的牌则将其弃置";
@@ -264,58 +265,58 @@ iv init()
 	skillexplanation[9]="弃置你所有带有【加边！加边！加边！】的牌";
 	skillexplanation[10]="开局时多摸一张牌";
 	skillexplanation[11]="每回合初得到的◆为1~3";
-	skillexplanation[12]="+1◆,摸1张牌";
-	skillexplanation[13]="获得2回合【愤怒】buff：因对方手牌效果获得的手牌被弃置";
+	skillexplanation[12]="将手牌中费用最大的一张牌与对手手牌中费用最小的一张牌交换";
+	skillexplanation[13]="获得3回合【愤怒】buff：因对方手牌效果获得的手牌被弃置";
 	skillexplanation[14]="初始时手牌上限-2";
 	skillexplanation[15]="因超过手牌上限而被弃掉的牌50%概率交给对手";
 	skillexplanation[16]="手牌上限-1（最低为3，若已为3效果转为◆+2）";
-	skillexplanation[17]="你的回合开始摸牌时如果摸到◆>3的牌则将其弃置"; 
+	skillexplanation[17]="你的回合开始摸牌时如果摸到◆>3的牌则将其弃置";
 	skillexplanation[18]="对方随机一张手牌◆+1";
 	skillexplanation[19]="每使用一次费用+10,使用后永久获得1回合【觉醒】buff，然后使用任意技能时有【觉醒】层数*10%返还魔法";
 	skillexplanation[20]="回合初的摸牌变为从牌堆顶摸一张牌给对手再从对手手牌中摸一张牌";
 	skillexplanation[21]="使对方获得1回合【沉睡】buff：打出手牌后有35%概率结束回合";
-	
+	//qwq
 	soullong=9;
 	soullist[1]="自由";
 	soulskill[1].push_back(theskill[1]);
 	soulskill[1].push_back(theskill[2]);
-	soulexplanation[1]="综合型较强，但魔法耗值高";
+	soulexplanation[1]="综合型较强，但魔法耗值高                  版 本 之 母";    
 	soullist[2]="混沌";
 	soulskill[2].push_back(theskill[3]);
 	soulskill[2].push_back(theskill[4]);
 	soulskill[2].push_back(theskill[10]);
-	soulexplanation[2]="需要技巧性出牌，发动被动弃置费用大的牌";
+	soulexplanation[2]="需要技巧性出牌，发动被动弃置费用大的牌    版 本 之 父";
 	soullist[3]="暴戾";
 	soulskill[3].push_back(theskill[5]);
 	soulskill[3].push_back(theskill[6]);
 	soulskill[3].push_back(theskill[13]);
-	soulexplanation[3]="积累费用，稳健进攻，还可防守";
+	soulexplanation[3]="积累费用，稳健进攻，还可防守              无 能 狂 怒";
 	soullist[4]="谔谔";
 	soulskill[4].push_back(theskill[7]);
 	soulskill[4].push_back(theskill[8]);
 	soulskill[4].push_back(theskill[9]);
-	soulexplanation[4]="蓄势待发，后期快速清理手牌";
-	soullist[5]="迷茫";
+	soulexplanation[4]="蓄势待发，后期快速清理手牌                加 边 加 边";
+	soullist[5]="迷惘";
 	soulskill[5].push_back(theskill[11]);
 	soulskill[5].push_back(theskill[12]);
-	soulexplanation[5]="快速积攒费用，同时说不定能摸到好牌";
+	soulexplanation[5]="快速积攒费用，同时说不定能摸到好牌        乒 乓 球 手";      
 	soullist[6]="冷静";
 	soulskill[6].push_back(theskill[14]);
 	soulskill[6].push_back(theskill[15]);
 	soulskill[6].push_back(theskill[16]);
-	soulexplanation[6]="逐渐降低自己的限度，反击敌人";
+	soulexplanation[6]="逐渐降低自己的限度，反击敌人              毫 无 底 线";
 	soullist[7]="虔诚";
 	soulskill[7].push_back(theskill[17]);
 	soulskill[7].push_back(theskill[18]);
 	soulskill[7].push_back(theskill[19]); 
-	soulexplanation[7]="自战斗中觉醒，逐渐强大";
+	soulexplanation[7]="自战斗中觉醒，逐渐强大                    祈 求 厄 运";
 	soullist[8]="幻想";
 	soulskill[8].push_back(theskill[20]);
 	soulskill[8].push_back(theskill[21]);
-	soulexplanation[8]="在缥缈的虚无中战斗着";
-	soullist[9]="rand";
-	soulexplanation[9]="？？？";
-	
+	soulexplanation[8]="在缥缈的虚无中战斗着                      睡 觉 狂 魔";
+	soullist[9]="rand"; 
+	soulexplanation[9]="？？？                                    任 您 选 择";
+	//qwq
 	speffectexplanation["加边！加边！加边！"]="使用【并查集查询】时此牌将被弃置";
 	speffectexplanation["浪人的恩赐"]="当你拥有恩赐的手牌总数>3时这张牌将被弃置";
 	speffectexplanation["术士的恩赐"]="打出这张牌时+15■";
@@ -325,30 +326,30 @@ iv init()
 	speffectexplanation["恶魔的恩赐"]="回合开始时有带有【恶魔的恩赐】的手牌数量*10%的概率弃一张牌";
 	speffectexplanation["牧师的恩赐"]="当你的所有手牌都带有【牧师的恩赐】时直接获胜";
 	speffectexplanation["鱼人的恩赐"]="打出这张牌时+5■";
-	
+	//qwq
 	cardsystlong=4;
 	cardsyst[1]="基础套牌";
 	cardsyst[2]="时间套牌";
 	cardsyst[3]="恩赐套牌";
 	cardsyst[4]="只狼套牌";
-	
+	//qwq
 	cardsystexplanation[1]="最为基础的牌型";
 	cardsystexplanation[2]="需要打开时间模式才能打开";
 	cardsystexplanation[3]="来自 CARD-GAME 各职业人物的恩赐";
 	cardsystexplanation[4]="需要进入 娱乐模式：只狼 才可打开";
-	
+	//qwq
 	thecardsyst[1]=thecardsyst[2]=thecardsyst[3]=1;
-	
+	//qwq
 	gamemodelong=3;
 	gamemodename[1]="经典模式";
 	gamemodename[2]="娱乐模式：计时";
 	gamemodename[3]="娱乐模式：只狼";
-	
+	//qwq
 	gamemodeexplanation[1]="最经典的游戏模式";
 	gamemodeexplanation[2]="每回合开局多摸1张牌，在20回合后手牌数量少的人获胜";
 	gamemodeexplanation[3]="每得到一张手牌便增加躯干值，躯干值充满将被对方忍杀";
 }
-
+//qwq
 void wolf()
 {
 	printf("请仔细阅读游戏规则:\n\n");
@@ -362,7 +363,7 @@ void wolf()
 	printf("7.回合结束时若手牌数等于手牌上限则增加 10 点躯干值\n\n");
 	printf("8.按下空格或者Enter继续");
 }
-
+//qwq
 //From PreInfo.h
 void SetColor(short x)
 {
@@ -371,7 +372,7 @@ void SetColor(short x)
   else
     SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 7);
 }
-
+//qwq
 void Shake(int power,int time){
 	int shake_time = 25;
     int shake_distance = power;
@@ -400,3 +401,4 @@ void Shake(int power,int time){
     }
     return;
 }
+//为临时更新传递的实现请勿删除本行

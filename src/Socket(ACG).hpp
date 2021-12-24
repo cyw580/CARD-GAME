@@ -306,3 +306,4 @@ void send_a_shake()
 	if(server_mode<3)
 		send_string2("Shake");
 }
+//为临时更新传递的实现请勿删除本行
