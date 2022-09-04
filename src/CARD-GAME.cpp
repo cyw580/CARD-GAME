@@ -29,45 +29,45 @@ int Check(int now){
 	return 0;
 }
 
-int Card::cal_atk(int from,int to){//è®¡ç®—å®é™…æ”»å‡»åŠ›
+int Card::cal_atk(int from,int to){//¼ÆËãÊµ¼Ê¹¥»÷Á¦
 	int damage=ATK;
-	if(func==15) return damage;//[èƒŒæ°´ä¸€æˆ˜]æ— è§†buff
-	if(func==89) return damage+pl[from].buff[0]*1.5;//[æŒ‡æŒ¥è¿›æ”»]æ— è§†buff
-	if(pl[from].occ==2 && ATK>0) damage=ATK+5*pl[from].buff[0];//æœ¯å£«
-	if(pl[from].occ==5 && ATK>0) damage=ATK+ATK*pl[from].buff[0]*0.09;//åœ°ç²¾
-	if(pl[from].occ==4 && pl[from].buff[0])//æˆ˜å£«
+	if(func==15) return damage;//[±³Ë®Ò»Õ½]ÎŞÊÓbuff
+	if(func==89) return damage+pl[from].buff[0]*1.5;//[Ö¸»Ó½ø¹¥]ÎŞÊÓbuff
+	if(pl[from].occ==2 && ATK>0) damage=ATK+5*pl[from].buff[0];//ÊõÊ¿
+	if(pl[from].occ==5 && ATK>0) damage=ATK+ATK*pl[from].buff[0]*0.09;//µØ¾«
+	if(pl[from].occ==4 && pl[from].buff[0])//Õ½Ê¿
 		damage-=0.04*damage*pl[from].buff[0];
 	if(pl[to].occ==20 && pl[to].buff[0]) damage-=0.02*damage*pl[to].buff[0];
-	//èŒä¸šå½±å“
-	if(pl[from].buff[3])//ç‹‚æš´
+	//Ö°ÒµÓ°Ïì
+	if(pl[from].buff[3])//¿ñ±©
 		damage*=2;
-	if(pl[from].buff[4])//è™šå¼±
+	if(pl[from].buff[4])//ĞéÈõ
 		damage*=0.7;
-	//Buffå½±å“
-	if(env_now==1)//è¡€æœˆ
+	//BuffÓ°Ïì
+	if(env_now==1)//ÑªÔÂ
 		damage*=1.2;
-	if(env_now==2)//æš´é›¨
+	if(env_now==2)//±©Óê
 		damage*=0.8;
-	//å¤©æ°”å½±å“
-	if(mode==2) //æ¬¢ä¹æ¨¡å¼ï¼šéšæœºbuff
+	//ÌìÆøÓ°Ïì
+	if(mode==2) //»¶ÀÖÄ£Ê½£ºËæ»úbuff
 		damage*=0.7;
 	return damage;
 }
 
-int Card::cal_heal(int from,int to){//è®¡ç®—å®é™…æ¢å¤é‡
+int Card::cal_heal(int from,int to){//¼ÆËãÊµ¼Ê»Ö¸´Á¿
 	int heal=HEAL;
 	if(func==90) heal+=pl[from].buff[0]*2;
-	if(pl[from].buff[4])//è™šå¼±
+	if(pl[from].buff[4])//ĞéÈõ
 		heal*=0.7;
 	if(pl[from].occ==20 && pl[from].buff[0]) heal-=0.01*heal*pl[from].buff[0];
-	if(mode==2) //æ¬¢ä¹æ¨¡å¼ï¼šéšæœºbuff
+	if(mode==2) //»¶ÀÖÄ£Ê½£ºËæ»úbuff
 		heal*=0.7;
 	return heal;
 }
 
-int Card::cal_def(int from,int to){//è®¡ç®—å®é™…å ç›¾
+int Card::cal_def(int from,int to){//¼ÆËãÊµ¼Êµş¶Ü
 	int def=DEF;
-	if(mode==2) //æ¬¢ä¹æ¨¡å¼ï¼šéšæœºbuff
+	if(mode==2) //»¶ÀÖÄ£Ê½£ºËæ»úbuff
 		def*=0.7;
 	return def;
 }
@@ -78,8 +78,8 @@ int Card::cal_miss(int from,int to){
 		miss+=10;
 	if(env_now==4)
 		miss-=10;
-	//å¤©æ°”å¯¹å¤±è¯¯ç‡çš„å½±å“
-	if(pl[from].buff[6])//è¿·æƒ‘
+	//ÌìÆø¶ÔÊ§ÎóÂÊµÄÓ°Ïì
+	if(pl[from].buff[6])//ÃÔ»ó
 		miss+=25;
 	if(miss>100) miss=100;
 	if(miss<0) miss=0;
@@ -96,22 +96,34 @@ int Card::Use(int from,int to){
 	use_card.func=func;
 	if(rad()%100<miss && id!=119){
 		SetPos(0,1);
-		printf("æ“ä½œå¤±è¯¯äº†!");
+		printf("²Ù×÷Ê§ÎóÁË!");
 		if(pl[from].occ==4 && ATK>0) pl[from].buff[0]+=2;
 		pl[from].cost=min(pl[from].maxcost,pl[from].cost+cost/2);
 		UI(from);
 		use_card.MISS=1;
 		return 0;
-	}//å¤±æ•ˆåˆ¤å®š
+	}//Ê§Ğ§ÅĞ¶¨
 	int damage,flag=0;
 	if(func) flag=Special(from,to);
 	if(flag==4) return 0;
 	damage=use_card.ATK=cal_atk(from,to);
-	//æŠ¤ç›¾æŠµæ¶ˆ
+	//»¤¶ÜµÖÏû
 	if(pl[to].def>0 && flag!=1){
+		if(pl[to].occ==9)
+		{
+			int sum=min(damage,pl[to].def);
+			if(pl[3-to].occ!=8) pl[3-to].hp-=sum*pl[to].buff[0]/10.0;
+			else
+			{
+				int defdamage=sum*pl[3-to].buff[0]/10.0;
+				if(defdamage<=pl[3-to].buff[0]*2) pl[3-to].buff[0]-=defdamage/2,defdamage=0;
+				else defdamage-=pl[3-to].buff[0]*2,pl[3-to].buff[0]=0;
+				if(defdamage>0) pl[3-to].hp-=defdamage;
+			}
+		}
 		if(damage>=pl[to].def){
 			damage-=pl[to].def,pl[to].def=0;
-			Shake(3,1);//å‡»ç ´æŠ¤ç›¾çš„åŠ¨ç”»
+			Shake(3,1);//»÷ÆÆ»¤¶ÜµÄ¶¯»­
 		}
 		else pl[to].def-=damage,damage=0;
 	}
@@ -124,21 +136,29 @@ int Card::Use(int from,int to){
 	if(damage>0){
 		pl[to].hp-=damage;
 	}
-	if(damage>=150){//é‡å‡»åŠ¨ç”»
+	if(damage>=150){//ÖØ»÷¶¯»­
 		system("color 47");
 		Shake(10,1);
 		system("color 07");
 		system("cls");
 		UI(from);
 	}
-	//è¿›æ”»
+	//½ø¹¥
 	int heal=cal_heal(from,to);
 	use_card.HEAL=heal;
 	pl[from].hp=min(pl[from].maxhp,pl[from].hp+heal);
 	int def=cal_def(from,to);
 	use_card.DEF=def;
+	if(pl[from].occ==9) 
+		if(pl[from].def+def>pl[from].maxdef) 
+		{
+			int defdamage=(pl[from].def+def-pl[from].maxdef)*(10-pl[from].buff[0])/10.0;
+			if(defdamage<=pl[3-from].buff[0]*2) pl[3-from].buff[0]-=defdamage/2,defdamage=0;
+			else defdamage-=pl[3-from].buff[0]*2,pl[3-from].buff[0]=0;
+			if(defdamage>0) pl[3-from].hp-=defdamage;
+		}
 	pl[from].def=min(pl[from].maxdef,pl[from].def+def);
-	//å¥—ç›¾ä¸å›è¡€
+	//Ì×¶ÜÓë»ØÑª
 	if(mode!=4){
 		if(HEAL<0 && pl[from].occ==2) pl[from].buff[0]++;
 		if(pl[from].occ==4 && ATK>0) pl[from].buff[0]+=2;
@@ -287,7 +307,7 @@ int Card::Special(int from,int to){
 	else if(func==32){
 		for(int i=1;i<=pl[from].cardcnt;i++){
 			if(pl[from].used[i]) continue;
-			if(pl[from].handcard[i].id==98){ //98-->[è™šç©ºåƒåœ¾]
+			if(pl[from].handcard[i].id==98){ //98-->[Ğé¿ÕÀ¬»ø]
 				 pl[from].used[i]=1;
 				 pl[from].rest--;
 			}
@@ -326,8 +346,8 @@ int Card::Special(int from,int to){
 	}
 	else if(func==46){
 		pl[from].cost=min(pl[from].maxcost,pl[from].cost+4);
-		int x=rad()%pl[to].cardcnt+1;//é€‰å–éšæœºæ§½ä½
-		pl[to].handcard[x]=lib[7][10];//[æ³•åŠ›æ°´æ™¶]
+		int x=rad()%pl[to].cardcnt+1;//Ñ¡È¡Ëæ»ú²ÛÎ»
+		pl[to].handcard[x]=lib[7][10];//[·¨Á¦Ë®¾§]
 		if(pl[to].used[x]) pl[to].used[x]=0;
 	}
 	else if(func==47){
@@ -338,13 +358,13 @@ int Card::Special(int from,int to){
 				if(pl[to].handcard[i].func==42) pl[to].buff[0]++;
 			}
 		}
-		int x=rad()%pl[to].cardcnt+1;//é€‰å–éšæœºæ§½ä½
+		int x=rad()%pl[to].cardcnt+1;//Ñ¡È¡Ëæ»ú²ÛÎ»
 		pl[to].handcard[x].cost+=1;
 	}
 	else if(func==48){
 		for(int i=1;i<=pl[to].cardcnt;i++){
 			if(pl[to].used[i]) continue;
-			if(pl[to].handcard[i].id==114) pl[to].used[i]=1,pl[to].buff[0]+=2; //114-->[ç¥åœ£æ„å¿—]
+			if(pl[to].handcard[i].id==114) pl[to].used[i]=1,pl[to].buff[0]+=2; //114-->[ÉñÊ¥ÒâÖ¾]
 		}
 	}
 	else if(func==49){
@@ -368,8 +388,8 @@ int Card::Special(int from,int to){
 		pl[from].buff[rad()%6+1]+=rad()%2+1;
 	}
 	else if(func==55){
-		int x=rad()%pl[to].cardcnt+1,y=rad()%pl[to].cardcnt+1;//é€‰å–éšæœºæ§½ä½
-		while(x==y) x=rad()%pl[to].cardcnt+1,y=rad()%pl[to].cardcnt+1;//å»é‡
+		int x=rad()%pl[to].cardcnt+1,y=rad()%pl[to].cardcnt+1;//Ñ¡È¡Ëæ»ú²ÛÎ»
+		while(x==y) x=rad()%pl[to].cardcnt+1,y=rad()%pl[to].cardcnt+1;//È¥ÖØ
 		pl[to].handcard[x]=pl[to].handcard[y]=lib[7][libcnt[7]+3];
 		pl[to].used[x]=pl[to].used[y]=0;
 	}
@@ -393,7 +413,7 @@ int Card::Special(int from,int to){
 		pl[to].maxhp-=90;
 		pl[to].hp=min(pl[to].hp,pl[to].maxhp);
 		for(int i=1;i<=pl[from].heapn;i++){
-			while(pl[from].handcard[i].id==98 && i<=pl[from].heapn){ //98-->[è™šç©ºåƒåœ¾]
+			while(pl[from].handcard[i].id==98 && i<=pl[from].heapn){ //98-->[Ğé¿ÕÀ¬»ø]
 				pl[from].heap[i]=pl[from].heap[pl[from].heapn--];
 			}
 		}
@@ -402,24 +422,24 @@ int Card::Special(int from,int to){
 		pl[from].cost=min(pl[from].cost+2,pl[from].maxcost);
 		pl[from].used[++pl[from].cardcnt]=1;
 		for(int i=1;i<=pl[from].heapn;i++){
-			if(pl[from].heap[i].id==17) { //17-->[å†²é”‹å·ä»¤]
+			if(pl[from].heap[i].id==17) { //17-->[³å·æºÅÁî]
 				pl[from].heap[i].id=-17;
 				pl[from].heap[i].cost=2;
 				pl[from].heap[i].ATK=20;
 			}
-			if(pl[from].heap[i].id==21) { //21-->[æœ‰èƒ½ç‹‚æ€’]
+			if(pl[from].heap[i].id==21) { //21-->[ÓĞÄÜ¿ñÅ­]
 				pl[from].heap[i].id=-21;
 				pl[from].heap[i].ATK=20;
 			}
-			if(pl[from].heap[i].id==25) { //25-->[ç”Ÿå‘½æœ]
+			if(pl[from].heap[i].id==25) { //25-->[ÉúÃü¹û]
 				pl[from].heap[i].id=-25;
 				pl[from].heap[i].HEAL=90;
 			}
-			if(pl[from].heap[i].id==19) { //19-->[äº’æƒ å…±èµ¢]
+			if(pl[from].heap[i].id==19) { //19-->[»¥»İ¹²Ó®]
 				pl[from].heap[i].id=-19;
 				pl[from].heap[i].cost=0;
 			}
-			if(pl[from].heap[i].id==23) { //23-->[æ— ä¸­ç”Ÿæœ‰]
+			if(pl[from].heap[i].id==23) { //23-->[ÎŞÖĞÉúÓĞ]
 				pl[from].heap[i].id=-23;
 				pl[from].heap[i].MISS=5;
 			}
@@ -438,7 +458,7 @@ int Card::Special(int from,int to){
 	}
 	else if(func==63){
 		for(int i=1;i<=pl[from].heapn;i++){
-			while(pl[from].heap[i].id==81 && i<=pl[from].heapn){ //81-->[ç´¯èµ˜]
+			while(pl[from].heap[i].id==81 && i<=pl[from].heapn){ //81-->[ÀÛ×¸]
 				pl[to].heap[++pl[to].heapn]=pl[from].heap[i];
 				pl[from].heap[i]=pl[from].heap[pl[from].heapn--];
 			}
@@ -457,7 +477,7 @@ int Card::Special(int from,int to){
 			pl[from].buff[0]+=1;
 		}
 		for(int i=1;i<=pl[from].heapn;i++){
-			if(pl[from].heap[i].id==54) pl[from].heap[i].ATK+=15; //54-->[æ³•åŠ›æˆé•¿]
+			if(pl[from].heap[i].id==54) pl[from].heap[i].ATK+=15; //54-->[·¨Á¦³É³¤]
 		}
 	}
 	else if(func==67){
@@ -557,6 +577,47 @@ int Card::Special(int from,int to){
 		for(int i=1;i<=pl[from].cardcnt;i++) if(!pl[from].used[i]) pl[from].rest++;
 		return 4;
 	}
+	else if(func==98){
+		pl[from].maxdef+=30;
+		pl[from].maxhp-=20;
+		pl[from].hp=min(pl[from].hp,pl[from].maxhp);
+	}
+	else if(func==99){
+		pl[from].def/=2;
+		pl[from].buff[0]=max(0,pl[from].buff[0]-2);
+	}
+	else if(func==100){
+		pl[from].def/=2;
+		pl[from].buff[0]=min(7,pl[from].buff[0]+2);
+	}
+	else if(func==101){
+		if(damage>=pl[to].def)
+			pl[to].buff[1]+=2;
+	}
+	else if(func==102){
+		pl[from].def=0;
+	}
+	else if(func==103){
+		pl[from].maxdef+=50;
+	}
+	else if(func==104){
+		pl[from].maxhp+=100; 
+		pl[from].maxdef+=100;
+	}
+	else if(func==105){
+		pl[from].maxdef=max(0,pl[from].maxdef-50);
+		pl[from].def=min(pl[from].def,pl[from].maxdef);
+		pl[from].cost=min(pl[from].cost+3,pl[from].maxcost);
+	}
+	else if(func==106){
+		pl[from].maxdef=max(0,pl[from].maxdef-100);
+		pl[from].def=min(pl[from].def,pl[from].maxdef);
+	}
+	else if(func==107)
+	{
+		pl[to].def=0;
+		pl[to].cost=min(pl[to].cost+2,pl[to].maxcost);
+	}
 	return 0;
 }
 
@@ -567,30 +628,30 @@ void extra(int now,int cursor){
 		Card x=pl[now].heap[(rad()%pl[now].heapn)+1];
 		while(x.id==pl[now].handcard[cursor].id) x=pl[now].heap[(rad()%pl[now].heapn)+1];
 		pl[now].handcard[cursor]=x;
-	}//[æ€¥ä¸å¯è€],[è¡€è‰²æ€’ç«],[äº’æƒ å…±èµ¢]æŠ½ç‰Œ
+	}//[¼±²»¿ÉÄÍ],[ÑªÉ«Å­»ğ],[»¥»İ¹²Ó®]³éÅÆ
 	if(pl[now].handcard[cursor].func==40){
 		pl[now].used[cursor]=0;
 		pl[now].rest++;
 		pl[now].handcard[cursor]=pl[3-now].heap[(rad()%pl[3-now].heapn)+1];
 		pl[now].handcard[cursor].MISS=pl[now].handcard[cursor].func=0;
-	}//[ä¸å®Œå…¨è®°å¿†]
+	}//[²»ÍêÈ«¼ÇÒä]
 	if(pl[now].handcard[cursor].func==60){
 		pl[now].used[cursor]=0;
 		pl[now].rest++;
 		pl[now].handcard[cursor]=lib[1][7];
-	}//[ç†Ÿç»ƒæ‹¾è’]å˜ä¸º[æ— ä¸­ç”Ÿæœ‰]
+	}//[ÊìÁ·Ê°»Ä]±äÎª[ÎŞÖĞÉúÓĞ]
 	if(pl[now].handcard[cursor].func==96){
 		pl[now].used[cursor]=0;
 		pl[now].rest++;
 		pl[now].handcard[cursor]=lib[8][11];
-	}//[æ·±æµ·æ»‹å…»]å˜ä¸º[æ°´ä¸­ç–—å…»]
+	}//[Éîº£×ÌÑø]±äÎª[Ë®ÖĞÁÆÑø]
 	if(pl[now].handcard[cursor].func==24){
 		for(int i=1;i<=pl[now].cardcnt;i++) {
 			pl[now].handcard[i]=pl[now].heap[rad()%pl[now].heapn+1];
 			pl[now].used[i]=0;
 		}
 		pl[now].rest=pl[now].cardcnt;
-	}//[æ¶…æ§ƒ]æŠ½ç‰Œ
+	}//[Äù˜„]³éÅÆ
 	if(pl[now].handcard[cursor].func==82){
 		for(int i=1;i<=pl[now].cardcnt;i++) {
 			if(pl[now].used[i]) continue;
@@ -598,9 +659,9 @@ void extra(int now,int cursor){
 			else pl[now].handcard[i].ATK+=15;
 			pl[now].handcard[i].HEAL=0;
 		}
-	}//[æš—å½±å½¢æ€]æœç´¢
+	}//[°µÓ°ĞÎÌ¬]ËÑË÷
 	if(pl[now].handcard[cursor].func==44){
-		int x=rad()%pl[now].cardcnt+1;//é€‰å–éšæœºæ§½ä½
+		int x=rad()%pl[now].cardcnt+1;//Ñ¡È¡Ëæ»ú²ÛÎ»
 		if(pl[now].used[x]){
 			pl[now].rest++;
 			pl[now].used[x]=0;
@@ -616,11 +677,11 @@ bool giveupcard(int now,int cursor){
 	if(pl[now].handcard[cursor].func==65) {
 		pl[now].buff[4]=max(pl[now].buff[4],2);
 		return 1;
-	}//[ç²¾ç¥æ§åˆ¶]
+	}//[¾«Éñ¿ØÖÆ]
 	if(pl[now].handcard[cursor].func==94) {
 		pl[3-now].def=min(pl[3-now].maxdef,pl[3-now].def+10);
 		return 1;
-	}//[æ— åŠ›]
+	}//[ÎŞÁ¦]
 	return 0;
 }
 				
@@ -651,14 +712,14 @@ void init(int x){
 	pl[x].maxdef=job[pl[x].occ].maxdef;
 	pl[x].maxcost=job[pl[x].occ].maxcost;
 	pl[x].hp=pl[x].maxhp;
-	//è·å¾—èŒä¸šåŸºæœ¬ä¿¡æ¯
+	//»ñµÃÖ°Òµ»ù±¾ĞÅÏ¢
 	int tot=libcnt[0];
 	for(int i=1;i<=tot;i++){
 		pl[x].heap[i]=lib[0][i];
-		if(pl[x].occ==3 && pl[x].heap[i].HEAL>=75) i--,tot--; //æ³•å¸ˆä¸èƒ½æŠ½å…¬å…±ç‰Œåº“HEAL>=75çš„ç‰Œ
-		if(pl[x].occ==4 && pl[x].heap[i].HEAL>0) i--,tot--;//æˆ˜å£«ä¸èƒ½æŠ½å…¬å…±ç‰Œåº“HEALç‰Œ
-		if(pl[x].occ==5 || pl[x].occ==6 || pl[x].occ==8) i--,tot--;//åœ°ç²¾ã€æ¶é­”ã€é±¼äººä¸èƒ½æŠ½å…¬å…±ç‰Œåº“çš„ç‰Œ
-		if(pl[x].occ==7 && pl[x].heap[i].ATK>=80) i--,tot--;//ç‰§å¸ˆä¸èƒ½æŠ½å…¬å…±ç‰Œåº“ATK>=80çš„ç‰Œ
+		if(pl[x].occ==3 && pl[x].heap[i].HEAL>=75) i--,tot--; //·¨Ê¦²»ÄÜ³é¹«¹²ÅÆ¿âHEAL>=75µÄÅÆ
+		if(pl[x].occ==4 && pl[x].heap[i].HEAL>0) i--,tot--;//Õ½Ê¿²»ÄÜ³é¹«¹²ÅÆ¿âHEALÅÆ
+		if(pl[x].occ==5 || pl[x].occ==6 || pl[x].occ==8 || pl[x].occ==9) i--,tot--;//µØ¾«¡¢¶ñÄ§¡¢ÓãÈË¡¢¶ÜÎÀ²»ÄÜ³é¹«¹²ÅÆ¿âµÄÅÆ
+		if(pl[x].occ==7 && pl[x].heap[i].ATK>=80) i--,tot--;//ÄÁÊ¦²»ÄÜ³é¹«¹²ÅÆ¿âATK>=80µÄÅÆ
 	}
 	pl[x].heapn=tot;
 	tot=libcnt[pl[x].occ];
@@ -666,13 +727,13 @@ void init(int x){
 		pl[x].heap[i+pl[x].heapn]=lib[pl[x].occ][i];
 	}
 	pl[x].heapn+=tot;
-	if(mode==2){//æ¬¢ä¹æ¨¡å¼ï¼šéšæœºbuff
+	if(mode==2){//»¶ÀÖÄ£Ê½£ºËæ»úbuff
 		tot=funcnt[2][0];
 		for(int i=1;i<=tot;i++) pl[x].heap[i+pl[x].heapn]=fun[2][0][i];
 		pl[x].heapn+=tot;
 	}
 }
-void treasure(int now){//ç«æŠ€æ¨¡å¼ï¼šå®è—ç‰Œ
+void treasure(int now){//¾º¼¼Ä£Ê½£º±¦²ØÅÆ
 	if(gettre[now]) return;
 	if(pl[now].occ==1 && pl[now].buff[0]>=3){
 		for(int i=1;i<=pl[now].cardcnt;i++){
@@ -786,6 +847,20 @@ void treasure(int now){//ç«æŠ€æ¨¡å¼ï¼šå®è—ç‰Œ
 			gettre[now]=1;
 		}
 	}
+	if(pl[now].occ==9 && pl[now].maxdef>=300){
+		for(int i=1;i<=pl[now].cardcnt;i++){
+			if(pl[now].used[i]) {
+				pl[now].used[i]=0;
+				gettre[now]=1;
+				pl[now].handcard[i]=fun[1][9][1];
+				break;
+			}
+		}
+		if(!gettre[now]){
+			pl[now].handcard[rad()%pl[now].cardcnt+1]=fun[1][9][1];
+			gettre[now]=1;
+		}
+	}
 }
 
 void adv(int x){
@@ -818,20 +893,24 @@ void adv(int x){
 	else if(pl[x].occ==8){
 		pl[x].buff[0]=15;
 	}
+	else if(pl[x].occ==9){
+		pl[x].def=40;
+	}
 	return;
 }
 
 string occ_name(int x){
-	if(x==1)return "æµªäºº";
-	else if(x==2)return "æœ¯å£«";
-	else if(x==3)return "æ³•å¸ˆ";
-	else if(x==4)return "æˆ˜å£«";
-	else if(x==5)return "åœ°ç²¾";
-	else if(x==6)return "æ¶é­”";
-	else if(x==7)return "ç‰§å¸ˆ";
-	else if(x==8)return "é±¼äºº";
-	else if(x==9)return "éšç¼˜";
-	else if(x==20)return "ç«æŠ€è€…";
+	if(x==1)return "ÀËÈË";
+	else if(x==2)return "ÊõÊ¿";
+	else if(x==3)return "·¨Ê¦";
+	else if(x==4)return "Õ½Ê¿";
+	else if(x==5)return "µØ¾«";
+	else if(x==6)return "¶ñÄ§";
+	else if(x==7)return "ÄÁÊ¦";
+	else if(x==8)return "ÓãÈË";
+	else if(x==9)return "¶ÜÎÀ";
+	else if(x==10)return "ËæÔµ";
+	else if(x==20)return "¾º¼¼Õß";
 	return "";
 }
 
@@ -840,21 +919,21 @@ void Choose(int now){
 	if(mode==3){
 		pl[now].occ=20;
 		SetPos(0,0);
-		printf("è¯·ä»”ç»†é˜…è¯»æ¸¸æˆè§„åˆ™:");
+		printf("Çë×ĞÏ¸ÔÄ¶ÁÓÎÏ·¹æÔò:");
 		SetPos(0,2);
-		printf("1.æ”»é˜²ä¹‹æˆ˜å¯ä»¥é€šè¿‡æ€æ­»å¯¹æ–¹æˆ–ç§¯ç´¯50ä¸ª<â˜…é˜²å¾¡>æ ‡è®°è·å¾—èƒœåˆ©");
+		printf("1.¹¥·ÀÖ®Õ½¿ÉÒÔÍ¨¹ıÉ±ËÀ¶Ô·½»ò»ıÀÛ50¸ö<¡ï·ÀÓù>±ê¼Ç»ñµÃÊ¤Àû");
 		SetPos(0,4);
-		printf("2.å¼€å§‹æ—¶æ¯äººéƒ½æœ‰ä¸€å¼ [è“„åŠ›ä¹‹å‡»](ä¸ä¼šMISS),æ¯å±€åªæœ‰ä¸€å¼ (æ— è®ºæ˜¯å¦å¼ƒç½®)");
+		printf("2.¿ªÊ¼Ê±Ã¿ÈË¶¼ÓĞÒ»ÕÅ[ĞîÁ¦Ö®»÷](²»»áMISS),Ã¿¾ÖÖ»ÓĞÒ»ÕÅ(ÎŞÂÛÊÇ·ñÆúÖÃ)");
 		SetPos(0,6);
-		printf("3.æ¯ä¸ª<â˜…é˜²å¾¡>æ ‡è®°å‡å°‘ä½ å—åˆ°çš„2%ä¼¤å®³,åŒæ—¶ä¹Ÿä¼šå‡å°‘ä½ 1%çš„HEALå›å¤é‡");
+		printf("3.Ã¿¸ö<¡ï·ÀÓù>±ê¼Ç¼õÉÙÄãÊÜµ½µÄ2%ÉËº¦,Í¬Ê±Ò²»á¼õÉÙÄã1%µÄHEAL»Ø¸´Á¿");
 		SetPos(0,8);
-		printf("4.æ¯å›åˆç¨³å®š+1â—†,å¹¶å¦æœ‰10%(è¿™ä¸ªæ•°å€¼éš[è“„åŠ›ä¹‹å‡»]ATKå¢é«˜è€Œå¢åŠ )é¢å¤–+1â—†");
+		printf("4.Ã¿»ØºÏÎÈ¶¨+1¡ô,²¢ÁíÓĞ10%(Õâ¸öÊıÖµËæ[ĞîÁ¦Ö®»÷]ATKÔö¸ß¶øÔö¼Ó)¶îÍâ+1¡ô");
 		SetPos(0,10);
-		printf("5.ç©å®¶ä¿¡æ¯:HP 600   MAX_DEF 120   æ‰‹ç‰Œä¸Šé™5   â—†3/8");
+		printf("5.Íæ¼ÒĞÅÏ¢:HP 600   MAX_DEF 120   ÊÖÅÆÉÏÏŞ5   ¡ô3/8");
 		SetPos(0,12);
-		printf("6.å›åˆç»“æŸè‹¥æ²¡æœ‰â—†,<â˜…é˜²å¾¡>+1ä¸”[è“„åŠ›ä¹‹å‡»]+15ATK");
+		printf("6.»ØºÏ½áÊøÈôÃ»ÓĞ¡ô,<¡ï·ÀÓù>+1ÇÒ[ĞîÁ¦Ö®»÷]+15ATK");
 		SetPos(0,14);
-		printf("7.æŒ‰ä¸‹ä½ çš„â€œç¡®è®¤â€é”®è¿›å…¥æ¸¸æˆ");
+		printf("7.°´ÏÂÄãµÄ¡°È·ÈÏ¡±¼ü½øÈëÓÎÏ·");
 		while(1){
 			input=getch();
 			if(input==bottom[5] || input==ENTER){
@@ -866,21 +945,21 @@ void Choose(int now){
 	if(mode==4){
 		pl[now].occ=rad()%sumjob+1;
 		SetPos(0,0);
-		printf("è¯·ä»”ç»†é˜…è¯»æ¸¸æˆè§„åˆ™:");
+		printf("Çë×ĞÏ¸ÔÄ¶ÁÓÎÏ·¹æÔò:");
 		SetPos(0,2);
-		printf("1.å‡é¢èˆä¼šä¸­ä¿è¯æ¯ä¸€æ¬¡å˜ä¸ºæ–°èŒä¸šæ—¶è‡³å°‘æŒç»­2ä¸ªå›åˆ");
+		printf("1.¼ÙÃæÎè»áÖĞ±£Ö¤Ã¿Ò»´Î±äÎªĞÂÖ°ÒµÊ±ÖÁÉÙ³ÖĞø2¸ö»ØºÏ");
 		SetPos(0,4);
-		printf("2.è·å¾—æ–°èŒä¸šæ—¶ç‰Œåº“å˜ä¸ºç›¸åº”èŒä¸šåˆå§‹ç‰Œåº“(å³åˆ·å…¥ç‰Œåº“çš„ç‰Œä¹Ÿè¢«æ¸…ç©º),æ‰‹ç‰Œä¸ä¼šå˜åŠ¨");
+		printf("2.»ñµÃĞÂÖ°ÒµÊ±ÅÆ¿â±äÎªÏàÓ¦Ö°Òµ³õÊ¼ÅÆ¿â(¼´Ë¢ÈëÅÆ¿âµÄÅÆÒ²±»Çå¿Õ),ÊÖÅÆ²»»á±ä¶¯");
 		SetPos(0,6);
-		printf("3.å…¬å…±ç‰Œåº“å§‹ç»ˆåœ¨ä½ çš„ç‰Œåº“ä¸­,ä¸”ä¼šé¢å¤–åˆ·å…¥ä¸€å¼ [æ— ä¸­ç”Ÿæœ‰]");
+		printf("3.¹«¹²ÅÆ¿âÊ¼ÖÕÔÚÄãµÄÅÆ¿âÖĞ,ÇÒ»á¶îÍâË¢ÈëÒ»ÕÅ[ÎŞÖĞÉúÓĞ]");
 		SetPos(0,8);
-		printf("4.èŒä¸šæ ‡è®°ç›¸å…³çš„æ•ˆæœä¸ä¼šå®ç°,ä½ ä¸ä¼šè·å¾—ç›¸åº”èŒä¸šçš„ç‰¹æ€§,ä¹Ÿæ— æ³•é€šè¿‡é›†é½[ç¥åœ£æ„å¿—]èƒœåˆ©");
+		printf("4.Ö°Òµ±ê¼ÇÏà¹ØµÄĞ§¹û²»»áÊµÏÖ,Äã²»»á»ñµÃÏàÓ¦Ö°ÒµµÄÌØĞÔ,Ò²ÎŞ·¨Í¨¹ı¼¯Æë[ÉñÊ¥ÒâÖ¾]Ê¤Àû");
 		SetPos(0,10);
-		printf("5.æ¯å›åˆç¨³å®š+2â—†,åæ‰‹ä¼˜åŠ¿ä¸ºå¼€å±€+1â—†");
+		printf("5.Ã¿»ØºÏÎÈ¶¨+2¡ô,ºóÊÖÓÅÊÆÎª¿ª¾Ö+1¡ô");
 		SetPos(0,12);
-		printf("6.ç©å®¶ä¿¡æ¯:HP 500   MAX_DEF 120   æ‰‹ç‰Œä¸Šé™6   â—†3/8");
+		printf("6.Íæ¼ÒĞÅÏ¢:HP 500   MAX_DEF 120   ÊÖÅÆÉÏÏŞ6   ¡ô3/8");
 		SetPos(0,14);
-		printf("7.æŒ‰ä¸‹ä½ çš„â€œç¡®è®¤â€é”®è¿›å…¥æ¸¸æˆ");
+		printf("7.°´ÏÂÄãµÄ¡°È·ÈÏ¡±¼ü½øÈëÓÎÏ·");
 		while(1){
 			input=getch();
 			if(input==bottom[5] || input==ENTER){
@@ -889,9 +968,9 @@ void Choose(int now){
 		}
 	}
 	SetPos(0,1);
-	printf("          â—‡é€‰æ‹©P%d ",now);
+	printf("          ¡óÑ¡ÔñP%d ",now);
 	printf(pl[now].name);
-	printf("çš„èŒä¸šâ—‡");//ç¬¬ä¸€è¡Œæ ‡è¯†è°é€‰æ‹©èŒä¸š
+	printf("µÄÖ°Òµ¡ó");//µÚÒ»ĞĞ±êÊ¶Ë­Ñ¡ÔñÖ°Òµ
 	while(1){
 		for(int i=1;i<=sumjob+1;i++){	
 			if(cursor!=i)
@@ -905,14 +984,14 @@ void Choose(int now){
 			printf(occ_name(i));
 			printf(" | ");
 			printf(occ_intro(i));
-		}//å„èŒä¸šåå­—å’Œç®€ä»‹å±•ç¤º
+		}//¸÷Ö°ÒµÃû×ÖºÍ¼ò½éÕ¹Ê¾
 		SetPos(0,12);
 		occ_func(cursor);
 		if(mode==1){
 			SetPos(0,24);
 			occ_treasure(cursor);
 		}
-		if(fight) printf("\n\n(ä½ å¯ä»¥æŸ¥çœ‹è¿™äº›èŒä¸šè¯´æ˜,ä½†ä½ çš„èŒä¸šæ˜¯éšç¼˜çš„)");
+		if(fight) printf("\n\n(Äã¿ÉÒÔ²é¿´ÕâĞ©Ö°ÒµËµÃ÷,µ«ÄãµÄÖ°ÒµÊÇËæÔµµÄ)");
 		input=getch();
 		if(input==bottom[1] || input==UP)
 			cursor--;
@@ -939,7 +1018,7 @@ void Choose(int now){
 int UI(int now){
 	for(int rnk=1;rnk<=2;rnk++){
 		int i;
-		//ç¼–å·/åå­—/èŒä¸š
+		//±àºÅ/Ãû×Ö/Ö°Òµ
 		SetColor(15);
 		SetPos(5,rnk*4-2);
 		printf("#%d ",rnk);
@@ -947,11 +1026,11 @@ int UI(int now){
 		if(fight){
 			if(rnk==now){
 				SetColor(6);
-				for(int i=1;i<=havewon;i++) printf("â—");
+				for(int i=1;i<=havewon;i++) printf("¡ñ");
 			}
 			else {
 				SetColor(6);
-				for(int i=1;i<=havelost;i++) printf("â—");
+				for(int i=1;i<=havelost;i++) printf("¡ñ");
 			}
 		}
 		SetColor(7);
@@ -964,77 +1043,77 @@ int UI(int now){
 		else if(pl[rnk].occ>=2){
 			SetColor(13);
 			SetPos(8,rnk*4+2-2);
-			printf("â˜…%d   ",pl[rnk].buff[0]);
+			printf("¡ï%d   ",pl[rnk].buff[0]);
 		}
 
-		//è´¹ç”¨ç»˜åˆ¶
+		//·ÑÓÃ»æÖÆ
 		SetColor(11);
 		SetPos(17,rnk*4-2);
 		printf("%d/%d ",pl[rnk].cost,pl[rnk].maxcost);
 		SetPos(26,rnk*4-2);
 		for(i=1;i<=pl[rnk].cost;i++)
-			printf("â—†");
+			printf("¡ô");
 		for(;i<=pl[rnk].maxcost;i++)
-			printf("â—‡");
+			printf("¡ó");
 		printf("                                   ");
 		
-		//è¡€é‡ç»˜åˆ¶
+		//ÑªÁ¿»æÖÆ
 		if(pl[rnk].hprate()>5)SetColor(10);
 		else if(pl[rnk].hprate()>2)SetColor(6);
 		else SetColor(12);
 		SetPos(17,rnk*4+1-2);
 		printf("%d/%d            ",pl[rnk].hp,pl[rnk].maxhp);
 
-		//æŠ¤ç”²ç»˜åˆ¶
+		//»¤¼×»æÖÆ
 		SetColor(15);
 		SetPos(17,rnk*4+2-2);
 		printf("[%d/%d]            ",pl[rnk].def,pl[rnk].maxdef);
 		
-		//Buffç»˜åˆ¶
+		//Buff»æÖÆ
 		SetPos(26,rnk*4+2-2);
 		if(mode==3){
-			SetColor(7),printf("(æ¯å›åˆ)");
-			SetColor(12),printf("è“„åŠ›+%dATK  ",pl[rnk].buff[7]);
-			SetColor(9),printf("[é˜²å¾¡]+%d ",pl[rnk].buff[8]);
+			SetColor(7),printf("(Ã¿»ØºÏ)");
+			SetColor(12),printf("ĞîÁ¦+%dATK  ",pl[rnk].buff[7]);
+			SetColor(9),printf("[·ÀÓù]+%d ",pl[rnk].buff[8]);
 		}
 		if(pl[rnk].buff[1])
-			SetColor(6),printf("ç‡ƒçƒ§ %d : ",pl[rnk].buff[1]);
+			SetColor(6),printf("È¼ÉÕ %d : ",pl[rnk].buff[1]);
 		if(pl[rnk].buff[2])
-			SetColor(2),printf("ä¸­æ¯’ %d : ",pl[rnk].buff[2]);
+			SetColor(2),printf("ÖĞ¶¾ %d : ",pl[rnk].buff[2]);
 		if(pl[rnk].buff[3])
-			SetColor(4),printf("ç‹‚æš´ %d : ",pl[rnk].buff[3]);
+			SetColor(4),printf("¿ñ±© %d : ",pl[rnk].buff[3]);
 		if(pl[rnk].buff[4])
-			SetColor(11),printf("è™šå¼± %d : ",pl[rnk].buff[4]);
+			SetColor(11),printf("ĞéÈõ %d : ",pl[rnk].buff[4]);
 		if(pl[rnk].buff[5])
-			SetColor(10),printf("æ²»ç–— %d : ",pl[rnk].buff[5]);
+			SetColor(10),printf("ÖÎÁÆ %d : ",pl[rnk].buff[5]);
 		if(pl[rnk].buff[6])
-			SetColor(5),printf("è¿·æƒ‘ %d : ",pl[rnk].buff[6]);
+			SetColor(5),printf("ÃÔ»ó %d : ",pl[rnk].buff[6]);
 		printf("                                                 ");
 		
-		//è¡€æ¡ç»˜åˆ¶
+		//ÑªÌõ»æÖÆ
 		SetPos(26,rnk*4+1-2);
 		if(pl[rnk].hprate()>5)SetColor(10);
 		else if(pl[rnk].hprate()>2)SetColor(6);
 		else SetColor(12);
 		i=1;
 		if(pl[rnk].hp>0) for(;i<=(pl[rnk].hp-1)/40+1;i++)
-			printf("â– ");
+			printf("¡ö");
 		SetColor(8);
 		for(;i<=(pl[rnk].prehp-1)/40+1;i++)
-			printf("â– ");
+			printf("¡ö");
 		if(pl[rnk].hprate()>5)SetColor(10);
 		else if(pl[rnk].hprate()>2)SetColor(6);
 		else SetColor(12);
 		for(;i<=(pl[rnk].maxhp-1)/40+1;i++)
-			printf("â–¡");
+			printf("¡õ");
 		SetColor(7);
 		if(pl[rnk].def) for(i=1;i<=(pl[rnk].def-1)/30+1;i++)
-			printf("â– ");
+			printf("¡ö");
 		for(i=1;i<=36-(pl[rnk].maxhp-1)/40-(pl[rnk].def-1)/30-2;i++)
 		printf(" ");
 	}
 
-	//æ˜¾ç¤ºå¤©æ°”
+	//ÏÔÊ¾ÌìÆø
 	SetPos(15,0);
 	SetColor(env_color(env_now));
 	printf("<");
@@ -1055,17 +1134,17 @@ void UI_other(){
 	SetPos(0,Row-1);
 	printf("P%d",now); 
 	SetPos(5,Row-1);
-	printf("  å‰©ä½™æ‰‹ç‰Œ:%d/%d",pl[3-server_mode].rest,pl[3-server_mode].cardcnt); 
+	printf("  Ê£ÓàÊÖÅÆ:%d/%d",pl[3-server_mode].rest,pl[3-server_mode].cardcnt); 
 	if(pl[3-server_mode].occ==7 && mode!=4){
 		SetColor(6);
 		SetPos(30,Row-1);
-		printf("  [ç¥åœ£æ„å¿—]:%d/%d",pl[3-server_mode].buff[10],pl[3-server_mode].cardcnt); 
+		printf("  [ÉñÊ¥ÒâÖ¾]:%d/%d",pl[3-server_mode].buff[10],pl[3-server_mode].cardcnt); 
 	}
 	SetColor(7);
 	SetPos(5,Row);
 	printf("  #"); 
 	SetPos(11,Row);SetColor(11);
-	printf("â—†");
+	printf("¡ô");
 	SetPos(20+14,Row);SetColor(7);
 	printf("ATK");
 	SetPos(30+14,Row);
@@ -1083,10 +1162,10 @@ void UI_other(){
 		if(i==min(appcnt,6)) {
 			SetColor(11,0);
 			SetPos(11,Row+i);
-			printf("%d",appcard[x].cost);//è´¹ç”¨
+			printf("%d",appcard[x].cost);//·ÑÓÃ
 			SetColor(0,8);
 			SetPos(14,Row+i);
-			printf(appcard[x].Name());//ç‰Œå
+			printf(appcard[x].Name());//ÅÆÃû
 //			SetColor(0,8);
 			printf("                 ");
 			SetPos(20+14,Row+i);
@@ -1117,10 +1196,10 @@ void UI_other(){
 		else {
 			SetColor(11);
 			SetPos(11,Row+i);
-			printf("%d",appcard[x].cost);//è´¹ç”¨
+			printf("%d",appcard[x].cost);//·ÑÓÃ
 			SetColor(7);
 			SetPos(14,Row+i);
-			printf(appcard[x].Name());//ç‰Œå
+			printf(appcard[x].Name());//ÅÆÃû
 			SetColor(7,0);
 			printf("               ");
 			SetPos(20+14,Row+i);
@@ -1152,23 +1231,23 @@ void UI_other(){
 }
 
 void start_turn(int now){
-	for(int i=1;i<=2;i++) pl[i].prehp=pl[i].hp;//è®°å½•å›åˆå¼€å§‹è¡€é‡
-	if(mode==4) pl[now].cost=min(pl[now].cost+1,pl[now].maxcost);//åŠ è´¹ 
+	for(int i=1;i<=2;i++) pl[i].prehp=pl[i].hp;//¼ÇÂ¼»ØºÏ¿ªÊ¼ÑªÁ¿
+	if(mode==4) pl[now].cost=min(pl[now].cost+1,pl[now].maxcost);//¼Ó·Ñ 
 	if(mode==3){
 		if(pl[now].handcard[pl[now].cardcnt].id==119) {
-			if(rad()%100<10+(pl[now].handcard[pl[now].cardcnt].ATK)/12) pl[now].cost=min(pl[now].cost+1,pl[now].maxcost);//åŠ è´¹
+			if(rad()%100<10+(pl[now].handcard[pl[now].cardcnt].ATK)/12) pl[now].cost=min(pl[now].cost+1,pl[now].maxcost);//¼Ó·Ñ
 		}
-		else if(rad()%100<10) pl[now].cost=min(pl[now].cost+1,pl[now].maxcost);//åŠ è´¹
+		else if(rad()%100<10) pl[now].cost=min(pl[now].cost+1,pl[now].maxcost);//¼Ó·Ñ
 	}
 	if(env_now==7)
-		pl[now].cost=min(pl[now].cost+1,pl[now].maxcost);//ç¯å¢ƒåŠ è´¹ 
+		pl[now].cost=min(pl[now].cost+1,pl[now].maxcost);//»·¾³¼Ó·Ñ 
 
-	//èŒä¸šç‰¹æ€§
+	//Ö°ÒµÌØĞÔ
 	if(mode!=4){
 		if(pl[now].occ==1) {
 			if(pl[now].cost==0){
 				if(rad()%100<80) {
-					pl[now].cost++;//æµªäºº[æ‹¾è’]
+					pl[now].cost++;//ÀËÈË[Ê°»Ä]
 					pl[now].buff[0]++;
 				}
 			}
@@ -1178,12 +1257,12 @@ void start_turn(int now){
 			pl[now].cost=min(pl[now].maxcost,pl[now].cost+pl[now].buff[0]);
 			pl[now].buff[0]=0;
 			if(rad()%100<45) pl[now].buff[0]++;
-		}//æ³•å¸ˆ<â˜…æ³•åŠ›>æ ‡è®°è·å¾—è´¹ç”¨
+		}//·¨Ê¦<¡ï·¨Á¦>±ê¼Ç»ñµÃ·ÑÓÃ
 		if(pl[now].occ==4) {
 			if(pl[now].def==0) pl[now].def=30;
 			pl[now].buff[0]=max(0,pl[now].buff[0]-1);
-		}//æˆ˜å£«å ç”²å¹¶æ¸…é™¤<â˜…ç–²æƒ«>
-		if(pl[now].occ==5) pl[now].cost=3;//åœ°ç²¾æ¯å›åˆ3è´¹
+		}//Õ½Ê¿µş¼×²¢Çå³ı<¡ïÆ£±¹>
+		if(pl[now].occ==5) pl[now].cost=3;//µØ¾«Ã¿»ØºÏ3·Ñ
 		if(pl[now].occ==6){
 			pl[now].cost=min(pl[now].cost+1,pl[now].maxcost);
 			int da=5*pl[now].buff[0];
@@ -1192,39 +1271,39 @@ void start_turn(int now){
 				if(pl[now].def>0) Shake(3,1);
 				pl[now].hp-=da-pl[now].def,pl[now].def=0;
 			}
-		}//æ¶é­”<â˜…åŸç½ª>è®©è‡ªå·±å—ä¼¤
+		}//¶ñÄ§<¡ïÔ­×ï>ÈÃ×Ô¼ºÊÜÉË
 		if(pl[now].occ==8){
 			pl[now].hp-=15;
 			pl[now].buff[0]+=10;
 		}
 	}
-	pl[now].cost=min(pl[now].cost+1,pl[now].maxcost);//åŠ è´¹ 
-	if(pl[now].buff[5])//æ²»ç–—buff
+	pl[now].cost=min(pl[now].cost+1,pl[now].maxcost);//¼Ó·Ñ 
+	if(pl[now].buff[5])//ÖÎÁÆbuff
 		pl[now].hp=min(pl[now].hp+30,pl[now].maxhp);
-	if(pl[now].buff[1])//ç‡ƒçƒ§buff
+	if(pl[now].buff[1])//È¼ÉÕbuff
 		pl[now].hp-=40;
-	if(pl[now].buff[2])//ä¸­æ¯’buff
+	if(pl[now].buff[2])//ÖĞ¶¾buff
 		pl[now].hp-=pl[now].hp*0.2;
 	pl[now].UpdateBuff(1);
-	//buffå‰åˆ¤
+	//buffÇ°ÅĞ
 
 	if(mode==2){
 		pl[now].buff[rad()%6+1]++;
-	}//å¨±ä¹æ¨¡å¼ï¼šéšæœºbuff
+	}//ÓéÀÖÄ£Ê½£ºËæ»úbuff
 
 	if(env_now==5){
 		pl[now].hp=min(pl[now].maxhp,(int)(pl[now].hp+pl[now].maxhp*0.05));
-	}//å½©è™¹
+	}//²Êºç
 	if(env_now==6){
 		pl[now].hp=(pl[now].hp-pl[now].maxhp*0.05);
-	}//é…¸é›¨
-	//ç¯å¢ƒåˆ¤æ–­
+	}//ËáÓê
+	//»·¾³ÅĞ¶Ï
 	if(mode==3){
 		pl[now].buff[0]+=pl[now].buff[8];
 		if(pl[now].handcard[pl[now].cardcnt].id==119) {
 			pl[now].handcard[pl[now].cardcnt].ATK+=pl[now].buff[7];
-			if(pl[now].handcard[pl[now].cardcnt].ATK>=400 && !gettre[now]) { //è·å¾—[ç ´é˜²]
-				for(int i=1;i<=pl[now].cardcnt-1;i++){ //ä¸ä¼šè¦†ç›–[è“„åŠ›ä¹‹å‡»]
+			if(pl[now].handcard[pl[now].cardcnt].ATK>=400 && !gettre[now]) { //»ñµÃ[ÆÆ·À]
+				for(int i=1;i<=pl[now].cardcnt-1;i++){ //²»»á¸²¸Ç[ĞîÁ¦Ö®»÷]
 					if(pl[now].used[i]) {
 						pl[now].used[i]=0;
 						gettre[now]=1;
@@ -1233,7 +1312,7 @@ void start_turn(int now){
 					}
 				}
 				if(!gettre[now]){
-					pl[now].handcard[rad()%(pl[now].cardcnt-1)+1]=lib[20][libcnt[20]+1]; //ä¸ä¼šè¦†ç›–[è“„åŠ›ä¹‹å‡»]
+					pl[now].handcard[rad()%(pl[now].cardcnt-1)+1]=lib[20][libcnt[20]+1]; //²»»á¸²¸Ç[ĞîÁ¦Ö®»÷]
 					gettre[now]=1;
 				}
 			}
@@ -1244,7 +1323,7 @@ void start_turn(int now){
 void another_player_quit(int server_mode){
 	system("cls");
 	SetPos(11,0);
-	printf("å¯¹æ–¹é€€å‡ºäº†æ¸¸æˆï¼Œä»–ä¹Ÿè®¸æ˜¯æŠ•é™äº†...\n");
+	printf("¶Ô·½ÍË³öÁËÓÎÏ·£¬ËûÒ²ĞíÊÇÍ¶½µÁË...\n");
 	Sleep(1500);
 }
 int Ask(int now){
@@ -1253,7 +1332,7 @@ int Ask(int now){
 	if(mode==1) treasure(now);
 	UI(now);
 	if(Check(now)){send_gaming(void_card); return 1;}
-	//æ­»äº¡åˆ¤æ–­
+	//ËÀÍöÅĞ¶Ï
 
 	for(int i=1;i<=pl[now].cardcnt;i++){
 		if(pl[now].used[i]){
@@ -1267,12 +1346,12 @@ int Ask(int now){
 		}
 	}
 	pl[now].rest=pl[now].cardcnt;
-	//è¡¥å……æ‰‹ç‰Œ
+	//²¹³äÊÖÅÆ
 	if(pl[now].occ==7){
 		pl[now].buff[10]=0;
 		for(int i=1;i<=pl[now].cardcnt;i++) 
-			if(!pl[now].used[i] && pl[now].handcard[i].id==114) pl[now].buff[10]++; //114-->[ç¥åœ£æ„å¿—]
-	}//ç‰§å¸ˆæ£€ç´¢[ç¥åœ£æ„å¿—]
+			if(!pl[now].used[i] && pl[now].handcard[i].id==114) pl[now].buff[10]++; //114-->[ÉñÊ¥ÒâÖ¾]
+	}//ÄÁÊ¦¼ìË÷[ÉñÊ¥ÒâÖ¾]
 	use_card=(Card){0,0,0,0,0,-2,0};
 	if(send_gaming(use_card)<0) {
 		another_player_quit(server_mode); 
@@ -1290,7 +1369,7 @@ int Ask(int now){
 		SetPos(5,Row);
 		printf("  #"); 
 		SetPos(11,Row);SetColor(11);
-		printf("â—†");
+		printf("¡ô");
 		SetPos(20+14,Row);SetColor(7);
 		printf("ATK");
 		SetPos(30+14,Row);
@@ -1304,9 +1383,9 @@ int Ask(int now){
 			int color=0;
 			SetPos(5,Row+i);
 			if(pl[now].used[i])SetColor(8);
-			if(cursor==i && !option_giveup && !option_use) SetColor(color=15),printf("â—"); 
-			else if(cursor==i && option_giveup) SetColor(color=15),printf("Ã—"); 
-			else if(cursor==i && option_use) SetColor(color=15),printf("â—"); 
+			if(cursor==i && !option_giveup && !option_use) SetColor(color=15),printf("¡ò"); 
+			else if(cursor==i && option_giveup) SetColor(color=15),printf("¡Á"); 
+			else if(cursor==i && option_use) SetColor(color=15),printf("¡ñ"); 
 			else SetColor(color=7),printf("  "); 
 			SetPos(7,Row+i),printf("%d",i); 
 			if(pl[now].used[i]){
@@ -1321,21 +1400,24 @@ int Ask(int now){
 			if(pl[now].handcard[i].func==15) {
 				pl[now].handcard[i].ATK=pl[now].cost*40+25;
 				pl[now].handcard[i].cost=pl[now].cost;
-			}//[èƒŒæ°´ä¸€æˆ˜]
+			}//[±³Ë®Ò»Õ½]
 			if(pl[now].handcard[i].func==32){
 				int da=0;
 				for(int i=1;i<=pl[now].cardcnt;i++){
 					if(pl[now].used[i]) continue;
-					if(pl[now].handcard[i].id==98) da+=60; //98-->[è™šç©ºåƒåœ¾]
+					if(pl[now].handcard[i].id==98) da+=60; //98-->[Ğé¿ÕÀ¬»ø]
 				}
 				pl[now].handcard[i].ATK=da;
 			}
+			if(pl[now].handcard[i].func==102){
+				pl[now].handcard[i].ATK=pl[now].def;
+			}
 			if(pl[now].cost>=pl[now].handcard[i].cost)SetColor(11);
-			else SetColor(3);//è´¹ç”¨æ˜¯å¦è¶³å¤Ÿ
+			else SetColor(3);//·ÑÓÃÊÇ·ñ×ã¹»
 			printf("%d",pl[now].handcard[i].cost);
 			SetColor(color);
 			SetPos(14,Row+i);
-			printf(pl[now].handcard[i].Name());//ç‰Œå
+			printf(pl[now].handcard[i].Name());//ÅÆÃû
 			SetColor(7,0);
 			printf("               ");
 			SetPos(20+14,Row+i);
@@ -1390,7 +1472,7 @@ int Ask(int now){
 			}
 			printf("           ");
 
-		}//æ˜¾ç¤ºæ‰‹ç‰Œ
+		}//ÏÔÊ¾ÊÖÅÆ
 		mouse(0);
 		SetColor(7);
 		SetPos(11,Row+9);
@@ -1407,12 +1489,12 @@ int Ask(int now){
 			if(!option_quit){
 				option_quit=1;
 				SetPos(11,Row+12);
-				printf("ç¡®å®šè¦è®¤è¾“å—ï¼Ÿ          ");
+				printf("È·¶¨ÒªÈÏÊäÂğ£¿          ");
 			}
 			else if(option_quit==1){
 				option_quit=2;
 				SetPos(11,Row+12);
-				printf("çœŸçš„ç¡®å®šè¦è®¤è¾“å—ï¼Ÿ      ");
+				printf("ÕæµÄÈ·¶¨ÒªÈÏÊäÂğ£¿      ");
 			}
 			else{
 				pl[now].hp=0;
@@ -1450,8 +1532,8 @@ int Ask(int now){
 			}
 		}
 		if(cursor<=0)cursor=pl[now].cardcnt;
-		if(cursor>pl[now].cardcnt)cursor=1;//ç§»åŠ¨ç„¦ç‚¹
-		if(input==bottom[3])//ä½¿ç”¨
+		if(cursor>pl[now].cardcnt)cursor=1;//ÒÆ¶¯½¹µã
+		if(input==bottom[3])//Ê¹ÓÃ
 		{
 			SetPos(0,1);
 			printf("                                               ");
@@ -1462,11 +1544,11 @@ int Ask(int now){
 			else {
 				if(pl[now].used[cursor]){
 					SetPos(0,1);
-					printf("é€‰ä¸­çš„ç‰Œä¸å­˜åœ¨ï¼                   ");
+					printf("Ñ¡ÖĞµÄÅÆ²»´æÔÚ£¡                   ");
 				}
 				else if(pl[now].cost<pl[now].handcard[cursor].cost){
 					SetPos(0,1);
-					printf("è´¹ç”¨ä¸è¶³æ— æ³•ä½¿ç”¨æ­¤ç‰Œï¼                 ");
+					printf("·ÑÓÃ²»×ãÎŞ·¨Ê¹ÓÃ´ËÅÆ£¡                 ");
 				}
 				else{
 					pl[now].cost-=pl[now].handcard[cursor].cost;
@@ -1482,7 +1564,7 @@ int Ask(int now){
 						if(pl[now].used[i]) continue;
 						if(pl[now].handcard[i].func==41) pl[now].handcard[i].ATK+=10;
 						if(pl[now].handcard[i].func==75) pl[now].handcard[i].ATK+=5;
-					}//func 41 75 å¢åŠ ATK
+					}//func 41 75 Ôö¼ÓATK
 					while(pl[now].used[cursor] && cursor<=pl[now].cardcnt+1 && pl[now].rest){
 						cursor++;
 						if(cursor>pl[now].cardcnt) cursor=1;
@@ -1490,8 +1572,8 @@ int Ask(int now){
 					if(pl[now].occ==7){
 						pl[now].buff[10]=0;
 						for(int i=1;i<=pl[now].cardcnt;i++) 
-							if(!pl[now].used[i] && pl[now].handcard[i].id==114) pl[now].buff[10]++; //114-->[ç¥åœ£æ„å¿—]
-					}//ç‰§å¸ˆæ£€ç´¢[ç¥åœ£æ„å¿—]
+							if(!pl[now].used[i] && pl[now].handcard[i].id==114) pl[now].buff[10]++; //114-->[ÉñÊ¥ÒâÖ¾]
+					}//ÄÁÊ¦¼ìË÷[ÉñÊ¥ÒâÖ¾]
 					if(send_gaming(use_card)<0) {
 						another_player_quit(server_mode); 
 						winner=server_mode;
@@ -1501,7 +1583,7 @@ int Ask(int now){
 				option_use=0;
 			}
 		}
-		if(input==bottom[4]){//å¼ƒç‰Œ
+		if(input==bottom[4]){//ÆúÅÆ
 			SetPos(0,1);
 			printf("                                          ");
 			option_use=option_over=option_quit=0;
@@ -1531,7 +1613,7 @@ int Ask(int now){
 				else{
 					if(pl[now].used[cursor]){
 						SetPos(0,1);
-						printf("é€‰ä¸­çš„ç‰Œä¸å­˜åœ¨ï¼                  ");
+						printf("Ñ¡ÖĞµÄÅÆ²»´æÔÚ£¡                  ");
 					}
 					else if(pl[now].handcard[cursor].func>=27 && pl[now].handcard[cursor].func<=29){
 						pl[now].used[cursor]=1;
@@ -1546,7 +1628,7 @@ int Ask(int now){
 					}
 					else if(pl[now].cost<pl[now].handcard[cursor].cost){
 						SetPos(0,1);
-						printf("è´¹ç”¨ä¸è¶³æ— æ³•å¼ƒç½®æ­¤ç‰Œï¼                 ");
+						printf("·ÑÓÃ²»×ãÎŞ·¨ÆúÖÃ´ËÅÆ£¡                 ");
 					}
 					else{
 						pl[now].cost-=pl[now].handcard[cursor].cost;
@@ -1573,8 +1655,8 @@ int Ask(int now){
 				if(pl[now].occ==7){
 					pl[now].buff[10]=0;
 					for(int i=1;i<=pl[now].cardcnt;i++) 
-						if(!pl[now].used[i] && pl[now].handcard[i].id==114) pl[now].buff[10]++; //114-->[ç¥åœ£æ„å¿—]
-				}//ç‰§å¸ˆæ£€ç´¢[ç¥åœ£æ„å¿—]
+						if(!pl[now].used[i] && pl[now].handcard[i].id==114) pl[now].buff[10]++; //114-->[ÉñÊ¥ÒâÖ¾]
+				}//ÄÁÊ¦¼ìË÷[ÉñÊ¥ÒâÖ¾]
 				if(send_gaming(void_card)<0) {
 					another_player_quit(server_mode); 
 					winner=server_mode;
@@ -1582,14 +1664,14 @@ int Ask(int now){
 				}
 			}
 		}
-		if(input==bottom[5] || input==ENTER) {//ç»“æŸå›åˆ
+		if(input==bottom[5] || input==ENTER) {//½áÊø»ØºÏ
 			option_giveup=option_use=option_quit=0;
 			SetPos(0,1);
 			printf("                ");
 			if(!option_over){
 				option_over=1;
 				SetPos(11,Row+12);
-				printf("ç¡®å®šè¦ç»“æŸå›åˆå—ï¼Ÿ    ");
+				printf("È·¶¨Òª½áÊø»ØºÏÂğ£¿    ");
 			}else{
 				option_over=0;
 				SetPos(11,Row+12);
@@ -1601,7 +1683,7 @@ int Ask(int now){
 			SetPos(11,Row+12);
 			printf("                      ");
 		}
-		if(pl[now].rest<=0){//ç»“æŸå›åˆ
+		if(pl[now].rest<=0){//½áÊø»ØºÏ
 			SetPos(0,1);
 			printf("                ");
 			for(int i=1;i<=pl[now].cardcnt;i++){
@@ -1631,7 +1713,7 @@ int Ask_same(int now){
 	if(mode==1) treasure(now);
 	UI(now);
 	if(Check(now)) return 0;
-	//æ­»äº¡åˆ¤æ–­
+	//ËÀÍöÅĞ¶Ï
 
 	for(int i=1;i<=pl[now].cardcnt;i++){
 		if(pl[now].used[i]){
@@ -1644,7 +1726,7 @@ int Ask_same(int now){
 			}
 		}
 	}
-	//è¡¥å……æ‰‹ç‰Œ
+	//²¹³äÊÖÅÆ
 	pl[now].rest=pl[now].cardcnt;
 
 	int cursor=1;
@@ -1656,7 +1738,7 @@ int Ask_same(int now){
 		SetPos(5,Row);
 		printf("  #"); 
 		SetPos(11,Row);SetColor(11);
-		printf("â—†");
+		printf("¡ô");
 		SetPos(20+14,Row);SetColor(7);
 		printf("ATK");
 		SetPos(30+14,Row);
@@ -1670,9 +1752,9 @@ int Ask_same(int now){
 			int color=0;
 			SetPos(5,Row+i);
 			if(pl[now].used[i])SetColor(8);
-			if(cursor==i && !option_giveup && !option_use) SetColor(color=15),printf("â—"); 
-			else if(cursor==i && option_giveup) SetColor(color=15),printf("Ã—"); 
-			else if(cursor==i && option_use) SetColor(color=15),printf("â—"); 
+			if(cursor==i && !option_giveup && !option_use) SetColor(color=15),printf("¡ò"); 
+			else if(cursor==i && option_giveup) SetColor(color=15),printf("¡Á"); 
+			else if(cursor==i && option_use) SetColor(color=15),printf("¡ñ"); 
 			else SetColor(color=7),printf("  "); 
 			SetPos(7,Row+i),printf("%d",i); 
 			if(pl[now].used[i]){
@@ -1687,21 +1769,24 @@ int Ask_same(int now){
 			if(pl[now].handcard[i].func==15) {
 				pl[now].handcard[i].ATK=pl[now].cost*40+25;
 				pl[now].handcard[i].cost=pl[now].cost;
-			}//[èƒŒæ°´ä¸€æˆ˜]
+			}//[±³Ë®Ò»Õ½]
 			if(pl[now].handcard[i].func==32){
 				int da=0;
 				for(int i=1;i<=pl[now].cardcnt;i++){
 					if(pl[now].used[i]) continue;
-					if(pl[now].handcard[i].id==98) da+=60; //98-->[è™šç©ºåƒåœ¾]
+					if(pl[now].handcard[i].id==98) da+=60; //98-->[Ğé¿ÕÀ¬»ø]
 				}
 				pl[now].handcard[i].ATK=da;
 			}
+			if(pl[now].handcard[i].func==102){
+				pl[now].handcard[i].ATK=pl[now].def;
+			}
 			if(pl[now].cost>=pl[now].handcard[i].cost)SetColor(11);
-			else SetColor(3);//è´¹ç”¨æ˜¯å¦è¶³å¤Ÿ
+			else SetColor(3);//·ÑÓÃÊÇ·ñ×ã¹»
 			printf("%d",pl[now].handcard[i].cost);
 			SetColor(color);
 			SetPos(14,Row+i);
-			printf(pl[now].handcard[i].Name());//ç‰Œå
+			printf(pl[now].handcard[i].Name());//ÅÆÃû
 			SetColor(7,0);
 			printf("               ");
 			SetPos(20+14,Row+i);
@@ -1755,7 +1840,7 @@ int Ask_same(int now){
 				printf("          ");
 			}
 			printf("           ");
-		}//æ˜¾ç¤ºæ‰‹ç‰Œ
+		}//ÏÔÊ¾ÊÖÅÆ
 		mouse(0);
 		SetColor(7);
 		SetPos(11,Row+9);
@@ -1785,8 +1870,8 @@ int Ask_same(int now){
 			}
 		}
 		if(cursor<=0)cursor=pl[now].cardcnt;
-		if(cursor>pl[now].cardcnt)cursor=1;//ç§»åŠ¨ç„¦ç‚¹
-		if(input=='z' || input=='+')//ä½¿ç”¨
+		if(cursor>pl[now].cardcnt)cursor=1;//ÒÆ¶¯½¹µã
+		if(input=='z' || input=='+')//Ê¹ÓÃ
 		{
 			SetPos(0,1);
 			printf("                                  ");
@@ -1797,11 +1882,11 @@ int Ask_same(int now){
 			else {
 				if(pl[now].used[cursor]){
 					SetPos(0,1);
-					printf("é€‰ä¸­çš„ç‰Œä¸å­˜åœ¨ï¼                 ");
+					printf("Ñ¡ÖĞµÄÅÆ²»´æÔÚ£¡                 ");
 				}
 				else if(pl[now].cost<pl[now].handcard[cursor].cost){
 					SetPos(0,1);
-					printf("è´¹ç”¨ä¸è¶³æ— æ³•ä½¿ç”¨æ­¤ç‰Œï¼                 ");
+					printf("·ÑÓÃ²»×ãÎŞ·¨Ê¹ÓÃ´ËÅÆ£¡                 ");
 				}
 				else{
 					pl[now].cost-=pl[now].handcard[cursor].cost;
@@ -1817,7 +1902,7 @@ int Ask_same(int now){
 						if(pl[now].used[i]) continue;
 						if(pl[now].handcard[i].func==41) pl[now].handcard[i].ATK+=10;
 						if(pl[now].handcard[i].func==75) pl[now].handcard[i].ATK+=5;
-					}//func 41 75 å¢åŠ ATK
+					}//func 41 75 Ôö¼ÓATK
 					while(pl[now].used[cursor] && cursor<=pl[now].cardcnt+1 && pl[now].rest){
 						cursor++;
 						if(cursor>pl[now].cardcnt) cursor=1;
@@ -1826,7 +1911,7 @@ int Ask_same(int now){
 				option_use=0;
 			}
 		}
-		if(input=='x' || input=='-'){//å¼ƒç‰Œ
+		if(input=='x' || input=='-'){//ÆúÅÆ
 			SetPos(0,1);
 			printf("                ");
 			option_use=option_over=0;
@@ -1848,7 +1933,7 @@ int Ask_same(int now){
 				else{
 					if(pl[now].used[cursor]){
 						SetPos(0,1);
-						printf("é€‰ä¸­çš„ç‰Œä¸å­˜åœ¨ï¼                 ");
+						printf("Ñ¡ÖĞµÄÅÆ²»´æÔÚ£¡                 ");
 					}
 					else if(pl[now].handcard[cursor].func>=27 && pl[now].handcard[cursor].func<=29){
 						pl[now].used[cursor]=1;
@@ -1863,7 +1948,7 @@ int Ask_same(int now){
 					}
 					else if(pl[now].cost<pl[now].handcard[cursor].cost){
 						SetPos(0,1);
-						printf("è´¹ç”¨ä¸è¶³æ— æ³•å¼ƒç½®æ­¤ç‰Œï¼                 ");
+						printf("·ÑÓÃ²»×ãÎŞ·¨ÆúÖÃ´ËÅÆ£¡                 ");
 					}
 					else{
 						pl[now].cost-=pl[now].handcard[cursor].cost;
@@ -1884,13 +1969,13 @@ int Ask_same(int now){
 				}
 			}
 		}
-		if(input==SPACE || input==ENTER) {//ç»“æŸå›åˆ
+		if(input==SPACE || input==ENTER) {//½áÊø»ØºÏ
 			SetPos(0,1);
 			printf("                ");
 			if(!option_over){
 				option_over=1;
 				SetPos(11,Row+12);
-				printf("ç¡®å®šè¦ç»“æŸå›åˆå—ï¼Ÿ");
+				printf("È·¶¨Òª½áÊø»ØºÏÂğ£¿");
 			}else{
 				option_over=0;
 				SetPos(11,Row+12);
@@ -1902,7 +1987,7 @@ int Ask_same(int now){
 			SetPos(11,Row+12);
 			printf("                    ");
 		}
-		if(pl[now].rest<=0){//ç»“æŸå›åˆ
+		if(pl[now].rest<=0){//½áÊø»ØºÏ
 			SetPos(0,1);
 			printf("                ");
 			Sleep(200);
@@ -1918,51 +2003,51 @@ void bot(){
 	SetColor(7,0);
 	system("cls");
 	SetPos(15,0);
-	printf("â€» æŒ‰é”®è®¾ç½® â€»");
+	printf("¡ù °´¼üÉèÖÃ ¡ù");
 	SetPos(0,1);
-	printf("ä½¿ç”¨[â†‘][â†“]åˆ‡æ¢ä¸Šä¸‹æ¡ç›®,æŒ‰é”®â€œåªèƒ½â€è®¾ç½®ä¸ºç©ºæ ¼/å°å†™å­—æ¯,å…¶ä»–å°†æ— æ³•è®¾ç½®");
-	printf("\nè¾“å…¥æŒ‰é”®æ›´æ”¹äº®èµ·å¤„çš„æŒ‰é”®,[ENTER]å›åˆ°ä¸Šä¸€ç•Œé¢,è¯·ä¿è¯æŒ‰é”®æ²¡æœ‰é‡å¤");
+	printf("Ê¹ÓÃ[¡ü][¡ı]ÇĞ»»ÉÏÏÂÌõÄ¿,°´¼ü¡°Ö»ÄÜ¡±ÉèÖÃÎª¿Õ¸ñ/Ğ¡Ğ´×ÖÄ¸,ÆäËû½«ÎŞ·¨ÉèÖÃ");
+	printf("\nÊäÈë°´¼ü¸ü¸ÄÁÁÆğ´¦µÄ°´¼ü,[ENTER]»Øµ½ÉÏÒ»½çÃæ,Çë±£Ö¤°´¼üÃ»ÓĞÖØ¸´");
 	int cursor=1;
 	while(1){
 		SetPos(1,4);
 		if(cursor!=1)SetColor(7,0);
 		else SetColor(0,7);
-		printf("åˆ‡æ¢ä¸Šä¸€æ¡ç›®                          ");
+		printf("ÇĞ»»ÉÏÒ»ÌõÄ¿                          ");
 		SetPos(25,4);
 		printf("[%c]",bottom[1]);
 
 		SetPos(1,6);
 		if(cursor!=2)SetColor(7,0);
 		else SetColor(0,7);
-		printf("åˆ‡æ¢ä¸‹ä¸€æ¡ç›®                          ");
+		printf("ÇĞ»»ÏÂÒ»ÌõÄ¿                          ");
 		SetPos(25,6);
 		printf("[%c]",bottom[2]);
 
 		SetPos(1,8);
 		if(cursor!=3)SetColor(7,0);
 		else SetColor(0,7);
-		printf("æ‰“å‡ºæ‰‹ç‰Œ/æ›´æ”¹è®¾ç½®                          ");
+		printf("´ò³öÊÖÅÆ/¸ü¸ÄÉèÖÃ                          ");
 		SetPos(25,8);
 		printf("[%c]",bottom[3]);
 
 		SetPos(1,10);
 		if(cursor!=4)SetColor(7,0);
 		else SetColor(0,7);
-		printf("å¼ƒç½®æ‰‹ç‰Œ                          ");
+		printf("ÆúÖÃÊÖÅÆ                          ");
 		SetPos(25,10);
 		printf("[%c]",bottom[4]);
 
 		SetPos(1,12);
 		if(cursor!=5)SetColor(7,0);
 		else SetColor(0,7);
-		printf("ç»“æŸå›åˆ/ç¡®è®¤                          ");
+		printf("½áÊø»ØºÏ/È·ÈÏ                          ");
 		SetPos(25,12);
 		printf("[%c]",bottom[5]);
 
 		SetPos(1,14);
 		if(cursor!=6)SetColor(7,0);
 		else SetColor(0,7);
-		printf("è®¤è¾“                          ");
+		printf("ÈÏÊä                          ");
 		SetPos(25,14);
 		printf("[%c]",bottom[6]);
 		
@@ -1979,7 +2064,7 @@ void bot(){
 				err=1;
 				SetPos(1,16);
 				SetColor(7,0);
-				printf("ä½ è®¾ç½®äº†é‡å¤çš„æŒ‰é”®,è¯·æ£€æŸ¥!");
+				printf("ÄãÉèÖÃÁËÖØ¸´µÄ°´¼ü,Çë¼ì²é!");
 				if(err) break;
 			}
 			if(err) continue;
@@ -1994,71 +2079,71 @@ bool Options(bool x){
 	if(x){
 		system("cls");
 		SetPos(0,0);
-		printf("â€» è®¾ç½® Options â€»");
+		printf("¡ù ÉèÖÃ Options ¡ù");
 		int cursor=1;
 		while(1){
 
 			SetPos(1,3);
 			if(cursor!=1)SetColor(7,0);
 			else SetColor(0,7);
-			printf("å¤©æ°”ç¯å¢ƒå˜åŒ–                          ");
+			printf("ÌìÆø»·¾³±ä»¯                          ");
 			SetPos(25,3);
-			if(env_on==1)printf("â– å¼€");
-			else printf("å…³â– ");//å¤©æ°”è®¾å®š
+			if(env_on==1)printf("¡ö¿ª");
+			else printf("¹Ø¡ö");//ÌìÆøÉè¶¨
 
 			SetPos(1,5);
 			if(cursor!=2)SetColor(7,0);
 			else SetColor(0,7);
-			printf("å…ˆæ‰‹ç©å®¶                             ");
+			printf("ÏÈÊÖÍæ¼Ò                             ");
 			SetPos(25,5);
 			if(player_bgn>0)
 				printf("P%d",player_bgn);
 			else
-				printf("éšæœº");//å…ˆæ‰‹ç©å®¶è®¾å®š
+				printf("Ëæ»ú");//ÏÈÊÖÍæ¼ÒÉè¶¨
 
 			SetPos(1,7);
 			if(cursor!=3) SetColor(7,0);
 			else SetColor(0,7);
-			printf("æ¸¸æˆæ¨¡å¼                                   ");
+			printf("ÓÎÏ·Ä£Ê½                                   ");
 			SetPos(25,7);
 			if(mode==0){
-				printf("ç»å…¸æ¨¡å¼");
+				printf("¾­µäÄ£Ê½");
 				SetPos(8,15);SetColor(7,0);
-				printf("æœ€ç»å…¸çš„æ¸¸æˆæ¨¡å¼                                             ");
+				printf("×î¾­µäµÄÓÎÏ·Ä£Ê½                                             ");
 				printf("\n\t                                          ");
 			}
 			else if(mode==1){
-				printf("ç«æŠ€æ¨¡å¼ï¼šå®è—ç‰Œ");
+				printf("¾º¼¼Ä£Ê½£º±¦²ØÅÆ");
 				SetPos(8,15);SetColor(7,0);
-				printf("å„èŒä¸šå¢åŠ å®è—ç‰Œ,ç‰¹æ®Šæ¡ä»¶ä¸‹ä¼šç½®å…¥æ‰‹ç‰Œ,æ¯å±€ä»…1æ¬¡                    ");
+				printf("¸÷Ö°ÒµÔö¼Ó±¦²ØÅÆ,ÌØÊâÌõ¼şÏÂ»áÖÃÈëÊÖÅÆ,Ã¿¾Ö½ö1´Î                    ");
 				printf("\n\t                                          ");
 			}
 			else if(mode==2){
-				printf("æ¬¢ä¹æ¨¡å¼ï¼šéšæœºbuff");
+				printf("»¶ÀÖÄ£Ê½£ºËæ»úbuff");
 				SetPos(8,15);SetColor(7,0);
-				printf("æ¯å›åˆå¼€å§‹æ—¶è·å¾—1å›åˆéšæœºbuff,åŒæ–¹ç‰Œåº“ä¸­æ·»åŠ å¨±ä¹ç‰Œ");
-				printf("\n\tæ‰€æœ‰ç‰ŒATK/HEAL/DEFé™ä¸ºåŸå…ˆçš„70%%          ");
+				printf("Ã¿»ØºÏ¿ªÊ¼Ê±»ñµÃ1»ØºÏËæ»úbuff,Ë«·½ÅÆ¿âÖĞÌí¼ÓÓéÀÖÅÆ");
+				printf("\n\tËùÓĞÅÆATK/HEAL/DEF½µÎªÔ­ÏÈµÄ70%%          ");
 			}
 			else if(mode==3){
-				printf("ç«æŠ€æ¨¡å¼ï¼šæ”»é˜²ä¹‹æˆ˜");
+				printf("¾º¼¼Ä£Ê½£º¹¥·ÀÖ®Õ½");
 				SetPos(8,15);SetColor(7,0);
-				printf("è¿›æ”»ä¸é˜²å®ˆçš„ç»“åˆ,æœ‰å¤šç§èƒœåˆ©æ–¹å¼,è€ƒéªŒç©å®¶çš„æ“ä½œ                  ");
+				printf("½ø¹¥Óë·ÀÊØµÄ½áºÏ,ÓĞ¶àÖÖÊ¤Àû·½Ê½,¿¼ÑéÍæ¼ÒµÄ²Ù×÷                  ");
 				printf("\n\t                                          ");
 			}
 			else if(mode==4){
-				printf("æ¬¢ä¹æ¨¡å¼ï¼šå‡é¢èˆä¼š");
+				printf("»¶ÀÖÄ£Ê½£º¼ÙÃæÎè»á");
 				SetPos(8,15);SetColor(7,0);
-				printf("æ¯éš”å‡ ä¸ªå›åˆæ‰€æœ‰ç©å®¶çš„èŒä¸šå°†éšæœºå˜åŠ¨,è®©éšè—è¿æ‹›æˆä¸ºå¯èƒ½             ");
+				printf("Ã¿¸ô¼¸¸ö»ØºÏËùÓĞÍæ¼ÒµÄÖ°Òµ½«Ëæ»ú±ä¶¯,ÈÃÒş²ØÁ¬ÕĞ³ÉÎª¿ÉÄÜ             ");
 				printf("\n\t                                          ");
 			}
 			else if(mode==5){
-				printf("ç«æŠ€æ¨¡å¼ï¼šçƒ­è¡€ç«æŠ€");
+				printf("¾º¼¼Ä£Ê½£ºÈÈÑª¾º¼¼");
 				SetPos(8,15);SetColor(7,0);
-				printf("ä¸‰å±€ä¸¤èƒœçš„çƒ­è¡€ç«æŠ€,ä½“éªŒå…¶ä»–ç«æŠ€æ¨¡å¼,æ˜¯æ—¶å€™å±•ç°ä½ çœŸæ­£çš„å®åŠ›äº†!             ");
-				printf("\n\tä¾æ¬¡è¿›è¡Œ:ç»å…¸æ¨¡å¼->æ”»é˜²ä¹‹æˆ˜->å®è—ç‰Œ           ");
+				printf("Èı¾ÖÁ½Ê¤µÄÈÈÑª¾º¼¼,ÌåÑéÆäËû¾º¼¼Ä£Ê½,ÊÇÊ±ºòÕ¹ÏÖÄãÕæÕıµÄÊµÁ¦ÁË!             ");
+				printf("\n\tÒÀ´Î½øĞĞ:¾­µäÄ£Ê½->¹¥·ÀÖ®Õ½->±¦²ØÅÆ           ");
 			}
 			mouse(0);
-			//æ¸¸æˆæ¨¡å¼è®¾å®š
+			//ÓÎÏ·Ä£Ê½Éè¶¨
 			if(server_mode==1){
 				input=getch();
 				if(input==bottom[1] || input==UP) cursor--;
@@ -2114,64 +2199,64 @@ bool Options(bool x){
 	}
 	else {
 		SetPos(0,0);
-		printf("â€» è®¾ç½® Options â€»");
+		printf("¡ù ÉèÖÃ Options ¡ù");
 		int cursor=1;
 		while(1){
 
 			SetPos(1,3);
 			if(cursor!=1)SetColor(7,0);
 			else SetColor(0,7);
-			printf("å¤©æ°”ç¯å¢ƒå˜åŒ–                          ");
+			printf("ÌìÆø»·¾³±ä»¯                          ");
 			SetPos(25,3);
-			if(env_on==1)printf("â– å¼€");
-			else printf("å…³â– ");//å¤©æ°”è®¾å®š
+			if(env_on==1)printf("¡ö¿ª");
+			else printf("¹Ø¡ö");//ÌìÆøÉè¶¨
 
 			SetPos(1,5);
 			if(cursor!=2)SetColor(7,0);
 			else SetColor(0,7);
-			printf("å…ˆæ‰‹ç©å®¶                             ");
+			printf("ÏÈÊÖÍæ¼Ò                             ");
 			SetPos(25,5);
 			if(player_bgn>0)
 				printf("P%d",player_bgn);
 			else
-				printf("éšæœº");//å…ˆæ‰‹ç©å®¶è®¾å®š
+				printf("Ëæ»ú");//ÏÈÊÖÍæ¼ÒÉè¶¨
 
 			SetPos(1,7);
 			if(cursor!=3) SetColor(7,0);
 			else SetColor(0,7);
-			printf("æ¸¸æˆæ¨¡å¼                                   ");
+			printf("ÓÎÏ·Ä£Ê½                                   ");
 			SetPos(25,7);
 			if(mode==0){
-				printf("ç»å…¸æ¨¡å¼");
+				printf("¾­µäÄ£Ê½");
 				SetPos(8,15);SetColor(7,0);
-				printf("æœ€ç»å…¸çš„æ¸¸æˆæ¨¡å¼                                             ");
+				printf("×î¾­µäµÄÓÎÏ·Ä£Ê½                                             ");
 				printf("\n\t                                          ");
 			}
 			else if(mode==1){
-				printf("ç«æŠ€æ¨¡å¼ï¼šå®è—ç‰Œ");
+				printf("¾º¼¼Ä£Ê½£º±¦²ØÅÆ");
 				SetPos(8,15);SetColor(7,0);
-				printf("å„èŒä¸šå¢åŠ å®è—ç‰Œ,ç‰¹æ®Šæ¡ä»¶ä¸‹ä¼šç½®å…¥æ‰‹ç‰Œ,æ¯å±€ä»…1æ¬¡                    ");
+				printf("¸÷Ö°ÒµÔö¼Ó±¦²ØÅÆ,ÌØÊâÌõ¼şÏÂ»áÖÃÈëÊÖÅÆ,Ã¿¾Ö½ö1´Î                    ");
 				printf("\n\t                                          ");
 			}
 			else if(mode==2){
-				printf("æ¬¢ä¹æ¨¡å¼ï¼šéšæœºbuff");
+				printf("»¶ÀÖÄ£Ê½£ºËæ»úbuff");
 				SetPos(8,15);SetColor(7,0);
-				printf("æ¯å›åˆå¼€å§‹æ—¶è·å¾—1å›åˆéšæœºbuff,åŒæ–¹ç‰Œåº“ä¸­æ·»åŠ å¨±ä¹ç‰Œ                ");
-				printf("\n\tæ‰€æœ‰ç‰ŒATK/HEAL/DEFé™ä¸ºåŸå…ˆçš„70%%");
+				printf("Ã¿»ØºÏ¿ªÊ¼Ê±»ñµÃ1»ØºÏËæ»úbuff,Ë«·½ÅÆ¿âÖĞÌí¼ÓÓéÀÖÅÆ                ");
+				printf("\n\tËùÓĞÅÆATK/HEAL/DEF½µÎªÔ­ÏÈµÄ70%%");
 			}
 			else if(mode==3){
-				printf("ç«æŠ€æ¨¡å¼ï¼šæ”»é˜²ä¹‹æˆ˜");
+				printf("¾º¼¼Ä£Ê½£º¹¥·ÀÖ®Õ½");
 				SetPos(8,15);SetColor(7,0);
-				printf("è¿›æ”»ä¸é˜²å®ˆçš„ç»“åˆ,æœ‰å¤šç§èƒœåˆ©æ–¹å¼,è€ƒéªŒç©å®¶çš„æ“ä½œ                  ");
+				printf("½ø¹¥Óë·ÀÊØµÄ½áºÏ,ÓĞ¶àÖÖÊ¤Àû·½Ê½,¿¼ÑéÍæ¼ÒµÄ²Ù×÷                  ");
 				printf("\n\t                                          ");
 			}
 			else if(mode==4){
-				printf("æ¬¢ä¹æ¨¡å¼ï¼šå‡é¢èˆä¼š");
+				printf("»¶ÀÖÄ£Ê½£º¼ÙÃæÎè»á");
 				SetPos(8,15);SetColor(7,0);
-				printf("æ¯éš”å‡ ä¸ªå›åˆæ‰€æœ‰ç©å®¶çš„èŒä¸šå°†éšæœºå˜åŠ¨,è®©éšè—è¿æ‹›æˆä¸ºå¯èƒ½             ");
+				printf("Ã¿¸ô¼¸¸ö»ØºÏËùÓĞÍæ¼ÒµÄÖ°Òµ½«Ëæ»ú±ä¶¯,ÈÃÒş²ØÁ¬ÕĞ³ÉÎª¿ÉÄÜ             ");
 				printf("\n\t                                          ");
 			}
-			//æ¸¸æˆæ¨¡å¼è®¾å®š
+			//ÓÎÏ·Ä£Ê½Éè¶¨
 			mouse(0);
 			input=getch();
 			if(input==UP || input==LEFT || input=='w' || input=='a') cursor--;
@@ -2203,56 +2288,56 @@ void Connect(){
 		SetPos(1,1);
 		if(cursor!=1) SetColor(7,0);
 		else SetColor(0,7);
-		printf("1.å»ºç«‹æœåŠ¡ç«¯        ");
+		printf("1.½¨Á¢·şÎñ¶Ë        ");
 
 		SetPos(1,2);
 		if(cursor!=2)SetColor(7,0);
 		else SetColor(0,7);
-		printf("2.è¿æ¥åˆ°å·²æœ‰çš„æœåŠ¡ç«¯");
+		printf("2.Á¬½Óµ½ÒÑÓĞµÄ·şÎñ¶Ë");
 
 		SetPos(1,3);
 		if(cursor!=3)SetColor(7,0);
 		else SetColor(0,7);
-		printf("3.åœ¨æœ¬æœºè¿›è¡Œæ¸¸æˆ    ");
+		printf("3.ÔÚ±¾»ú½øĞĞÓÎÏ·    ");
 
 		SetPos(1,4);
 		if(cursor!=4)SetColor(7,0);
 		else SetColor(0,7);
-		printf("4.é€€å‡ºæ¸¸æˆ         ");
+		printf("4.ÍË³öÓÎÏ·         ");
 
 		SetPos(1,5);
 		if(cursor!=5)SetColor(7,0);
 		else SetColor(0,7);
-		printf("5.è®¾ç½®æŒ‰é”®         ");
+		printf("5.ÉèÖÃ°´¼ü         ");
 
 		SetPos(1,8);
 		SetColor(7,0);
-		printf("åˆ‡æ¢ä¸Šä¸€æ¡ç›®                          ");
+		printf("ÇĞ»»ÉÏÒ»ÌõÄ¿                          ");
 		SetPos(25,8);
-		printf("[%c]  [â†‘]",bottom[1]);
+		printf("[%c]  [¡ü]",bottom[1]);
 
 		SetPos(1,9);
-		printf("åˆ‡æ¢ä¸‹ä¸€æ¡ç›®                          ");
+		printf("ÇĞ»»ÏÂÒ»ÌõÄ¿                          ");
 		SetPos(25,9);
-		printf("[%c]  [â†“]",bottom[2]);
+		printf("[%c]  [¡ı]",bottom[2]);
 
 		SetPos(1,10);
-		printf("æ‰“å‡ºæ‰‹ç‰Œ/æ›´æ”¹è®¾ç½®                          ");
+		printf("´ò³öÊÖÅÆ/¸ü¸ÄÉèÖÃ                          ");
 		SetPos(25,10);
 		printf("[%c]",bottom[3]);
 
 		SetPos(1,11);
-		printf("å¼ƒç½®æ‰‹ç‰Œ                          ");
+		printf("ÆúÖÃÊÖÅÆ                          ");
 		SetPos(25,11);
 		printf("[%c]",bottom[4]);
 
 		SetPos(1,12);
-		printf("ç»“æŸå›åˆ/ç¡®è®¤                          ");
+		printf("½áÊø»ØºÏ/È·ÈÏ                          ");
 		SetPos(25,12);
 		printf("[%c]  [ENTER]",bottom[5]);
 
 		SetPos(1,13);
-		printf("è®¤è¾“                          ");
+		printf("ÈÏÊä                          ");
 		SetPos(25,13);
 		printf("[%c]",bottom[6]);
 		
@@ -2274,19 +2359,23 @@ void Connect(){
 int game(){
 	if(server_mode!=3){
 		SetConsoleTitle("CARD GAME:Choose Your Identity.");
-		Choose(server_mode);//é€‰æ‹©èŒä¸š
+		Choose(server_mode);//Ñ¡ÔñÖ°Òµ
 		SetPos(0,20);
-		printf("P%dçš„èŒä¸šæ˜¯",server_mode);
+		printf("P%dµÄÖ°ÒµÊÇ",server_mode);
 		printf(occ_name(pl[server_mode].occ));
 		if(server_mode==1) send_int(2010);
 		else send_int(2020);
 		send_player(pl[server_mode]);
 		recv_message();
-		if(pl[server_mode].occ!=6 || mode==4) pl[server_mode].cost=3;//åˆå§‹è´¹ç”¨è®¾ç½®
-		init(server_mode);//è·å¾—ç›¸åº”ç‰Œå½¢æˆç‰Œåº“
+		if(pl[server_mode].occ!=6 || mode==4) pl[server_mode].cost=3;//³õÊ¼·ÑÓÃÉèÖÃ
+		if(pl[server_mode].occ==9) pl[server_mode].buff[0]=5;//¶ÜÎÀ³õÊ¼5µã¾£¼¬ 
+		init(server_mode);//»ñµÃÏàÓ¦ÅÆĞÎ³ÉÅÆ¿â
 		if(mode!=4){
-			if(pl[3-server_mode].occ==7 && pl[server_mode].occ!=7) {//è·å¾—[äºµæ¸] 
+			if(pl[3-server_mode].occ==7 && pl[server_mode].occ!=7) {//»ñµÃ[ÙôäÂ] 
 				pl[server_mode].heap[++pl[server_mode].heapn]=lib[7][libcnt[7]+2];
+			}
+			if(pl[3-server_mode].occ==9 && pl[server_mode].occ!=9) {//»ñµÃ[·ÀÓù¹¥ÆÆ] 
+				pl[server_mode].heap[++pl[server_mode].heapn]=lib[9][libcnt[9]+1];
 			}
 		}
 		for(int i=1;i<=pl[server_mode].cardcnt;i++) {
@@ -2295,7 +2384,7 @@ int game(){
 		if(mode==3){
 			pl[1].handcard[5]=pl[2].handcard[5]=(Card){0,0,0,0,0,75,119};
 		}
-		//åˆå§‹å‘ç‰Œ
+		//³õÊ¼·¢ÅÆ
 		if(server_mode==1) send_int(2010);
 		else send_int(2020);
 		send_player(pl[server_mode]);
@@ -2304,11 +2393,11 @@ int game(){
 		SetConsoleTitle("Here we go...");
 		Sleep(1500);
 		while(_kbhit()) getch();
-		system("cls");//æ¸…å±å¹¶å¼€å§‹æ¸¸æˆ
+		system("cls");//ÇåÆÁ²¢¿ªÊ¼ÓÎÏ·
 		if(server_mode==1){
 			if(!player_bgn){
 				player_bgn=rad()%2+1;
-			}//éšæœºå…ˆæ‰‹
+			}//Ëæ»úÏÈÊÖ
 			now=player_bgn;
 		}
 		env_now=0;
@@ -2324,12 +2413,12 @@ int game(){
 		if(server_mode!=now) Sleep(1500);
 		if(server_mode==now) adturn=1;
 		while(!winner && !Check(now)){
-			if(!if_adv) adv(3-now),if_adv=1; //åæ‰‹è¡¥å¿
+			if(!if_adv) adv(3-now),if_adv=1; //ºóÊÖ²¹³¥
 			if(pl[3-now].occ==7 && pl[3-now].buff[10]==pl[3-now].cardcnt && mode!=4) {
 				system("cls");
 				SetPos(13,0);
 				SetColor(14);
-				printf("å¯¹æ–¹å—åˆ°äº†[ç¥åœ£æ„å¿—]çš„å‡€åŒ–,ä½ è¾“äº†!");
+				printf("¶Ô·½ÊÜµ½ÁË[ÉñÊ¥ÒâÖ¾]µÄ¾»»¯,ÄãÊäÁË!");
 				Sleep(500);
 				winner=3-now;
 				break;
@@ -2338,7 +2427,7 @@ int game(){
 				system("cls");
 				SetPos(13,0);
 				SetColor(14);
-				printf("å¯¹æ–¹å»ºç«‹èµ·äº†ç»å¯¹é˜²çº¿,ä½ è¾“äº†!");
+				printf("¶Ô·½½¨Á¢ÆğÁË¾ø¶Ô·ÀÏß,ÄãÊäÁË!");
 				Sleep(500);
 				winner=3-now;
 				break;
@@ -2358,7 +2447,7 @@ int game(){
 				title[29]=turn%10+'0';
 				SetConsoleTitle(title);
 				SetPos(11,Row+12);
-				printf("å³å°†è½®åˆ°ä½ çš„å›åˆ......");
+				printf("¼´½«ÂÖµ½ÄãµÄ»ØºÏ......");
 				Sleep(1500);
 				while(_kbhit()) getch();
 				appcnt=0;
@@ -2379,9 +2468,9 @@ int game(){
 					if(pl[now].cost==0) pl[now].buff[0]++;
 					pl[now].buff[10]=0;
 					for(int i=1;i<=pl[now].cardcnt;i++) 
-						if(!pl[now].used[i] && pl[now].handcard[i].id==114) pl[now].buff[10]++; //114-->[ç¥åœ£æ„å¿—]
+						if(!pl[now].used[i] && pl[now].handcard[i].id==114) pl[now].buff[10]++; //114-->[ÉñÊ¥ÒâÖ¾]
 					if(pl[now].buff[10]==pl[now].cardcnt && mode!=4)  winner=now;
-				}//ç‰§å¸ˆæ£€ç´¢[ç¥åœ£æ„å¿—]
+				}//ÄÁÊ¦¼ìË÷[ÉñÊ¥ÒâÖ¾]
 				if(pl[now].occ==20){
 					if(pl[now].cost==0) {
 						pl[now].buff[0]+=1;
@@ -2401,17 +2490,17 @@ int game(){
 							pl[3-now].def=min(pl[3-now].def,pl[3-now].maxdef);
 						}
 						pl[3-now].buff[0]=max(0,pl[3-now].buff[0]-1);
-					}//[æ°´èš€]
+					}//[Ë®Ê´]
 					if(damage>=pl[3-now].def) {
 						damage-=pl[3-now].def,pl[3-now].def=0,pl[3-now].hp-=damage;
 					}
 					else pl[3-now].def-=damage;
-					//[é›†ç¾¤æ”»å‡»]
+					//[¼¯Èº¹¥»÷]
 					Check(3-now);
 				}
 				pl[now].UpdateBuff(2);
 				if(mode==3 && pl[now].buff[0]>=50) winner=now;
-				//ç¯å¢ƒå˜åŠ¨
+				//»·¾³±ä¶¯
 				if(env_on){
 					if(env_cnt>=2){
 						env_rate+=25;
@@ -2431,7 +2520,7 @@ int game(){
 				// pl[now].rest=pl[now].cardcnt;
 				if(!winner){
 					SetPos(11,Row+12);
-					printf("ä½ çš„å›åˆå³å°†ç»“æŸ......");
+					printf("ÄãµÄ»ØºÏ¼´½«½áÊø......");
 					now=3-now;
 					if(send_gaming(void_card)<0) {
 						another_player_quit(server_mode); 
@@ -2446,7 +2535,7 @@ int game(){
 					system("cls");
 					SetPos(11,0);
 					SetColor(6);
-					printf("[ç¥åœ£æ„å¿—]æ´—æ¶¤äº†ä½ çš„å¿ƒçµ,ä½ ç›´æ¥è·å¾—äº†èƒœåˆ©!");
+					printf("[ÉñÊ¥ÒâÖ¾]Ï´µÓÁËÄãµÄĞÄÁé,ÄãÖ±½Ó»ñµÃÁËÊ¤Àû!");
 					now=3-now;
 					if(send_gaming(void_card)<0){
 						another_player_quit(server_mode); 
@@ -2459,7 +2548,7 @@ int game(){
 					system("cls");
 					SetPos(11,0);
 					SetColor(6);
-					printf("å¹²å¾—æ¼‚äº®!ä½ å»ºç«‹èµ·äº†å¼ºå¤§çš„é˜²çº¿");
+					printf("¸ÉµÃÆ¯ÁÁ!Äã½¨Á¢ÆğÁËÇ¿´óµÄ·ÀÏß");
 					now=3-now;
 					if(send_gaming(void_card)<0){
 						another_player_quit(server_mode); 
@@ -2472,7 +2561,7 @@ int game(){
 					system("cls");
 					SetPos(13,0);
 					SetColor(6);
-					printf("æ­å–œä½ å‡»è´¥å¯¹æ‰‹è·å¾—äº†èƒœåˆ©!");
+					printf("¹§Ï²Äã»÷°Ü¶ÔÊÖ»ñµÃÁËÊ¤Àû!");
 					now=3-now;
 					if(send_gaming(void_card)<0) {
 						another_player_quit(server_mode); 
@@ -2496,34 +2585,44 @@ int game(){
 	else {
 		SetConsoleTitle("CARD GAME:Choose Your Identity.");
 		for(int now=1;now<=2;now++){
-			Choose(now);//é€‰æ‹©èŒä¸š
+			Choose(now);//Ñ¡ÔñÖ°Òµ
 			SetPos(0,19+now);
-			printf("P%dçš„èŒä¸šæ˜¯",now);
+			printf("P%dµÄÖ°ÒµÊÇ",now);
 			printf(occ_name(pl[now].occ));
 		}
 		SetConsoleTitle("Here we go...");
 		Sleep(1500);
 		while(_kbhit()) getch();
-		system("cls");//æ¸…å±å¹¶å¼€å§‹æ¸¸æˆ
+		system("cls");//ÇåÆÁ²¢¿ªÊ¼ÓÎÏ·
 
-		for(int i=1;i<=2;i++) if(pl[i].occ!=6 || mode==4) pl[i].cost=3;//åˆå§‹è´¹ç”¨è®¾ç½®
+		for(int i=1;i<=2;i++) if(pl[i].occ!=6 || mode==4) pl[i].cost=3;//³õÊ¼·ÑÓÃÉèÖÃ
+		for(int i=1;i<=2;i++) if(pl[i].occ==9) pl[i].buff[0]=5;//¶ÜÎÀ³õÊ¼5µã¾£¼¬ 
 		for(int x=1;x<=2;x++) {
-			init(x);//è·å¾—ç›¸åº”ç‰Œå½¢æˆç‰Œåº“
+			init(x);//»ñµÃÏàÓ¦ÅÆĞÎ³ÉÅÆ¿â
 			for(int i=1;i<=pl[x].cardcnt;i++) {
 				pl[x].handcard[i]=pl[x].heap[(rad()%pl[x].heapn)+1];
 			}
+			if(mode!=4){
+				if(pl[3-x].occ==7 && pl[x].occ!=7) {//»ñµÃ[ÙôäÂ] 
+					pl[x].heap[++pl[x].heapn]=lib[7][libcnt[7]+2];
+				}
+				if(pl[3-x].occ==9 && pl[x].occ!=9) {//»ñµÃ[·ÀÓù¹¥ÆÆ] 
+					pl[x].heap[++pl[x].heapn]=lib[9][libcnt[9]+1];
+				}
+			}
 		}
+
 		if(mode==3){
 			pl[1].handcard[5]=pl[2].handcard[5]=(Card){0,0,0,0,0,75,119};
 		}
-		//åˆå§‹å‘ç‰Œ
+		//³õÊ¼·¢ÅÆ
 
 		if(!player_bgn){
 			player_bgn=rad()%2+1;
-		}//éšæœºå…ˆæ‰‹
+		}//Ëæ»úÏÈÊÖ
 		int now=player_bgn;
 
-		adv(3-player_bgn);//åæ‰‹è¡¥å¿
+		adv(3-player_bgn);//ºóÊÖ²¹³¥
 
 		env_now=0;
 
@@ -2558,7 +2657,7 @@ int game(){
 				bool ssyz=1;
 				for(int i=1;i<=pl[now].cardcnt;i++) if(pl[now].used[i] || pl[now].handcard[i].id!=114) ssyz=0;
 				if(ssyz && mode!=4) winner=now;
-			}//ç‰§å¸ˆæ£€ç´¢[ç¥åœ£æ„å¿—]
+			}//ÄÁÊ¦¼ìË÷[ÉñÊ¥ÒâÖ¾]
 			if(pl[now].occ==20){
 				if(pl[now].cost==0) {
 					pl[now].buff[0]+=1;
@@ -2578,12 +2677,12 @@ int game(){
 						pl[3-now].def=min(pl[3-now].def,pl[3-now].maxdef);
 					}
 					pl[3-now].buff[0]=max(0,pl[3-now].buff[0]-1);
-				}//[æ°´èš€]
+				}//[Ë®Ê´]
 				if(damage>=pl[3-now].def) {
 					damage-=pl[3-now].def,pl[3-now].def=0,pl[3-now].hp-=damage;
 				}
 				else pl[3-now].def-=damage;
-				//[é›†ç¾¤æ”»å‡»]
+				//[¼¯Èº¹¥»÷]
 				Check(3-now);
 			}
 			if(pl[now].occ==20 && pl[now].buff[0]>=50) winner=now;
@@ -2592,7 +2691,7 @@ int game(){
 			now++;
 			if(now>2)now=1;
 
-			//ç¯å¢ƒå˜åŠ¨
+			//»·¾³±ä¶¯
 			if(env_on){
 				if(env_cnt>=2){
 					env_rate+=25;
@@ -2615,15 +2714,15 @@ int game(){
 }
 
 int main(){
-	SetConsoleOutputCP(65001);
+//	SetConsoleOutputCP(65001);
 	mouse(0);
 	srand(time(NULL));
-	previous();//è·å¾—å…¬å…±ç‰Œåº“å’ŒèŒä¸šç‰Œåº“
+	previous();//»ñµÃ¹«¹²ÅÆ¿âºÍÖ°ÒµÅÆ¿â
 	while(1){
 		mouse(0);
 		fight=havewon=havelost=server_mode=0;
 		prepare();
-		SetConsoleTitle("CARD GAME:v3.0.2");
+		SetConsoleTitle("CARD GAME:v3.0.3");
 		bool connect_established=0;
 		while(!connect_established){
 			connect_established=1;
@@ -2631,7 +2730,7 @@ int main(){
 			Connect();
 			if(server_mode==3 || server_mode==4 || server_mode==5) break;
 			SetColor(7,0);
-			if(server_mode==2) WSAstart(),printf("\nè¾“å…¥æœåŠ¡ç«¯ipåœ°å€:");
+			if(server_mode==2) WSAstart(),printf("\nÊäÈë·şÎñ¶ËipµØÖ·:");
 			else {
 				WSAstart();
 				system("cls");
@@ -2639,20 +2738,20 @@ int main(){
 				gethostname(hostname,sizeof(hostname));
 				HOSTENT* host=gethostbyname(hostname);
 				strcpy(ip,inet_ntoa(*(in_addr*)*host->h_addr_list));
-				printf("ä½ çš„ipåœ°å€æ˜¯:%s\n",ip);
-				SetPos(0,2),printf("ç­‰å¾…ç©å®¶è¿å…¥...\n");
+				printf("ÄãµÄipµØÖ·ÊÇ:%s\n",ip);
+				SetPos(0,2),printf("µÈ´ıÍæ¼ÒÁ¬Èë...\n");
 			}
 			if(TCP_initialize(server_mode)!=0){
 				connect_established=0;
 				system("cls");
 				if(server_mode==1){
 					SetColor(6);
-					printf("æ— æ³•è®¾ç«‹æœåŠ¡ç«¯...è¯·æ£€æŸ¥æ˜¯å¦æœ‰åŒä¸€ç¨‹åºæ­£åœ¨è¿è¡Œæˆ–è€…ç¨åå†è¯•...\n");
+					printf("ÎŞ·¨ÉèÁ¢·şÎñ¶Ë...Çë¼ì²éÊÇ·ñÓĞÍ¬Ò»³ÌĞòÕıÔÚÔËĞĞ»òÕßÉÔºóÔÙÊÔ...\n");
 					getch();
 				}
 				else{
 					SetColor(6);
-					printf("æ— æ³•è¿æ¥è‡³æœåŠ¡å™¨...è¯·æ£€æŸ¥ç½‘ç»œçŠ¶å†µåŠæœåŠ¡å™¨æ˜¯å¦æ­£å¸¸å¯åŠ¨...\n");
+					printf("ÎŞ·¨Á¬½ÓÖÁ·şÎñÆ÷...Çë¼ì²éÍøÂç×´¿ö¼°·şÎñÆ÷ÊÇ·ñÕı³£Æô¶¯...\n");
 					getch();
 				}
 			}
@@ -2670,11 +2769,11 @@ int main(){
 				while(_kbhit()) getch();
 				SetColor(0,7);
 				system("color 07");
-				system("cls");//æ¸…å±å¹¶åˆ‡æ¢åˆ°Chooseç•Œé¢
+				system("cls");//ÇåÆÁ²¢ÇĞ»»µ½Choose½çÃæ
 			}
 			else {
 				// system("cls");
-				// printf("æ­£åœ¨ç­‰å¾…æœåŠ¡ç«¯è®¾å®šæ¸¸æˆæ¨¡å¼...\n");
+				// printf("ÕıÔÚµÈ´ı·şÎñ¶ËÉè¶¨ÓÎÏ·Ä£Ê½...\n");
 				if(Options(1)) continue;
 				while(_kbhit()) getch();
 			}
@@ -2686,18 +2785,18 @@ int main(){
 			system("cls");
 			printf("WELCOME!!\n");
 			for(int i=1;i<=2;i++){
-				printf("è¯·è¾“å…¥P%dçš„åå­—:",i);
+				printf("ÇëÊäÈëP%dµÄÃû×Ö:",i);
 				cin>>pl[i].name;
-			}//è¾“å…¥å§“å
+			}//ÊäÈëĞÕÃû
 			Sleep(200);
 			while(_kbhit()) getch();
-			system("cls");//æ¸…å±å¹¶åˆ‡æ¢åˆ°Optionç•Œé¢
+			system("cls");//ÇåÆÁ²¢ÇĞ»»µ½Option½çÃæ
 
 			SetConsoleTitle("CARD GAME:Options");
 			Options(0);
 			SetColor(0,7);
 			system("color 07");
-			system("cls");//æ¸…å±å¹¶åˆ‡æ¢åˆ°Chooseç•Œé¢
+			system("cls");//ÇåÆÁ²¢ÇĞ»»µ½Choose½çÃæ
 		}
 		while(_kbhit()) getch();
 		if(mode==5){
