@@ -2750,7 +2750,7 @@ int main(){
 		mouse(0);
 		fight=havewon=havelost=server_mode=0;
 		prepare();
-		SetConsoleTitle("CARD GAME:v3.0.3");
+		SetConsoleTitle("CARD GAME:v3.0.4");
 		bool connect_established=0;
 		while(!connect_established){
 			connect_established=1;
