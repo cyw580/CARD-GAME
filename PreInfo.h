@@ -344,15 +344,15 @@ string Card::Intro(){
 	else if(func==82)return "每张手牌的HEAL清空后加等量ATK,若HEAL=0则ATK+15";
 	else if(func==83)return "60% +1<★法力>";
 	else if(func==84)return "被弃置则下2回合[虚弱]";
-	else if(func==85)return "+3<★鱼仔>";
-	else if(func==86)return "+8<★鱼仔>";
-	else if(func==87)return "+15<★鱼仔>";
+	else if(func==85)return "+4<★鱼仔>";
+	else if(func==86)return "+9<★鱼仔>";
+	else if(func==87)return "+18<★鱼仔>";
 	else if(func==88)return "如果<★鱼仔>≥30则-15<★鱼仔>并+3◆,否则视为弃置";
 	else if(func==89)return "直接对敌方造成1.5*<★鱼仔>的伤害,不受环境/buff影响";
 	else if(func==90)return "恢复量HEAL=2*<★鱼仔>,现有<★鱼仔>数量减半";
 	else if(func==91)return "恢复已损失HP的20%";
 	else if(func==92)return "回合结束增加与<★鱼仔>等量的ATK(每回合至多50)";
-	else if(func==93)return "+18<★鱼仔>";
+	else if(func==93)return "+22<★鱼仔>";
 	else if(func==94)return "打出后-3<★鱼仔>,或弃置后对手+10DEF";
 	else if(func==95)return "如果<★鱼仔>≥15则-6<★鱼仔>并清空双方所有buff,否则视为弃置";
 	else if(func==96)return "(宝藏)<★鱼仔>*1.5,使用后此牌变为[水中疗养]";
@@ -364,9 +364,10 @@ string Card::Intro(){
 	else if(func==102)return "将所有的护盾转化为等量伤害攻击对方";
 	else if(func==103)return "增加50点DEF上限";
 	else if(func==104)return "(宝藏)HP,DEF上限增加100";
-	else if(func==105)return "减少50DEF上限,+3◆";
-	else if(func==106)return "减少100DEF上限";
+	else if(func==105)return "减少50DEF上限(若已扣完则扣血量上限),+3◆";
+	else if(func==106)return "减少100DEF上限(若已扣完则扣血量上限)";
 	else if(func==107)return "清空对方的DEF,对方+2◆"; 
+	else if(func==108)return "DEF*=2";
 	return "                                                     ";
 }
 
@@ -565,24 +566,25 @@ void previous(){
 	funcnt[1][8]=1;
 	job[8]={360,5,0,6};
 	//盾卫 
-	lib[9][1]=(Card){1,0,10,45,0,0,160};
+	lib[9][1]=(Card){1,0,10,40,0,0,160};
 	lib[9][2]=lib[9][1];
-	lib[9][3]=(Card){2,0,20,100,0,0,161};
+	lib[9][3]=(Card){2,0,20,95,0,0,161};
 	lib[9][4]=(Card){1,0,0,10,0,98,162};
 	lib[9][5]=(Card){1,0,0,0,0,99,163};
 	lib[9][6]=(Card){1,0,0,0,0,100,164};
 	lib[9][7]=(Card)(Card){1,10,10,10,0,101,165};
-	lib[9][8]=(Card){4,0,30,30,0,102,166};
+	lib[9][8]=(Card){3,0,30,30,0,102,166};
 	lib[9][9]=lib[9][1];
 	lib[9][10]=(Card){3,0,30,50,0,103,167};
 	lib[9][11]=(Card){1,0,0,0,0,105,169};
 	lib[9][12]=(Card){0,30,10,10,0,0,170};
 	lib[9][13]=(Card){1,0,150,30,0,106,171};
-	libcnt[9]=13;
+	lib[9][14]=(Card){3,0,0,0,0,108,173};
+	libcnt[9]=14;
 	lib[9][libcnt[9]+1]=(Card){2,0,0,0,0,107,172};
 	fun[1][9][1]=(Card){1,50,50,100,0,104,168};
 	funcnt[1][9]=1;
-	job[9]={450,4,200,5};
+	job[9]={380,4,200,5};
 	//攻防之战
 	lib[20][1]=(Card){1,0,15,5,0,68,120};//+(1-2)<★防御>
 	lib[20][2]=(Card){3,0,45,20,0,69,121};//本局剩余时间内,自己回合开始时+1<★防御>
@@ -787,6 +789,7 @@ string Card::Name(){
 	if(id==170) return "[灵巧攻击]";
 	if(id==171) return "[紧急自救]";
 	if(id==172) return "[防御攻破]";
+	if(id==173) return "[强力构筑]"; 
 	else return "[未命名]";
 }
 
@@ -800,7 +803,7 @@ string occ_intro(int x){
 	else if(x==6)return "受虚空力量滋养,有着多样的特效与出牌方式";
 	else if(x==7)return "受到神圣的祝福,强大的治疗与控制能力";
 	else if(x==8)return "繁殖极快的种族,群体出击而非单枪匹马";
-	else if(x==9)return "依靠快速增加护甲与反弹攻击胜利";
+	else if(x==9)return "以进为退，以退为进，攻守一体";
 	else if(x==10)return "反正我都会玩,随便来一个";
 	return "";
 }
@@ -815,7 +818,7 @@ void occ_func(int x){
 		printf("\n");printf("                                                          ");
 		printf("\n");printf("                                                  ");
 	}else if(x==2){
-		printf("HP 600   MAX_DEF 80   手牌上限4   ◆3/5   ");printf("  ");SetColor(13);
+		printf("HP 600   MAX_DEF 80    手牌上限4   ◆3/5   ");printf("  ");SetColor(13);
 		printf("\n\t<★牺牲> 每个标记使ATK增加5");printf("                              ");;SetColor(7);
 		printf("\n\t 1.每次自己出牌而受到伤害会+1<★牺牲>");printf("                 ");
 		printf("\n\t 2.一些职业技能牌会通过削弱自己而获得优势");printf("                 ");
@@ -836,23 +839,23 @@ void occ_func(int x){
 		printf("\n\t 3.[装备精良] 每回合开始时若没有护甲 则护甲+30");printf("            ");
 		printf("\n\t 4.[无畏] 无法抽到公共牌库中治疗牌");printf("      ");
 	}else if(x==5){
-		printf("HP 280   MAX_DEF 0   手牌上限3   ◆3/3   ");printf("   ");SetColor(13);
+		printf("HP 280   MAX_DEF 0      手牌上限3   ◆3/3   ");printf("   ");SetColor(13);
 		printf("\n\t<★成长>每个标记使你ATK+9%% HP上限+10 MAX_DEF+5");printf("               ");SetColor(7);
 		printf("\n\t 1.[贪婪] 回合开始时变为3◆,使用牌后有80%会抽牌");printf("           ");
 		printf("\n\t 2.[健康] 每当获得1个<★成长>时恢复12HP");printf("                       ");
-		printf("\n\t 3.[与世隔绝] 无法抽到公共牌库中的牌");printf("                ");
-		printf("\n\t 4.[敏捷] 部分牌有穿透护盾攻击的能力");printf("      ");
+		printf("\n\t 3.[敏捷] 部分牌有穿透护盾攻击的能力");printf("                   ");
+		printf("\n\t 4.[与世隔绝] 无法抽到公共牌库中的牌");printf("                ");
 	}
 	else if(x==6){
-		printf("HP 400   MAX_DEF 40   手牌上限4   ◆0/5   ");printf("   ");SetColor(13);
+		printf("HP 400   MAX_DEF 40     手牌上限4   ◆0/5   ");printf("   ");SetColor(13);
 		printf("\n\t<★原罪>回合开始时每个标记对你造成5点伤害");printf("                ");SetColor(7);
 		printf("\n\t 1.[源于虚空] 开局时0◆,每回合额外+1◆");printf("                   ");
 		printf("\n\t 2.[虚空把戏] 弃牌需消耗相应费用并视为打出,ATK与HEAL交换");printf("          ");
-		printf("\n\t 3.[舞弊] 每次弃牌时(无论是否视为打出)+1<★原罪>");printf("            ");
-		printf("\n\t 4.[与世隔绝] 无法抽到公共牌库中的牌");printf("        ");
+		printf("\n\t 3.[舞弊] 每次弃牌时(无论是否视为打出)+1<★原罪>");printf("                ");
+		printf("\n\t 4.[与世隔绝] 无法抽到公共牌库中的牌");printf("                  ");
 	}
 	else if(x==7){
-		printf("HP 450   MAX_DEF 120   手牌上限4   ◆3/6   ");printf("   ");SetColor(13);
+		printf("HP 450   MAX_DEF 120    手牌上限4   ◆3/6   ");printf("   ");SetColor(13);
 		printf("\n\t<★信仰>每个标记额外增加2%抽到[神圣意志]的概率");printf("                ");SetColor(7);
 		printf("\n\t 1.[虔诚] 手牌中全是[神圣意志]则直接获胜");printf("               ");
 		printf("\n\t 2.[奉献] 若回合结束时没有费用 则+1<★信仰>");printf("                    ");
@@ -860,7 +863,7 @@ void occ_func(int x){
 		printf("\n\t 4.[和平] 无法抽到公共牌库中ATK≥80的牌");printf("          ");
 	}
 	else if(x==8){
-		printf("HP 360   MAX_DEF 0   手牌上限5   ◆3/6     ");printf("   ");SetColor(13);
+		printf("HP 360   MAX_DEF 0      手牌上限5   ◆3/6     ");printf("   ");SetColor(13);
 		printf("\n\t<★鱼仔>每个标记为你挡下2点伤害后消失");printf("                     ");SetColor(7);
 		printf("\n\t 1.[快速繁殖] 每回合开始-15HP并+10<★鱼仔>");printf("                 ");
 		printf("\n\t 2.[集群攻击] 回合结束时对敌方造成★等量的伤害");printf("            ");
@@ -868,7 +871,7 @@ void occ_func(int x){
 		printf("\n\t 4.[与世隔绝] 无法抽到公共牌库中的牌");printf("            ");
 	}
 	else if(x==9){
-		printf("HP 450   MAX_DEF 200   手牌上限4   ◆3/6     ");printf("   ");SetColor(13);
+		printf("HP 380   MAX_DEF 200    手牌上限4   ◆3/6     ");printf("   ");SetColor(13);
 		printf("\n\t<★荆棘>数量与反弹伤害和溢出伤害相关，初始5点，范围在0到7间");printf("           ");SetColor(7);
 		printf("\n\t 1.[反甲] <★荆棘>*10%盾牌吸收伤害转化为真实伤害反击对方");printf("             ");
 		printf("\n\t 2.[过载] 100%-<★荆棘>*10%溢出的盾牌转化为真实伤害攻击对方");printf("            ");
@@ -877,11 +880,11 @@ void occ_func(int x){
 	}
 	else if(x==10){
 		printf("HP ???   MAX_DEF ???   手牌上限?   ◆?   ");printf(" ");
-		printf("\n                                                                 ");
-		printf("\n                                                                 ");
-		printf("\n                                                                 ");
-		printf("\n                                                                 ");
-		printf("\n                                                                 ");
+		printf("\n                                                                     ");
+		printf("\n                                                                     ");
+		printf("\n                                                                     ");
+		printf("\n                                                                     ");
+		printf("\n                                                                     ");
 	}
 	return;
 }

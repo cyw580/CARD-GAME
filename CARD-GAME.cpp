@@ -153,7 +153,7 @@ int Card::Use(int from,int to){
 		if(pl[from].def+def>pl[from].maxdef) 
 		{
 			int defdamage=(pl[from].def+def-pl[from].maxdef)*(10-pl[from].buff[0])/10.0;
-			if(pl[3-from].occ!=9) pl[3-from].hp-=defdamage;
+			if(pl[3-from].occ!=8) pl[3-from].hp-=defdamage;
 			else
 			{
 				if(defdamage<=pl[3-from].buff[0]*2) pl[3-from].buff[0]-=defdamage/2,defdamage=0;
@@ -532,13 +532,13 @@ int Card::Special(int from,int to){
 		if(rad()%100<60) pl[from].buff[0]++;
 	}
 	else if(func==85){
-		pl[from].buff[0]+=3;
+		pl[from].buff[0]+=4;
 	}
 	else if(func==86){
-		pl[from].buff[0]+=8;
+		pl[from].buff[0]+=9;
 	}
 	else if(func==87){
-		pl[from].buff[0]+=15;
+		pl[from].buff[0]+=18;
 	}
 	else if(func==88){
 		if(pl[from].buff[0]>=30){
@@ -551,7 +551,7 @@ int Card::Special(int from,int to){
 		pl[from].hp+=(pl[from].maxhp-pl[from].hp)*0.20;
 	}
 	else if(func==93){
-		pl[from].buff[0]+=18;
+		pl[from].buff[0]+=22;
 	}
 	else if(func==94){
 		pl[from].buff[0]=max(0,pl[from].buff[0]-3);
@@ -609,12 +609,13 @@ int Card::Special(int from,int to){
 		pl[from].maxdef+=100;
 	}
 	else if(func==105){
+		int chaotic=pl[from].maxdef;
 		pl[from].maxdef=max(0,pl[from].maxdef-50);
 		if(pl[from].occ==9) 
 			if(pl[from].def>pl[from].maxdef) 
 			{
 				int defdamage=(pl[from].def-pl[from].maxdef)*(10-pl[from].buff[0])/10.0;
-				if(pl[3-from].occ!=9) pl[3-from].hp-=defdamage;
+				if(pl[3-from].occ!=8) pl[3-from].hp-=defdamage;
 				else
 				{
 					if(defdamage<=pl[3-from].buff[0]*2) pl[3-from].buff[0]-=defdamage/2,defdamage=0;
@@ -624,14 +625,20 @@ int Card::Special(int from,int to){
 			}
 		pl[from].def=min(pl[from].def,pl[from].maxdef);
 		pl[from].cost=min(pl[from].cost+3,pl[from].maxcost);
+		if(chaotic<50)
+		{
+			pl[from].maxhp=max(0,pl[from].maxhp-(50-chaotic));
+			pl[from].hp=min(pl[from].hp,pl[from].maxhp);
+		}
 	}
 	else if(func==106){
+		int chaotic=pl[from].maxdef;
 		pl[from].maxdef=max(0,pl[from].maxdef-100);
 		if(pl[from].occ==9) 
 			if(pl[from].def>pl[from].maxdef) 
 			{
 				int defdamage=(pl[from].def-pl[from].maxdef)*(10-pl[from].buff[0])/10.0;
-				if(pl[3-from].occ!=9) pl[3-from].hp-=defdamage;
+				if(pl[3-from].occ!=8) pl[3-from].hp-=defdamage;
 				else
 				{
 					if(defdamage<=pl[3-from].buff[0]*2) pl[3-from].buff[0]-=defdamage/2,defdamage=0;
@@ -640,11 +647,33 @@ int Card::Special(int from,int to){
 				}
 			}
 		pl[from].def=min(pl[from].def,pl[from].maxdef);
+		if(chaotic<100)
+		{
+			pl[from].maxhp=max(0,pl[from].maxhp-(100-chaotic));
+			pl[from].hp=min(pl[from].hp,pl[from].maxhp);
+		}
 	}
 	else if(func==107)
 	{
 		pl[to].def=0;
 		pl[to].cost=min(pl[to].cost+2,pl[to].maxcost);
+	}
+	else if(func==108)
+	{
+		pl[from].def*=2;
+		if(pl[from].occ==9) 
+			if(pl[from].def>pl[from].maxdef) 
+			{
+				int defdamage=(pl[from].def-pl[from].maxdef)*(10-pl[from].buff[0])/10.0;
+				if(pl[3-from].occ!=8) pl[3-from].hp-=defdamage;
+				else
+				{
+					if(defdamage<=pl[3-from].buff[0]*2) pl[3-from].buff[0]-=defdamage/2,defdamage=0;
+					else defdamage-=pl[3-from].buff[0]*2,pl[3-from].buff[0]=0;
+					if(defdamage>0) pl[3-from].hp-=defdamage;	
+				}
+			}
+		pl[from].def=min(pl[from].def,pl[from].maxdef);
 	}
 	return 0;
 }
@@ -2750,7 +2779,7 @@ int main(){
 		mouse(0);
 		fight=havewon=havelost=server_mode=0;
 		prepare();
-		SetConsoleTitle("CARD GAME:v3.0.4");
+		SetConsoleTitle("CARD GAME:v3.0.5");
 		bool connect_established=0;
 		while(!connect_established){
 			connect_established=1;
