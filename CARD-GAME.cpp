@@ -33,6 +33,7 @@ int Card::cal_atk(int from,int to){//计算实际攻击力
 	int damage=ATK;
 	if(func==15) return damage;//[背水一战]无视buff
 	if(func==89) return damage+pl[from].buff[0]*1.5;//[指挥进攻]无视buff
+	if(func==119) return damage;//[命运]为了好看固定为9999 
 	if(pl[from].occ==2 && ATK>0) damage=ATK+5*pl[from].buff[0];//术士
 	if(pl[from].occ==5 && ATK>0) damage=ATK+ATK*pl[from].buff[0]*0.09;//地精
 	if(pl[from].occ==4 && pl[from].buff[0])//战士
@@ -74,10 +75,15 @@ int Card::cal_def(int from,int to){//计算实际叠盾
 
 int Card::cal_miss(int from,int to){
 	int miss=MISS;
+	if(func==109) return miss;
+	if(func==119) return miss;
+	if(func==122) return miss;
 	if(env_now==3)
 		miss+=10;
 	if(env_now==4)
 		miss-=10;
+	if(pl[from].occ==10 and pl[from].hp<pl[from].maxhp/2)
+		miss-=15; 
 	//天气对失误率的影响
 	if(pl[from].buff[6])//迷惑
 		miss+=25;
@@ -98,6 +104,14 @@ int Card::Use(int from,int to){
 		SetPos(0,1);
 		printf("操作失误了!");
 		if(pl[from].occ==4 && ATK>0) pl[from].buff[0]+=2;
+		if(pl[from].occ==10 and id==178) pl[from].buff[0]=pl[from].buff[0]/10000*10000;
+		if(pl[from].occ==10 and id==174) 
+		{
+			int s1=pl[from].buff[0]/10000,s2=pl[from].buff[0]%10000;
+			s1=min(500,s1+s2-s2/2),s2/=2;
+			pl[from].buff[0]=s1*10000+s2; 
+		}
+		if(pl[from].occ==10) pl[from].hp=min(pl[from].hp+20,pl[from].maxhp);
 		pl[from].cost=min(pl[from].maxcost,pl[from].cost+cost/2);
 		UI(from);
 		use_card.MISS=1;
@@ -653,13 +667,11 @@ int Card::Special(int from,int to){
 			pl[from].hp=min(pl[from].hp,pl[from].maxhp);
 		}
 	}
-	else if(func==107)
-	{
+	else if(func==107){
 		pl[to].def=0;
 		pl[to].cost=min(pl[to].cost+2,pl[to].maxcost);
 	}
-	else if(func==108)
-	{
+	else if(func==108){
 		pl[from].def*=2;
 		if(pl[from].occ==9) 
 			if(pl[from].def>pl[from].maxdef) 
@@ -674,6 +686,73 @@ int Card::Special(int from,int to){
 				}
 			}
 		pl[from].def=min(pl[from].def,pl[from].maxdef);
+	}
+	else if(func==109){
+		int s1=pl[from].buff[0]/10000,s2=pl[from].buff[0]%10000;
+		pl[from].buff[0]=s1*10000+min(1000,s2*2);
+	}
+	else if(func==110){
+		int s1=pl[from].buff[0]/10000,s2=pl[from].buff[0]%10000;
+		pl[from].buff[0]=s1*10000+min(1000,s2+5);
+	}
+	else if(func==111){
+		int s1=pl[from].buff[0]/10000,s2=pl[from].buff[0]%10000;
+		pl[from].buff[0]=s1*10000+min(1000,s2+11);
+	}
+	else if(func==112){
+		int s1=pl[from].buff[0]/10000,s2=pl[from].buff[0]%10000;
+		if(s2>pl[from].maxhp-pl[from].hp)
+		{
+			s2-=pl[from].maxhp-pl[from].hp;
+			pl[from].hp=pl[from].maxhp;
+			if(s2>pl[from].maxdef-pl[from].def)
+			{
+				s2-=pl[from].maxdef-pl[from].def;
+				pl[from].def=pl[from].maxdef;
+			}
+			else pl[from].def+=s2,s2=0; 
+		}
+		else pl[from].hp+=s2,s2=0;
+		pl[from].buff[0]=s1*10000+s2;
+	}
+	else if(func==113){
+		pl[from].buff[0]=pl[from].buff[0]/10000*10000;
+	}
+	else if(func==114){
+		pl[from].cost+=2;
+		int s1=pl[from].buff[0]/10000,s2=pl[from].buff[0]%10000;
+		pl[from].buff[0]=s1*10000+min(1000,s2+10);
+	}
+	else if(func==115){
+		pl[from].buff[6]+=2;
+	}
+	else if(func==116){
+		pl[to].buff[6]+=2;
+	}
+	else if(func==117){
+		int s1=pl[from].buff[0]/10000,s2=pl[from].buff[0]%10000;
+		pl[from].buff[0]=s1*10000+min(1000,s2+3);
+	}
+	else if(func==118){
+		int s1=pl[from].buff[0]/10000,s2=pl[from].buff[0]%10000;
+		pl[from].buff[0]=s1*10000+min(1000,s2+18);
+	}
+	else if(func==120){
+		int s1=pl[from].buff[0]/10000,s2=pl[from].buff[0]%10000;
+		pl[from].buff[0]=s1*10000+min(1000,(int)(s2*1.5));
+	}
+	else if(func==121){
+		pl[from].hp-=max(80,pl[from].hp/2);
+		int s1=pl[from].buff[0]/10000,s2=pl[from].buff[0]%10000;
+		pl[from].buff[0]=s1*10000+min(1000,(int)(s2*1.5));
+	}
+	else if(func==122){
+		int s1=pl[from].buff[0]/10000,s2=pl[from].buff[0]%10000;
+		pl[from].buff[0]=s1*10000+min(1000,s2*2);
+	}
+	else if(func==123){
+		int s1=pl[from].buff[0]/10000,s2=pl[from].buff[0]%10000;
+		pl[from].buff[0]=min(1000,s2+s1);
 	}
 	return 0;
 }
@@ -742,7 +821,6 @@ bool giveupcard(int now,int cursor){
 	return 0;
 }
 				
-
 void init(int x){
 	if(mode==4){
 		if(!pl[x].maxhp) pl[x].maxhp=500;
@@ -775,7 +853,7 @@ void init(int x){
 		pl[x].heap[i]=lib[0][i];
 		if(pl[x].occ==3 && pl[x].heap[i].HEAL>=75) i--,tot--; //法师不能抽公共牌库HEAL>=75的牌
 		if(pl[x].occ==4 && pl[x].heap[i].HEAL>0) i--,tot--;//战士不能抽公共牌库HEAL牌
-		if(pl[x].occ==5 || pl[x].occ==6 || pl[x].occ==8 || pl[x].occ==9) i--,tot--;//地精、恶魔、鱼人、盾卫不能抽公共牌库的牌
+		if(pl[x].occ==5 || pl[x].occ==6 || pl[x].occ==8 || pl[x].occ==9 || pl[x].occ==10) i--,tot--;//地精、恶魔、鱼人、盾卫、赌徒不能抽公共牌库的牌
 		if(pl[x].occ==7 && pl[x].heap[i].ATK>=80) i--,tot--;//牧师不能抽公共牌库ATK>=80的牌
 	}
 	pl[x].heapn=tot;
@@ -918,6 +996,21 @@ void treasure(int now){//竞技模式：宝藏牌
 			gettre[now]=1;
 		}
 	}
+	if(pl[now].occ==10 && pl[now].buff[0]>=200){
+		for(int i=1;i<=pl[now].cardcnt-1;i++){
+			if(pl[now].used[i]) {
+				pl[now].used[i]=0;
+				gettre[now]=1;
+				pl[now].handcard[i]=fun[1][10][1];
+				break;
+			}
+		}
+		if(!gettre[now]){
+			pl[now].handcard[rad()%(pl[now].cardcnt-1)+1]=fun[1][10][1];
+			gettre[now]=1;
+		}
+		//pl[now].cardcnt-1:赌徒第4张牌被固定为[赌局开盘] 
+	}
 }
 
 void adv(int x){
@@ -953,6 +1046,9 @@ void adv(int x){
 	else if(pl[x].occ==9){
 		pl[x].def=40;
 	}
+	else if(pl[x].occ==10){
+		pl[x].def=50;
+	}
 	return;
 }
 
@@ -966,7 +1062,8 @@ string occ_name(int x){
 	else if(x==7)return "牧师";
 	else if(x==8)return "鱼人";
 	else if(x==9)return "盾卫";
-	else if(x==10)return "随缘";
+	else if(x==10)return "赌徒";
+	else if(x==11)return "随缘";
 	else if(x==20)return "竞技者";
 	return "";
 }
@@ -1035,14 +1132,14 @@ void Choose(int now){
 			else
 				SetColor(0,7);
 			SetPos(0,i+1);
-			printf("                                                             ");
+			printf("                                                              ");
 			SetPos(0,i+1);
-			printf("   %d ",i);
+			printf("   %2d ",i);
 			printf(occ_name(i));
 			printf(" | ");
 			printf(occ_intro(i));
 		}//各职业名字和简介展示
-		SetPos(0,12);
+		SetPos(0,13);
 		occ_func(cursor);
 		if(mode==1){
 			SetPos(0,24);
@@ -1054,9 +1151,6 @@ void Choose(int now){
 			cursor--;
 		if(input==bottom[2] || input==DOWN)
 			cursor++;
-		if(input>='1' && input<='9'){
-			cursor=input-'0';
-		}
 		if(cursor>sumjob+1) cursor=1;
 		if(cursor<1) cursor=sumjob+1;
 		if(input==bottom[5] || input==ENTER){
@@ -1099,8 +1193,13 @@ int UI(int now){
 		if(mode==4) pl[rnk].buff[0]=0;
 		else if(pl[rnk].occ>=2){
 			SetColor(13);
-			SetPos(8,rnk*4+2-2);
-			printf("★%d   ",pl[rnk].buff[0]);
+			SetPos(8,rnk*4);
+			if(pl[rnk].occ!=10) printf("★%d   ",pl[rnk].buff[0]);
+			else
+			{
+				printf("★%d   ",pl[rnk].buff[0]%10000);
+				SetPos(8,rnk*4+1);printf("★%d   ",pl[rnk].buff[0]/10000);
+			}
 		}
 
 		//费用绘制
@@ -1332,7 +1431,7 @@ void start_turn(int now){
 		if(pl[now].occ==8){
 			pl[now].hp-=15;
 			pl[now].buff[0]+=10;
-		}
+		}//鱼人扣15血获得10<★鱼仔>
 	}
 	pl[now].cost=min(pl[now].cost+1,pl[now].maxcost);//加费 
 	if(pl[now].buff[5])//治疗buff
@@ -1404,6 +1503,9 @@ int Ask(int now){
 	}
 	pl[now].rest=pl[now].cardcnt;
 	//补充手牌
+	if(pl[now].occ==10){
+		pl[now].handcard[4]=lib[10][1];
+	}//赌徒第4张牌变为[赌局开盘] 
 	if(pl[now].occ==7){
 		pl[now].buff[10]=0;
 		for(int i=1;i<=pl[now].cardcnt;i++) 
@@ -1468,6 +1570,9 @@ int Ask(int now){
 			}
 			if(pl[now].handcard[i].func==102){
 				pl[now].handcard[i].ATK=pl[now].def;
+			}
+			if(pl[now].handcard[i].func==113){
+				pl[now].handcard[i].ATK=pl[now].buff[0]%10000;
 			}
 			if(pl[now].cost>=pl[now].handcard[i].cost)SetColor(11);
 			else SetColor(3);//费用是否足够
@@ -1785,6 +1890,9 @@ int Ask_same(int now){
 	}
 	//补充手牌
 	pl[now].rest=pl[now].cardcnt;
+	if(pl[now].occ==10){
+		pl[now].handcard[4]=lib[10][1];
+	}//赌徒第4张牌变为[赌局开盘] 
 
 	int cursor=1;
 	SetColor(7);
@@ -1837,6 +1945,9 @@ int Ask_same(int now){
 			}
 			if(pl[now].handcard[i].func==102){
 				pl[now].handcard[i].ATK=pl[now].def;
+			}
+			if(pl[now].handcard[i].func==113){
+				pl[now].handcard[i].ATK=pl[now].buff[0]%10000;
 			}
 			if(pl[now].cost>=pl[now].handcard[i].cost)SetColor(11);
 			else SetColor(3);//费用是否足够
@@ -2771,15 +2882,15 @@ int game(){
 }
 
 int main(){
-//	SetConsoleOutputCP(65001);
 	mouse(0);
 	srand(time(NULL));
+	system("mode con cols=90 lines=26");
 	previous();//获得公共牌库和职业牌库
 	while(1){
 		mouse(0);
 		fight=havewon=havelost=server_mode=0;
 		prepare();
-		SetConsoleTitle("CARD GAME:v3.0.5");
+		SetConsoleTitle("CARD GAME:v3.1.0");
 		bool connect_established=0;
 		while(!connect_established){
 			connect_established=1;
