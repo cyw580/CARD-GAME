@@ -378,7 +378,7 @@ string Card::Intro(){
 	else if(func==116)return "对手[迷惑]2回合";
 	else if(func==117)return "+3<★筹码>"; 
 	else if(func==118)return "+18<★筹码>"; 
-	else if(func==119)return "MISS率固定为97%";
+	else if(func==119)return "MISS率固定为97%,被[不完全记忆]夺走时ATK清空";
 	else if(func==120)return "<★筹码>*1.5";
 	else if(func==121)return "扣除max(80,HP/2)的HP,<★筹码>*1.5";
 	else if(func==122)return "(宝藏)<★筹码>*2,此牌MISS率固定为0%";
@@ -616,6 +616,7 @@ void previous(){
 	lib[10][13]=(Card){3,90,50,20,15,120,185};
 	lib[10][14]=(Card){1,0,0,0,0,121,186};
 	lib[10][15]=(Card){2,0,0,0,0,123,188};
+//	lib[10][16]=lib[10][17]=lib[10][18]=lib[10][12];
 	libcnt[10]=15;
 	fun[1][10][1]=(Card){1,50,100,100,0,122,187};
 	funcnt[1][10]=1;

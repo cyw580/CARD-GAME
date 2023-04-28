@@ -773,6 +773,7 @@ void extra(int now,int cursor){
 		pl[now].used[cursor]=0;
 		pl[now].rest++;
 		pl[now].handcard[cursor]=pl[3-now].heap[(rad()%pl[3-now].heapn)+1];
+		if(pl[now].handcard[cursor].func==119) pl[now].handcard[cursor].ATK=0;
 		pl[now].handcard[cursor].MISS=pl[now].handcard[cursor].func=0;
 	}//[不完全记忆]
 	if(pl[now].handcard[cursor].func==60){
