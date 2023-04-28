@@ -5,6 +5,10 @@
 #include<cstdio>
 using namespace std;
 
+int version1=3;
+int version2=1;
+int version3=1;
+string version="3.1.1";
 
 #define UP 72
 #define DOWN 80
@@ -996,7 +1000,7 @@ void treasure(int now){//竞技模式：宝藏牌
 			gettre[now]=1;
 		}
 	}
-	if(pl[now].occ==10 && pl[now].buff[0]>=200){
+	if(pl[now].occ==10 && pl[now].buff[0]%10000>=200){
 		for(int i=1;i<=pl[now].cardcnt-1;i++){
 			if(pl[now].used[i]) {
 				pl[now].used[i]=0;
@@ -1232,19 +1236,26 @@ int UI(int now){
 			SetColor(12),printf("蓄力+%dATK  ",pl[rnk].buff[7]);
 			SetColor(9),printf("[防御]+%d ",pl[rnk].buff[8]);
 		}
+		int qwqcnt=0;
 		if(pl[rnk].buff[1])
 			SetColor(6),printf("燃烧 %d : ",pl[rnk].buff[1]);
+		else qwqcnt++;
 		if(pl[rnk].buff[2])
 			SetColor(2),printf("中毒 %d : ",pl[rnk].buff[2]);
+		else qwqcnt++;
 		if(pl[rnk].buff[3])
 			SetColor(4),printf("狂暴 %d : ",pl[rnk].buff[3]);
+		else qwqcnt++;
 		if(pl[rnk].buff[4])
 			SetColor(11),printf("虚弱 %d : ",pl[rnk].buff[4]);
+		else qwqcnt++;
 		if(pl[rnk].buff[5])
 			SetColor(10),printf("治疗 %d : ",pl[rnk].buff[5]);
+		else qwqcnt++;
 		if(pl[rnk].buff[6])
 			SetColor(5),printf("迷惑 %d : ",pl[rnk].buff[6]);
-		printf("                                                 ");
+		else qwqcnt++;
+		printf(string(9*qwqcnt,' '));
 		
 		//血条绘制
 		SetPos(26,rnk*4+1-2);
@@ -2890,7 +2901,7 @@ int main(){
 		mouse(0);
 		fight=havewon=havelost=server_mode=0;
 		prepare();
-		SetConsoleTitle("CARD GAME:v3.1.0");
+		SetConsoleTitle(("CARD GAME:v"+version).c_str());
 		bool connect_established=0;
 		while(!connect_established){
 			connect_established=1;
@@ -2932,6 +2943,16 @@ int main(){
 		if(server_mode!=3){
 			if(server_mode==1){
 				system("cls");
+				int qwq1,qwq2,qwq3;
+				recv_int(qwq1),recv_int(qwq2),recv_int(qwq3);
+				send_int(version1),send_int(version2),send_int(version3);
+				if(version1!=qwq1 or version2!=qwq2 or version3!=qwq3)
+				{
+					SetColor(6);
+					printf("双方版本不同...无法进行游戏...");
+					getch();continue;
+				}
+				
 				SetConsoleTitle("CARD GAME:Options");
 				if(Options(1)) continue;
 				while(_kbhit()) getch();
@@ -2940,8 +2961,17 @@ int main(){
 				system("cls");//清屏并切换到Choose界面
 			}
 			else {
-				// system("cls");
-				// printf("正在等待服务端设定游戏模式...\n");
+				system("cls");
+				int qwq1,qwq2,qwq3;
+				send_int(version1),send_int(version2),send_int(version3);
+				recv_int(qwq1),recv_int(qwq2),recv_int(qwq3);
+				if(version1!=qwq1 or version2!=qwq2 or version3!=qwq3)
+				{
+					SetColor(6);
+					printf("双方版本不同...无法进行游戏...");
+					getch();continue;
+				}
+				
 				if(Options(1)) continue;
 				while(_kbhit()) getch();
 			}
