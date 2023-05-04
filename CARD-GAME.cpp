@@ -7,8 +7,8 @@ using namespace std;
 
 int version1=3;
 int version2=1;
-int version3=1;
-string version="3.1.1";
+int version3=2;
+string version="3.1.2";
 
 #define UP 72
 #define DOWN 80
@@ -115,7 +115,7 @@ int Card::Use(int from,int to){
 			s1=min(500,s1+s2-s2/2),s2/=2;
 			pl[from].buff[0]=s1*10000+s2; 
 		}
-		if(pl[from].occ==10) pl[from].hp=min(pl[from].hp+20,pl[from].maxhp);
+		if(pl[from].occ==10) pl[from].hp=min(pl[from].hp+15*(cost+1),pl[from].maxhp);
 		pl[from].cost=min(pl[from].maxcost,pl[from].cost+cost/2);
 		UI(from);
 		use_card.MISS=1;
@@ -134,8 +134,8 @@ int Card::Use(int from,int to){
 			else
 			{
 				int defdamage=sum*pl[to].buff[0]/10.0;
-				if(defdamage<=pl[3-to].buff[0]*2) pl[3-to].buff[0]-=defdamage/2,defdamage=0;
-				else defdamage-=pl[3-to].buff[0]*2,pl[3-to].buff[0]=0;
+				if(defdamage<=pl[3-to].buff[0]*3) pl[3-to].buff[0]-=defdamage/3,defdamage=0;
+				else defdamage-=pl[3-to].buff[0]*3,pl[3-to].buff[0]=0;
 				if(defdamage>0) pl[3-to].hp-=defdamage;
 			}
 		}
@@ -146,10 +146,10 @@ int Card::Use(int from,int to){
 		else pl[to].def-=damage,damage=0;
 	}
 	if(pl[to].occ==8){
-		if(damage<=pl[to].buff[0]*2){
-			pl[to].buff[0]-=damage/2,damage=0;
+		if(damage<=pl[to].buff[0]*3){
+			pl[to].buff[0]-=damage/3,damage=0;
 		}
-		else damage-=pl[to].buff[0]*2,pl[to].buff[0]=0;
+		else damage-=pl[to].buff[0]*3,pl[to].buff[0]=0;
 	}
 	if(damage>0){
 		pl[to].hp-=damage;
@@ -174,8 +174,8 @@ int Card::Use(int from,int to){
 			if(pl[3-from].occ!=8) pl[3-from].hp-=defdamage;
 			else
 			{
-				if(defdamage<=pl[3-from].buff[0]*2) pl[3-from].buff[0]-=defdamage/2,defdamage=0;
-				else defdamage-=pl[3-from].buff[0]*2,pl[3-from].buff[0]=0;
+				if(defdamage<=pl[3-from].buff[0]*3) pl[3-from].buff[0]-=defdamage/3,defdamage=0;
+				else defdamage-=pl[3-from].buff[0]*3,pl[3-from].buff[0]=0;
 				if(defdamage>0) pl[3-from].hp-=defdamage;	
 			}
 		}
@@ -290,7 +290,20 @@ int Card::Special(int from,int to){
 		return 1;
 	}
 	else if(func==21){
-		pl[to].def=min(pl[to].def+50,pl[to].maxdef);
+		pl[to].def+=50;
+		if(pl[to].occ==9) 
+			if(pl[to].def>pl[to].maxdef) 
+			{
+				int defdamage=(pl[to].def-pl[to].maxdef)*(10-pl[to].buff[0])/10.0;
+				if(pl[3-to].occ!=8) pl[3-to].hp-=defdamage;
+				else
+				{
+					if(defdamage<=pl[3-to].buff[0]*3) pl[3-to].buff[0]-=defdamage/3,defdamage=0;
+					else defdamage-=pl[3-to].buff[0]*3,pl[3-to].buff[0]=0;
+					if(defdamage>0) pl[3-to].hp-=defdamage;	
+				}
+			}
+		pl[to].def=min(pl[to].def,pl[to].maxdef);
 	}
 	else if(func==22){
 		pl[from].maxhp-=20;
@@ -550,7 +563,7 @@ int Card::Special(int from,int to){
 		if(rad()%100<60) pl[from].buff[0]++;
 	}
 	else if(func==85){
-		pl[from].buff[0]+=4;
+		pl[from].buff[0]+=5;
 	}
 	else if(func==86){
 		pl[from].buff[0]+=9;
@@ -636,8 +649,8 @@ int Card::Special(int from,int to){
 				if(pl[3-from].occ!=8) pl[3-from].hp-=defdamage;
 				else
 				{
-					if(defdamage<=pl[3-from].buff[0]*2) pl[3-from].buff[0]-=defdamage/2,defdamage=0;
-					else defdamage-=pl[3-from].buff[0]*2,pl[3-from].buff[0]=0;
+					if(defdamage<=pl[3-from].buff[0]*3) pl[3-from].buff[0]-=defdamage/3,defdamage=0;
+					else defdamage-=pl[3-from].buff[0]*3,pl[3-from].buff[0]=0;
 					if(defdamage>0) pl[3-from].hp-=defdamage;	
 				}
 			}
@@ -659,8 +672,8 @@ int Card::Special(int from,int to){
 				if(pl[3-from].occ!=8) pl[3-from].hp-=defdamage;
 				else
 				{
-					if(defdamage<=pl[3-from].buff[0]*2) pl[3-from].buff[0]-=defdamage/2,defdamage=0;
-					else defdamage-=pl[3-from].buff[0]*2,pl[3-from].buff[0]=0;
+					if(defdamage<=pl[3-from].buff[0]*3) pl[3-from].buff[0]-=defdamage/3,defdamage=0;
+					else defdamage-=pl[3-from].buff[0]*3,pl[3-from].buff[0]=0;
 					if(defdamage>0) pl[3-from].hp-=defdamage;	
 				}
 			}
@@ -684,8 +697,8 @@ int Card::Special(int from,int to){
 				if(pl[3-from].occ!=8) pl[3-from].hp-=defdamage;
 				else
 				{
-					if(defdamage<=pl[3-from].buff[0]*2) pl[3-from].buff[0]-=defdamage/2,defdamage=0;
-					else defdamage-=pl[3-from].buff[0]*2,pl[3-from].buff[0]=0;
+					if(defdamage<=pl[3-from].buff[0]*3) pl[3-from].buff[0]-=defdamage/3,defdamage=0;
+					else defdamage-=pl[3-from].buff[0]*3,pl[3-from].buff[0]=0;
 					if(defdamage>0) pl[3-from].hp-=defdamage;	
 				}
 			}
@@ -746,7 +759,7 @@ int Card::Special(int from,int to){
 		pl[from].buff[0]=s1*10000+min(1000,(int)(s2*1.5));
 	}
 	else if(func==121){
-		pl[from].hp-=max(80,pl[from].hp/2);
+		pl[from].hp-=max(70,pl[from].hp/5);
 		int s1=pl[from].buff[0]/10000,s2=pl[from].buff[0]%10000;
 		pl[from].buff[0]=s1*10000+min(1000,(int)(s2*1.5));
 	}
@@ -820,7 +833,20 @@ bool giveupcard(int now,int cursor){
 		return 1;
 	}//[精神控制]
 	if(pl[now].handcard[cursor].func==94) {
-		pl[3-now].def=min(pl[3-now].maxdef,pl[3-now].def+10);
+		pl[3-now].def+=10;
+		if(pl[3-now].occ==9) 
+			if(pl[3-now].def>pl[3-now].maxdef) 
+			{
+				int defdamage=(pl[3-now].def-pl[3-now].maxdef)*(10-pl[3-now].buff[0])/10.0;
+				if(pl[now].occ!=8) pl[now].hp-=defdamage;
+				else
+				{
+					if(defdamage<=pl[now].buff[0]*3) pl[now].buff[0]-=defdamage/3,defdamage=0;
+					else defdamage-=pl[now].buff[0]*3,pl[now].buff[0]=0;
+					if(defdamage>0) pl[now].hp-=defdamage;	
+				}
+			}
+		pl[3-now].def=min(pl[3-now].maxdef,pl[3-now].def);
 		return 1;
 	}//[无力]
 	return 0;
@@ -2663,18 +2689,23 @@ int game(){
 						if(pl[now].handcard[i].func==92) pl[now].handcard[i].ATK+=min(pl[now].buff[0],50);
 					}
 					int damage=pl[now].buff[0];
-					if(pl[3-now].occ>1 && rad()%100<damage/6+2) {
-						if(pl[3-now].occ==5 && pl[3-now].buff[0]){
-							pl[3-now].maxhp-=10,pl[3-now].maxdef-=5;
-							pl[3-now].hp=min(pl[3-now].hp,pl[3-now].maxhp);
-							pl[3-now].def=min(pl[3-now].def,pl[3-now].maxdef);
-						}
-						pl[3-now].buff[0]=max(0,pl[3-now].buff[0]-1);
-					}//[水蚀]
-					if(damage>=pl[3-now].def) {
-						damage-=pl[3-now].def,pl[3-now].def=0,pl[3-now].hp-=damage;
+					if(pl[3-now].occ==9)
+					{
+						int defdamage=min(damage,pl[3-now].def);
+						damage-=defdamage,pl[3-now].def-=defdamage;
+						if(damage) pl[3-now].hp-=damage;
+						defdamage=defdamage*pl[3-now].buff[0]/10;
+						if(defdamage<=pl[now].buff[0]*3) pl[now].buff[0]-=defdamage/3,defdamage=0;
+						else defdamage-=pl[now].buff[0]*3,pl[now].buff[0]=0;
+						if(defdamage>0) pl[now].hp-=defdamage;
 					}
-					else pl[3-now].def-=damage;
+					else
+					{
+						if(damage>=pl[3-now].def) {
+							damage-=pl[3-now].def,pl[3-now].def=0,pl[3-now].hp-=damage;
+						}
+						else pl[3-now].def-=damage;	
+					}
 					//[集群攻击]
 					Check(3-now);
 				}
@@ -2850,18 +2881,23 @@ int game(){
 					if(pl[now].handcard[i].func==92) pl[now].handcard[i].ATK+=min(pl[now].buff[0],50);
 				}
 				int damage=pl[now].buff[0];
-				if(rad()%100<damage/6+2) {
-					if(pl[3-now].occ==5 && pl[3-now].buff[0]){
-						pl[3-now].maxhp-=10,pl[3-now].maxdef-=5;
-						pl[3-now].hp=min(pl[3-now].hp,pl[3-now].maxhp);
-						pl[3-now].def=min(pl[3-now].def,pl[3-now].maxdef);
-					}
-					pl[3-now].buff[0]=max(0,pl[3-now].buff[0]-1);
-				}//[水蚀]
-				if(damage>=pl[3-now].def) {
-					damage-=pl[3-now].def,pl[3-now].def=0,pl[3-now].hp-=damage;
+				if(pl[3-now].occ==9)
+				{
+					int defdamage=min(damage,pl[3-now].def);
+					damage-=defdamage,pl[3-now].def-=defdamage;
+					if(damage) pl[3-now].hp-=damage;
+					defdamage=defdamage*pl[3-now].buff[0]/10;
+					if(defdamage<=pl[now].buff[0]*3) pl[now].buff[0]-=defdamage/3,defdamage=0;
+					else defdamage-=pl[now].buff[0]*3,pl[now].buff[0]=0;
+					if(defdamage>0) pl[now].hp-=defdamage;
 				}
-				else pl[3-now].def-=damage;
+				else
+				{
+					if(damage>=pl[3-now].def) {
+						damage-=pl[3-now].def,pl[3-now].def=0,pl[3-now].hp-=damage;
+					}
+					else pl[3-now].def-=damage;	
+				}
 				//[集群攻击]
 				Check(3-now);
 			}

@@ -1,14 +1,14 @@
 #include<windows.h>
 void SetPos(int x, int y)
 {
-        COORD coord;
-        coord.X = x;
-        coord.Y = y;
+    COORD coord;
+    coord.X = x;
+    coord.Y = y;
 
-        //HANDLE hout = GetStdHandle(STD_OUTPUT_HANDLE);
-        //SetConsoleCursorPosition(hout, coord);//和下面的代码一样功能
+    //HANDLE hout = GetStdHandle(STD_OUTPUT_HANDLE);
+    //SetConsoleCursorPosition(hout, coord);//和下面的代码一样功能
 
-        SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
+    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
 };
 
 void mouse(int a)
@@ -22,10 +22,10 @@ void mouse(int a)
 
 void SetColor(short x)
 {
-  if(x>=0 && x<=15)
-    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), x);
-  else
-    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 7);
+  	if(x>=0 && x<=15)
+    	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), x);
+  	else
+   	 	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 7);
 }
 
 void SetColor(short x,short y)
@@ -344,7 +344,7 @@ string Card::Intro(){
 	else if(func==82)return "每张手牌的HEAL清空后加等量ATK,若HEAL=0则ATK+15";
 	else if(func==83)return "60% +1<★法力>";
 	else if(func==84)return "被弃置则下2回合[虚弱]";
-	else if(func==85)return "+4<★鱼仔>";
+	else if(func==85)return "+5<★鱼仔>";
 	else if(func==86)return "+9<★鱼仔>";
 	else if(func==87)return "+18<★鱼仔>";
 	else if(func==88)return "如果<★鱼仔>≥30则-15<★鱼仔>并+3◆,否则视为弃置";
@@ -380,9 +380,9 @@ string Card::Intro(){
 	else if(func==118)return "+18<★筹码>"; 
 	else if(func==119)return "MISS率固定为97%,被[不完全记忆]夺走时ATK清空";
 	else if(func==120)return "<★筹码>*1.5";
-	else if(func==121)return "扣除max(80,HP/2)的HP,<★筹码>*1.5";
+	else if(func==121)return "扣除max(70,HP/5)的HP,<★筹码>*1.5";
 	else if(func==122)return "(宝藏)<★筹码>*2,此牌MISS率固定为0%";
-	else if(func==123)return "将因[赌局开盘]损失的所有筹码重新夺回";
+	else if(func==123)return "将<★底牌>全部转化为<★筹码>";
 	return "                                                     ";
 }
 
@@ -456,8 +456,8 @@ void previous(){
 	lib[3][8]=(Card){2,0,0,0,0,13,47};
 	lib[3][9]=(Card){2,0,35,0,0,12,48};
 	lib[3][10]=(Card){1,65,0,0,0,0,49};
-	lib[3][11]=(Card){2,145,50,0,40,35,50};
-	lib[3][12]=(Card){3,175,0,0,20,36,51};
+	lib[3][11]=(Card){2,125,50,0,40,35,50};
+	lib[3][12]=(Card){3,155,0,0,20,36,51};
 	lib[3][13]=(Card){1,0,-20,0,0,37,52};
 	lib[3][14]=(Card){3,85,40,0,0,83,140};
 	libcnt[3]=14;
@@ -533,7 +533,7 @@ void previous(){
 	lib[6][libcnt[6]+2]=(Card){2,0,0,0,0,32,99};
 	fun[1][6][1]=(Card){2,85,55,0,0,59,100};
 	funcnt[1][6]=1;
-	job[6]={400,4,40,5};
+	job[6]={450,4,40,5};
 	//minister
 	lib[7][1]=(Card){1,30,0,0,0,38,101};
 	lib[7][2]=(Card){2,0,65,0,0,39,102};
@@ -579,11 +579,11 @@ void previous(){
 	libcnt[8]=17;
 	fun[1][8][1]=(Card){1,20,20,0,0,96,158};
 	funcnt[1][8]=1;
-	job[8]={360,5,0,6};
+	job[8]={400,5,0,6};
 	//盾卫 
-	lib[9][1]=(Card){1,0,10,40,0,0,160};
+	lib[9][1]=(Card){1,0,10,45,0,0,160};
 	lib[9][2]=lib[9][1];
-	lib[9][3]=(Card){2,0,20,95,0,0,161};
+	lib[9][3]=(Card){2,0,20,105,0,0,161};
 	lib[9][4]=(Card){1,0,0,10,0,98,162};
 	lib[9][5]=(Card){1,0,0,0,0,99,163};
 	lib[9][6]=(Card){1,0,0,0,0,100,164};
@@ -599,7 +599,7 @@ void previous(){
 	lib[9][libcnt[9]+1]=(Card){2,0,0,0,0,107,172};
 	fun[1][9][1]=(Card){1,50,50,100,0,104,168};
 	funcnt[1][9]=1;
-	job[9]={380,4,200,5};
+	job[9]={420,4,200,5};
 	//赌徒 
 	lib[10][1]=(Card){1,0,-10,0,30,109,174};
 	lib[10][2]=(Card){1,10,10,10,15,110,175};
@@ -616,7 +616,6 @@ void previous(){
 	lib[10][13]=(Card){3,90,50,20,15,120,185};
 	lib[10][14]=(Card){1,0,0,0,0,121,186};
 	lib[10][15]=(Card){2,0,0,0,0,123,188};
-//	lib[10][16]=lib[10][17]=lib[10][18]=lib[10][12];
 	libcnt[10]=15;
 	fun[1][10][1]=(Card){1,50,100,100,0,122,187};
 	funcnt[1][10]=1;
@@ -839,7 +838,7 @@ string Card::Name(){
 	if(id==184) return "[命运]";
 	if(id==185) return "[流光溢彩]";
 	if(id==186) return "[暗无天日]";
-	if(id==187) return "[拉斯维加斯]";    //美国的赌城 
+	if(id==187) return "[拉斯维加斯]";    //美国赌城 
 	if(id==188) return "[秩序背叛]";      //我们的16bit战争 歌词 
 	else return "[未命名]";
 }
@@ -903,7 +902,7 @@ void occ_func(int x){
 		printf("\n                                                                     ");
 	}
 	else if(x==6){
-		printf("HP 400   MAX_DEF 40    手牌上限4   ◆0/5   ");printf("   ");SetColor(13);
+		printf("HP 450   MAX_DEF 40    手牌上限4   ◆0/5   ");printf("   ");SetColor(13);
 		printf("\n\t<★原罪>回合开始时每个标记对你造成5点伤害");printf("                  ");SetColor(7);
 		printf("\n\t 1.[源于虚空] 开局时0◆,每回合额外+1◆");printf("                     ");
 		printf("\n\t 2.[虚空把戏] 弃牌需消耗相应费用并视为打出,ATK与HEAL交换");printf("            ");
@@ -921,16 +920,16 @@ void occ_func(int x){
 		printf("\n                                                                     ");
 	}
 	else if(x==8){
-		printf("HP 360   MAX_DEF 0     手牌上限5   ◆3/6     ");printf("   ");SetColor(13);
-		printf("\n\t<★鱼仔>每个标记为你挡下2点伤害后消失");printf("                       ");SetColor(7);
+		printf("HP 400   MAX_DEF 0     手牌上限5   ◆3/6     ");printf("   ");SetColor(13);
+		printf("\n\t<★鱼仔>每个标记为你挡下3点伤害后消失");printf("                       ");SetColor(7);
 		printf("\n\t 1.[快速繁殖] 每回合开始-15HP并+10<★鱼仔>");printf("                   ");
 		printf("\n\t 2.[集群攻击] 回合结束时对敌方造成★等量的伤害");printf("              ");
-		printf("\n\t 3.[水蚀] 回合结束有概率(与★数量相关)-1对手的★");printf("             ");
-		printf("\n\t 4.[与世隔绝] 无法抽到公共牌库中的牌");printf("              ");
+		printf("\n\t 3.[与世隔绝] 无法抽到公共牌库中的牌");printf("              ");
+		printf("\n                                                                     ");
 		printf("\n                                                                     ");
 	}
 	else if(x==9){
-		printf("HP 380   MAX_DEF 200   手牌上限4   ◆3/6     ");printf("   ");SetColor(13);
+		printf("HP 420   MAX_DEF 200   手牌上限4   ◆3/6     ");printf("   ");SetColor(13);
 		printf("\n\t<★荆棘>数量与反弹伤害和溢出伤害相关 初始5点 范围在0到7间");printf("           ");SetColor(7);
 		printf("\n\t 1.[反甲] <★荆棘>*10%盾牌吸收伤害转化为真实伤害反击对方");printf("             ");
 		printf("\n\t 2.[过载] 100%-<★荆棘>*10%溢出的盾牌转化为真实伤害攻击对方");printf("           ");
@@ -943,7 +942,7 @@ void occ_func(int x){
 		printf("\n\t<★筹码>足量的筹码在战斗中对你有益,上限为1000个");printf("                               ");
 		printf("\n\t<★底牌>因[赌局开盘]损失的筹码将被储存,上限为500个");printf("                               ");SetColor(7);
 		printf("\n\t 1.[赌场] 回合开始时你的第4张牌被自动替换为[赌局开盘]");printf("                         ");
-		printf("\n\t 2.[借酒消愁] 每次出牌失误回复20HP                   ");printf("            ");
+		printf("\n\t 2.[借酒消愁] 每次出牌失误回复(卡牌费用+1)*15HP                   ");printf("            ");
 		printf("\n\t 3.[亡命之徒] 当HP低于最大HP的50%时出牌MISS得到15%的减少           ");printf("         ");
 		printf("\n\t 4.[与世隔绝] 无法抽到公共牌库中的牌");printf("                   ");
 	}
@@ -961,7 +960,7 @@ void occ_func(int x){
 void occ_treasure(int x){
 	SetColor(7,0);
 	if(x==1){
-		printf("宝藏获取条件:触发3次[拾荒]后获得宝藏");printf("                 ");
+		printf("宝藏获取条件:触发3次[拾荒]");printf("                 ");
 	}
 	else if(x==2){
 		printf("宝藏获取条件:回合开始时最大HP≤500");printf("                   ");
