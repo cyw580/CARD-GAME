@@ -1,14 +1,12 @@
 #include<bits/stdc++.h>
 #include<windows.h>
 #include<conio.h> 
-#include<iostream>
-#include<cstdio>
 using namespace std;
 
 int version1=3;
 int version2=1;
-int version3=2;
-string version="3.1.2";
+int version3=3;
+string version="3.1.3";
 
 #define UP 72
 #define DOWN 80
@@ -614,8 +612,6 @@ int Card::Special(int from,int to){
 	}
 	else if(func==98){
 		pl[from].maxdef+=30;
-		pl[from].maxhp-=20;
-		pl[from].hp=min(pl[from].hp,pl[from].maxhp);
 	}
 	else if(func==99){
 		pl[from].def/=2;
@@ -633,7 +629,7 @@ int Card::Special(int from,int to){
 		pl[from].def=0;
 	}
 	else if(func==103){
-		pl[from].maxdef+=50;
+		pl[from].maxdef+=70;
 	}
 	else if(func==104){
 		pl[from].maxhp+=100; 
@@ -771,6 +767,14 @@ int Card::Special(int from,int to){
 		int s1=pl[from].buff[0]/10000,s2=pl[from].buff[0]%10000;
 		pl[from].buff[0]=min(1000,s2+s1);
 	}
+	else if(func==124){
+		for(int i=1;i<=pl[to].cardcnt;i++)
+			if(!pl[to].used[i]) {
+				if(func==109 or func==119 or func==122) continue;
+				pl[to].handcard[i].MISS+=20;
+				if(pl[to].handcard[i].MISS>100) pl[to].handcard[i].MISS=100;
+			}
+	}
 	return 0;
 }
 
@@ -799,6 +803,11 @@ void extra(int now,int cursor){
 		pl[now].rest++;
 		pl[now].handcard[cursor]=lib[8][11];
 	}//[深海滋养]变为[水中疗养]
+	if(pl[now].handcard[cursor].func==104){
+		pl[now].used[cursor]=0;
+		pl[now].rest++;
+		pl[now].handcard[cursor]=lib[9][11];
+	}//[守护者的审判]变为[圣盾形态]
 	if(pl[now].handcard[cursor].func==24){
 		for(int i=1;i<=pl[now].cardcnt;i++) {
 			pl[now].handcard[i]=pl[now].heap[rad()%pl[now].heapn+1];
@@ -1433,8 +1442,6 @@ void start_turn(int now){
 		}
 		else if(rad()%100<10) pl[now].cost=min(pl[now].cost+1,pl[now].maxcost);//加费
 	}
-	if(env_now==7)
-		pl[now].cost=min(pl[now].cost+1,pl[now].maxcost);//环境加费 
 
 	//职业特性
 	if(mode!=4){
@@ -1456,7 +1463,9 @@ void start_turn(int now){
 			if(pl[now].def==0) pl[now].def=30;
 			pl[now].buff[0]=max(0,pl[now].buff[0]-1);
 		}//战士叠甲并清除<★疲惫>
-		if(pl[now].occ==5) pl[now].cost=3;//地精每回合3费
+		if(pl[now].occ==5){
+			pl[now].cost=min(pl[now].cost+2,pl[now].maxcost);//地精每回合3费
+		}
 		if(pl[now].occ==6){
 			pl[now].cost=min(pl[now].cost+1,pl[now].maxcost);
 			int da=5*pl[now].buff[0];
@@ -1471,6 +1480,10 @@ void start_turn(int now){
 			pl[now].buff[0]+=10;
 		}//鱼人扣15血获得10<★鱼仔>
 	}
+	
+	if(env_now==7)
+		pl[now].cost=min(pl[now].cost+1,pl[now].maxcost);//环境加费 
+	
 	pl[now].cost=min(pl[now].cost+1,pl[now].maxcost);//加费 
 	if(pl[now].buff[5])//治疗buff
 		pl[now].hp=min(pl[now].hp+30,pl[now].maxhp);
@@ -1607,7 +1620,7 @@ int Ask(int now){
 				pl[now].handcard[i].ATK=da;
 			}
 			if(pl[now].handcard[i].func==102){
-				pl[now].handcard[i].ATK=pl[now].def;
+				pl[now].handcard[i].ATK=pl[now].def*2;
 			}
 			if(pl[now].handcard[i].func==113){
 				pl[now].handcard[i].ATK=pl[now].buff[0]%10000;
@@ -1982,7 +1995,7 @@ int Ask_same(int now){
 				pl[now].handcard[i].ATK=da;
 			}
 			if(pl[now].handcard[i].func==102){
-				pl[now].handcard[i].ATK=pl[now].def;
+				pl[now].handcard[i].ATK=pl[now].def*2;
 			}
 			if(pl[now].handcard[i].func==113){
 				pl[now].handcard[i].ATK=pl[now].buff[0]%10000;

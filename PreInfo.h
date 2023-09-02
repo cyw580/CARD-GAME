@@ -357,18 +357,18 @@ string Card::Intro(){
 	else if(func==95)return "如果<★鱼仔>≥15则-6<★鱼仔>并清空双方所有buff,否则视为弃置";
 	else if(func==96)return "(宝藏)<★鱼仔>*1.5,使用后此牌变为[水中疗养]";
 	else if(func==97)return "立刻抽取至多3张牌";
-	else if(func==98)return "减少20点HP上限，增加30点DEF上限";
+	else if(func==98)return "增加30点DEF上限";
 	else if(func==99)return "护盾减半，-2<★荆棘>";
 	else if(func==100)return "护盾减半，+2<★荆棘>";
 	else if(func==101)return "对手[燃烧]2回合（击破护盾时才生效）";
-	else if(func==102)return "将所有的护盾转化为等量伤害攻击对方";
-	else if(func==103)return "增加50点DEF上限";
-	else if(func==104)return "(宝藏)HP,DEF上限增加100";
+	else if(func==102)return "将所有的护盾转化为两倍伤害攻击对方";
+	else if(func==103)return "增加70点DEF上限";
+	else if(func==104)return "(宝藏)HP,DEF上限增加100,使用后此牌变为[圣盾形态]";
 	else if(func==105)return "减少50DEF上限(若已扣完则扣血量上限),+3◆";
 	else if(func==106)return "减少100DEF上限(若已扣完则扣血量上限)";
 	else if(func==107)return "清空对方的DEF,对方+2◆"; 
 	else if(func==108)return "DEF*=2";
-	else if(func==109)return "70%的概率<★筹码>翻倍，否则减半，概率不受外界影响";
+	else if(func==109)return "MISS率固定为70%,成功打出使<★筹码>翻倍，否则减半";
 	else if(func==110)return "+5<★筹码>";
 	else if(func==111)return "+11<★筹码>";
 	else if(func==112)return "消耗<★筹码>以回复等量HP,若回满则回复等量DEF,又回满则停止";
@@ -381,8 +381,9 @@ string Card::Intro(){
 	else if(func==119)return "MISS率固定为97%,被[不完全记忆]夺走时ATK清空";
 	else if(func==120)return "<★筹码>*1.5";
 	else if(func==121)return "扣除max(70,HP/5)的HP,<★筹码>*1.5";
-	else if(func==122)return "(宝藏)<★筹码>*2,此牌MISS率固定为0%";
+	else if(func==122)return "(宝藏)MISS率固定为0%,<★筹码>*2";
 	else if(func==123)return "将<★底牌>全部转化为<★筹码>";
+	else if(func==124)return "对方所有手牌MISS+20%";
 	return "                                                     ";
 }
 
@@ -466,18 +467,18 @@ void previous(){
 	funcnt[1][3]=2;
 	job[3]={330,4,120,7};
 	//warrior
-	lib[4][1]=(Card){2,0,0,95,0,0,55};
+	lib[4][1]=(Card){2,0,0,85,0,0,55};
 	lib[4][2]=(Card){1,0,50,55,0,14,56};
 	lib[4][3]=lib[4][2];
 	lib[4][4]=(Card){1,75,0,0,15,0,57};
-	lib[4][5]=(Card){2,130,0,0,20,0,58};
+	lib[4][5]=(Card){2,120,0,0,20,0,58};
 	lib[4][6]=lib[4][5];
 	lib[4][7]=(Card){0,0,0,0,0,15,59};
-	lib[4][8]=(Card){3,125,0,60,0,0,60};
-	lib[4][9]=(Card){4,130,-30,0,0,4,61};
+	lib[4][8]=(Card){3,125,0,50,0,0,60};
+	lib[4][9]=(Card){4,120,-30,0,0,4,61};
 	lib[4][10]=(Card){2,0,20,20,0,16,62};
-	lib[4][11]=(Card){4,230,0,0,10,0,63};
-	lib[4][12]=(Card){3,0,0,150,0,0,64};
+	lib[4][11]=(Card){4,220,0,0,10,0,63};
+	lib[4][12]=(Card){3,0,0,140,0,0,64};
 	lib[4][13]=(Card){2,0,55,30,0,0,65};
 	lib[4][14]=lib[4][13];
 	lib[4][15]=(Card){2,0,0,10,0,25,66};
@@ -509,16 +510,16 @@ void previous(){
 	libcnt[5]=18;
 	fun[1][5][1]=(Card){3,0,75,0,0,63,83};
 	funcnt[1][5]=1;
-	job[5]={280,3,0,3};
+	job[5]={280,3,0,4};
 	//demon
 	lib[6][1]=(Card){1,0,45,0,0,31,84};
-	lib[6][2]=(Card){2,0,70,0,0,33,85};
+	lib[6][2]=(Card){2,0,80,0,0,33,85};
 	lib[6][3]=(Card){2,70,20,0,10,0,86};
 	lib[6][4]=(Card){1,25,20,10,0,30,87};
-	lib[6][5]=(Card){5,235,40,30,0,29,88};
+	lib[6][5]=(Card){5,245,40,30,0,29,88};
 	lib[6][6]=(Card){1,0,0,0,0,28,89};
-	lib[6][7]=(Card){2,100,0,0,0,30,90};
-	lib[6][8]=(Card){3,120,20,30,0,30,91};
+	lib[6][7]=(Card){2,110,0,0,0,30,90};
+	lib[6][8]=(Card){3,130,20,30,0,30,91};
 	lib[6][9]=(Card){0,15,0,0,0,0,92};
 	lib[6][10]=(Card){4,160,25,10,0,27,93};
 	lib[6][11]=(Card){3,95,40,0,10,0,94};
@@ -595,7 +596,8 @@ void previous(){
 	lib[9][12]=(Card){0,30,10,10,0,0,170};
 	lib[9][13]=(Card){1,0,150,30,0,106,171};
 	lib[9][14]=(Card){3,0,0,0,0,108,173};
-	libcnt[9]=14;
+	lib[9][15]=(Card){1,70,0,5,0,0,190};
+	libcnt[9]=15;
 	lib[9][libcnt[9]+1]=(Card){2,0,0,0,0,107,172};
 	fun[1][9][1]=(Card){1,50,50,100,0,104,168};
 	funcnt[1][9]=1;
@@ -616,7 +618,8 @@ void previous(){
 	lib[10][13]=(Card){3,90,50,20,15,120,185};
 	lib[10][14]=(Card){1,0,0,0,0,121,186};
 	lib[10][15]=(Card){2,0,0,0,0,123,188};
-	libcnt[10]=15;
+	lib[10][16]=(Card){1,20,-20,0,30,124,189};
+	libcnt[10]=16;
 	fun[1][10][1]=(Card){1,50,100,100,0,122,187};
 	funcnt[1][10]=1;
 	job[10]={500,4,100,5};
@@ -816,19 +819,19 @@ string Card::Name(){
 	if(id==162) return "[固盾]";
 	if(id==163) return "[前进]";
 	if(id==164) return "[后退]";
-	if(id==165) return "[热情高涨]";      //假面骑士Wizard "热情高涨触摸变身" 
-	if(id==166) return "[守护者之怒]";    //战神 技能 
+	if(id==165) return "[热情高涨]";
+	if(id==166) return "[守护者之怒]";
 	if(id==167) return "[固盾II]";
-	if(id==168) return "[守护者的审判]";  //战神 技能 
-	if(id==169) return "[圣盾形态]";      //假面骑士Den-O 圣剑、圣杆、圣斧、圣枪形态 
-	if(id==170) return "[灵巧攻击]";      //战神 技能 
+	if(id==168) return "[守护者的审判]";
+	if(id==169) return "[圣盾形态]";
+	if(id==170) return "[灵巧攻击]";
 	if(id==171) return "[紧急自救]";
 	if(id==172) return "[防御攻破]";
 	if(id==173) return "[强力构筑]";
 	if(id==174) return "[赌局开盘]";
 	if(id==175) return "[扑克戏弄]";
 	if(id==176) return "[赢得头彩]";
-	if(id==177) return "[轮回转生]";      //转生苹果 
+	if(id==177) return "[轮回转生]";
 	if(id==178) return "[孤注一掷]";
 	if(id==179) return "[斜面轮盘]";
 	if(id==180) return "[自我欺骗]";
@@ -838,8 +841,10 @@ string Card::Name(){
 	if(id==184) return "[命运]";
 	if(id==185) return "[流光溢彩]";
 	if(id==186) return "[暗无天日]";
-	if(id==187) return "[拉斯维加斯]";    //美国赌城 
-	if(id==188) return "[秩序背叛]";      //我们的16bit战争 歌词 
+	if(id==187) return "[拉斯维加斯]";
+	if(id==188) return "[秩序背叛]";
+	if(id==189) return "[神经致幻]";
+	if(id==190) return "[蛮力冲撞]";
 	else return "[未命名]";
 }
 
@@ -893,9 +898,9 @@ void occ_func(int x){
 		printf("\n\t 4.[无畏] 无法抽到公共牌库中治疗牌");printf("            ");
 		printf("\n                                                                     ");
 	}else if(x==5){
-		printf("HP 280   MAX_DEF 0     手牌上限3   ◆3/3   ");printf("   ");SetColor(13);
+		printf("HP 280   MAX_DEF 0     手牌上限3   ◆3/4   ");printf("   ");SetColor(13);
 		printf("\n\t<★成长>每个标记使你ATK+9%% HP上限+10 MAX_DEF+5");printf("                 ");SetColor(7);
-		printf("\n\t 1.[贪婪] 回合开始时变为3◆,使用牌后有80%会抽牌");printf("             ");
+		printf("\n\t 1.[贪婪] 每回合额外+2◆,使用牌后有80%会抽牌");printf("             ");
 		printf("\n\t 2.[健康] 每当获得1个<★成长>时恢复12HP");printf("                         ");
 		printf("\n\t 3.[敏捷] 部分牌有穿透护盾攻击的能力");printf("                     ");
 		printf("\n\t 4.[与世隔绝] 无法抽到公共牌库中的牌");printf("                  ");
