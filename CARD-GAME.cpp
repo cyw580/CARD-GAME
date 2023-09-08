@@ -5,8 +5,8 @@ using namespace std;
 
 int version1=3;
 int version2=1;
-int version3=3;
-string version="3.1.3";
+int version3=4;
+string version="3.1.4";
 
 #define UP 72
 #define DOWN 80
@@ -32,7 +32,7 @@ int Check(int now){
 }
 
 int Card::cal_atk(int from,int to){//计算实际攻击力
-	int damage=ATK;
+	double damage=ATK;
 	if(func==15) return damage;//[背水一战]无视buff
 	if(func==89) return damage+pl[from].buff[0]*1.5;//[指挥进攻]无视buff
 	if(func==119) return damage;//[命运]为了好看固定为9999 
@@ -54,11 +54,11 @@ int Card::cal_atk(int from,int to){//计算实际攻击力
 	//天气影响
 	if(mode==2) //欢乐模式：随机buff
 		damage*=0.7;
-	return damage;
+	return (int)damage;
 }
 
 int Card::cal_heal(int from,int to){//计算实际恢复量
-	int heal=HEAL;
+	double heal=HEAL;
 	if(func==90) heal+=pl[from].buff[0]*2;
 	if(pl[from].buff[4])//虚弱
 		heal*=0.7;
@@ -69,7 +69,7 @@ int Card::cal_heal(int from,int to){//计算实际恢复量
 }
 
 int Card::cal_def(int from,int to){//计算实际叠盾
-	int def=DEF;
+	double def=DEF;
 	if(mode==2) //欢乐模式：随机buff
 		def*=0.7;
 	return def;
@@ -122,6 +122,7 @@ int Card::Use(int from,int to){
 	int damage,flag=0;
 	if(func) flag=Special(from,to);
 	if(flag==4) return 0;
+	if(ATK>0 and pl[to].occ==11 and pl[to].buff[0]%10) pl[to].buff[0]--;
 	damage=use_card.ATK=cal_atk(from,to);
 	//护盾抵消
 	if(pl[to].def>0 && flag!=1){
@@ -1135,7 +1136,7 @@ void Choose(int now){
 			}
 		}
 	}
-	int cursor=1;
+	int cursor=1,lastcursor=1;
 	if(mode==4){
 		pl[now].occ=rad()%sumjob+1;
 		SetPos(0,0);
@@ -1161,31 +1162,27 @@ void Choose(int now){
 			}
 		}
 	}
-	SetPos(0,1);
-	printf("          ◇选择P%d ",now);
-	printf(pl[now].name);
-	printf("的职业◇");//第一行标识谁选择职业
-	while(1){
-		for(int i=1;i<=sumjob+1;i++){	
-			if(cursor!=i)
-				SetColor(7,0);
-			else
-				SetColor(0,7);
-			SetPos(0,i+1);
-			printf("                                                              ");
-			SetPos(0,i+1);
-			printf("   %2d ",i);
-			printf(occ_name(i));
-			printf(" | ");
-			printf(occ_intro(i));
-		}//各职业名字和简介展示
-		SetPos(0,13);
+	SetPos(6,5);
+	printf("◇选择P%d",now);printf("的职业◇");
+	for(int i=1;i<=sumjob+1;i++){
+		SetColor(7,0);SetPos(4,i+6);printf("%2d      ",i);printf(occ_name(i));printf("   ");
+	}//各职业名字和简介展示
+	while(1)
+	{
+		SetPos(9,lastcursor+6);SetColor(7,0);printf("   ");printf(occ_name(lastcursor));printf("   ");
+		SetPos(9,cursor+6);SetColor(0,7);printf("   ");printf(occ_name(cursor));printf("   ");
+		
 		occ_func(cursor);
 		if(mode==1){
-			SetPos(0,24);
+			SetPos(26,17);
 			occ_treasure(cursor);
 		}
-		if(fight) printf("\n\n(你可以查看这些职业说明,但你的职业是随缘的)");
+		if(fight)
+		{
+			SetPos(26,5);
+			printf("(你可以查看这些职业说明,但你的职业是随缘的)");
+		}
+		lastcursor=cursor;
 		input=getch();
 		if(input==bottom[1] || input==UP)
 			cursor--;
@@ -1204,6 +1201,38 @@ void Choose(int now){
 			}
 		}
 	}
+//	while(1){
+//		SetPos(0,lastcursor+1),SetColor(7,0);printf("                                                              ");
+//		SetPos(0,lastcursor+1);printf("   %2d ",lastcursor);
+//		SetPos(0,cursor+1),SetColor(0,7);printf("                                                              ");
+//		SetPos(0,cursor+1);printf("   %2d ",cursor);
+//		
+//		SetPos(0,14);
+//		occ_func(cursor);
+//		if(mode==1){
+//			SetPos(0,25);
+//			occ_treasure(cursor);
+//		}
+//		if(fight) printf("\n\n(你可以查看这些职业说明,但你的职业是随缘的)");
+//		lastcursor=cursor;
+//		input=getch();
+//		if(input==bottom[1] || input==UP)
+//			cursor--;
+//		if(input==bottom[2] || input==DOWN)
+//			cursor++;
+//		if(cursor>sumjob+1) cursor=1;
+//		if(cursor<1) cursor=sumjob+1;
+//		if(input==bottom[5] || input==ENTER){
+//			if(fight || cursor>sumjob){
+//				pl[now].occ=rad()%sumjob+1;
+//				return;
+//			}
+//			else {
+//				pl[now].occ=cursor;
+//				return;
+//			}
+//		}
+//	}
 }
 
 int UI(int now){
@@ -1235,7 +1264,7 @@ int UI(int now){
 			SetColor(13);
 			SetPos(8,rnk*4);
 			if(pl[rnk].occ!=10) printf("★%d   ",pl[rnk].buff[0]);
-			else
+			if(pl[rnk].occ==10)
 			{
 				printf("★%d   ",pl[rnk].buff[0]%10000);
 				SetPos(8,rnk*4+1);printf("★%d   ",pl[rnk].buff[0]/10000);
@@ -1620,7 +1649,7 @@ int Ask(int now){
 				pl[now].handcard[i].ATK=da;
 			}
 			if(pl[now].handcard[i].func==102){
-				pl[now].handcard[i].ATK=pl[now].def*2;
+				pl[now].handcard[i].ATK=pl[now].def*1.75;
 			}
 			if(pl[now].handcard[i].func==113){
 				pl[now].handcard[i].ATK=pl[now].buff[0]%10000;
@@ -1995,7 +2024,7 @@ int Ask_same(int now){
 				pl[now].handcard[i].ATK=da;
 			}
 			if(pl[now].handcard[i].func==102){
-				pl[now].handcard[i].ATK=pl[now].def*2;
+				pl[now].handcard[i].ATK=pl[now].def*1.75;
 			}
 			if(pl[now].handcard[i].func==113){
 				pl[now].handcard[i].ATK=pl[now].buff[0]%10000;
@@ -2579,7 +2608,7 @@ int game(){
 	if(server_mode!=3){
 		SetConsoleTitle("CARD GAME:Choose Your Identity.");
 		Choose(server_mode);//选择职业
-		SetPos(0,20);
+		SetPos(5,21);
 		printf("P%d的职业是",server_mode);
 		printf(occ_name(pl[server_mode].occ));
 		if(server_mode==1) send_int(2010);
@@ -2588,6 +2617,7 @@ int game(){
 		recv_message();
 		if(pl[server_mode].occ!=6 || mode==4) pl[server_mode].cost=3;//初始费用设置
 		if(pl[server_mode].occ==9) pl[server_mode].buff[0]=5;//盾卫初始5点荆棘 
+		if(pl[server_mode].occ==11) pl[server_mode].buff[0]=10;
 		init(server_mode);//获得相应牌形成牌库
 		if(mode!=4){
 			if(pl[3-server_mode].occ==7 && pl[server_mode].occ!=7) {//获得[亵渎] 
@@ -2810,7 +2840,7 @@ int game(){
 		SetConsoleTitle("CARD GAME:Choose Your Identity.");
 		for(int now=1;now<=2;now++){
 			Choose(now);//选择职业
-			SetPos(0,19+now);
+			SetPos(5,20+now);
 			printf("P%d的职业是",now);
 			printf(occ_name(pl[now].occ));
 		}
@@ -2821,6 +2851,7 @@ int game(){
 
 		for(int i=1;i<=2;i++) if(pl[i].occ!=6 || mode==4) pl[i].cost=3;//初始费用设置
 		for(int i=1;i<=2;i++) if(pl[i].occ==9) pl[i].buff[0]=5;//盾卫初始5点荆棘 
+		for(int i=1;i<=2;i++) if(pl[i].occ==11) pl[i].buff[0]=10;
 		for(int x=1;x<=2;x++) {
 			init(x);//获得相应牌形成牌库
 			for(int i=1;i<=pl[x].cardcnt;i++) {
