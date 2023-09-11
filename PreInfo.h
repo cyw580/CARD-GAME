@@ -368,7 +368,7 @@ string Card::Intro(){
 	if(func==106)return "减少100DEF上限(若已扣完则扣血量上限)";
 	if(func==107)return "清空对方的DEF,对方+2◆"; 
 	if(func==108)return "DEF*=2";
-	if(func==109)return "MISS率固定为70%,成功打出使<★筹码>翻倍，否则减半";
+	if(func==109)return "MISS率固定为30%,成功打出使<★筹码>翻倍，否则减半";
 	if(func==110)return "+5<★筹码>";
 	if(func==111)return "+11<★筹码>";
 	if(func==112)return "消耗<★筹码>以回复等量HP,若回满则回复等量DEF,又回满则停止";
