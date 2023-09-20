@@ -122,7 +122,6 @@ int Card::Use(int from,int to){
 	int damage,flag=0;
 	if(func) flag=Special(from,to);
 	if(flag==4) return 0;
-	if(ATK>0 and pl[to].occ==11 and pl[to].buff[0]%10) pl[to].buff[0]--;
 	damage=use_card.ATK=cal_atk(from,to);
 	//护盾抵消
 	if(pl[to].def>0 && flag!=1){
@@ -2617,7 +2616,6 @@ int game(){
 		recv_message();
 		if(pl[server_mode].occ!=6 || mode==4) pl[server_mode].cost=3;//初始费用设置
 		if(pl[server_mode].occ==9) pl[server_mode].buff[0]=5;//盾卫初始5点荆棘 
-		if(pl[server_mode].occ==11) pl[server_mode].buff[0]=10;
 		init(server_mode);//获得相应牌形成牌库
 		if(mode!=4){
 			if(pl[3-server_mode].occ==7 && pl[server_mode].occ!=7) {//获得[亵渎] 
@@ -2851,7 +2849,6 @@ int game(){
 
 		for(int i=1;i<=2;i++) if(pl[i].occ!=6 || mode==4) pl[i].cost=3;//初始费用设置
 		for(int i=1;i<=2;i++) if(pl[i].occ==9) pl[i].buff[0]=5;//盾卫初始5点荆棘 
-		for(int i=1;i<=2;i++) if(pl[i].occ==11) pl[i].buff[0]=10;
 		for(int x=1;x<=2;x++) {
 			init(x);//获得相应牌形成牌库
 			for(int i=1;i<=pl[x].cardcnt;i++) {
