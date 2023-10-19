@@ -443,7 +443,8 @@ int Card::Special(int from,int to){
 		pl[from].buff[0]=max(0,pl[from].buff[0]-3);
 	}
 	else if(func==59){
-		pl[from].buff[0]=max(0,pl[from].buff[0]-3);
+		int s1=pl[from].buff[0]%100,s2=pl[from].buff[0]/100%100,s3=pl[from].buff[0]/10000;
+		pl[from].buff[0]=(s3+1)*10000+s2*100+max(0,s1-3);
 		pl[to].maxhp-=90;
 		pl[to].hp=min(pl[to].hp,pl[to].maxhp);
 		for(int i=1;i<=pl[from].heapn;i++){
