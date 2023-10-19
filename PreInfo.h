@@ -318,7 +318,7 @@ string Card::Intro(){
 	if(func==56)return "对手下2回合[迷惑]";
 	if(func==57)return "(宝藏)-3<★疲惫>并升级牌库所有牌";
 	if(func==58)return "-3<★疲惫>";
-	if(func==59)return "(宝藏)-3<★原罪>,对手hp上限-90,清空牌库的[虚空垃圾]";
+	if(func==59)return "(宝藏)-3<★原罪>,+1初始<★嗜血>,对手HP上限-90,清空牌库[虚空垃圾]";
 	if(func==60)return "(宝藏)+2◆,手牌上限+1,增强部分牌库牌,使用后此牌变为[无中生有]";
 	if(func==61)return "(宝藏)+2<★牺牲>,+60hp上限";
 	if(func==62)return "(宝藏)+3<★法力>,+1◆上限,向牌库刷入3张[法力成长]";
@@ -384,6 +384,7 @@ string Card::Intro(){
 	if(func==122)return "(宝藏)MISS率固定为0%,<★筹码>*2";
 	if(func==123)return "将<★底牌>全部转化为<★筹码>";
 	if(func==124)return "对方所有手牌MISS+20%";
+	if(func==125)return "+1初始<★嗜血>,被弃置时不耗费不生效";
 	return "                                                     ";
 }
 
@@ -529,7 +530,8 @@ void previous(){
 	lib[6][15]=lib[6][3];
 	lib[6][16]=lib[6][14];
 	lib[6][17]=(Card){3,75,25,0,0,33,97};
-	libcnt[6]=17;
+	lib[6][18]=(Card){3,0,-30,0,0,125,191};	
+	libcnt[6]=18;
 	lib[6][libcnt[6]+1]=(Card){1,0,0,0,0,27,98};
 	lib[6][libcnt[6]+2]=(Card){2,0,0,0,0,32,99};
 	fun[1][6][1]=(Card){2,85,55,0,0,59,100};
@@ -845,6 +847,7 @@ string Card::Name(){
 	if(id==188) return "[秩序背叛]";
 	if(id==189) return "[神经致幻]";
 	if(id==190) return "[蛮力冲撞]";
+	if(id==191) return "[虚空血魔]";
 	return "[未命名]";
 }
 
@@ -894,12 +897,12 @@ void occ_func(int x){
 	}
 	else if(x==6){
 		SetPos(pos1,pos2-1),printf("HP 450   MAX_DEF 100   手牌上限5   ◆0/5   ");printf("   ");SetColor(13);
-		SetPos(pos1,pos2+1),printf("<★原罪>回合开始时每个标记对你造成5点伤害                  ");SetColor(7);
-		SetPos(pos1,pos2+2),printf("1.[源于虚空] 开局时0◆,每回合额外+1◆                      ");
-		SetPos(pos1,pos2+3),printf("2.[虚空把戏] 弃牌需消耗相应费用并视为打出,ATK与HEAL交换    ");
-		SetPos(pos1,pos2+4),printf("3.[舞弊] 每次弃牌时(无论是否视为打出)+1<★原罪>            ");
-		SetPos(pos1,pos2+5),printf("4.[与世隔绝] 无法抽到公共牌库中的牌                        ");
-		SetPos(pos1,pos2+6),printf("                                                           ");
+		SetPos(pos1,pos2+1),printf("<★原罪>回合开始时每个标记对你造成5点伤害                  ");
+		SetPos(pos1,pos2+2),printf("<★嗜血>使用牌后层数+1,回复层数*5的HP,回合结束效果清空     ");SetColor(7);
+		SetPos(pos1,pos2+3),printf("1.[源于虚空] 开局时0◆,每回合额外+1◆                      ");
+		SetPos(pos1,pos2+4),printf("2.[虚空把戏] 弃牌需消耗相应费用并视为打出,ATK与HEAL交换    ");
+		SetPos(pos1,pos2+5),printf("3.[舞弊] 每次弃牌时(无论是否视为打出)+1<★原罪>            ");
+		SetPos(pos1,pos2+6),printf("4.[与世隔绝] 无法抽到公共牌库中的牌                        ");
 	}
 	else if(x==7){
 		SetPos(pos1,pos2-1),printf("HP 450   MAX_DEF 120   手牌上限4   ◆3/6   ");printf("   ");SetColor(13);

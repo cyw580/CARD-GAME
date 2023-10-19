@@ -5,8 +5,8 @@ using namespace std;
 
 int version1=3;
 int version2=1;
-int version3=4;
-string version="3.1.4";
+int version3=5;
+string version="3.1.5";
 
 #define UP 72
 #define DOWN 80
@@ -182,6 +182,7 @@ int Card::Use(int from,int to){
 	if(mode!=4){
 		if(HEAL<0 && pl[from].occ==2) pl[from].buff[0]++;
 		if(pl[from].occ==4 && ATK>0) pl[from].buff[0]+=2;
+		if(pl[from].occ==6) pl[from].buff[0]+=100,pl[from].hp=min(pl[from].maxhp,pl[from].hp+pl[from].buff[0]/100%100*5);
 		if(pl[from].occ==5 && flag==2){
 			pl[from].buff[0]++;
 			pl[from].maxhp+=10;
@@ -775,6 +776,9 @@ int Card::Special(int from,int to){
 				if(pl[to].handcard[i].MISS>100) pl[to].handcard[i].MISS=100;
 			}
 	}
+	else if(func==125){
+		pl[from].buff[0]+=10000;
+	}
 	return 0;
 }
 
@@ -1262,7 +1266,12 @@ int UI(int now){
 		else if(pl[rnk].occ>=2){
 			SetColor(13);
 			SetPos(8,rnk*4);
-			if(pl[rnk].occ!=10) printf("★%d   ",pl[rnk].buff[0]);
+			if(pl[rnk].occ!=6 and pl[rnk].occ!=10) printf("★%d   ",pl[rnk].buff[0]);
+			if(pl[rnk].occ==6)
+			{
+				printf("★%d   ",pl[rnk].buff[0]%100);
+				SetPos(8,rnk*4+1);printf("★%d(%d)   ",pl[rnk].buff[0]/100%100,pl[rnk].buff[0]/10000);
+			}
 			if(pl[rnk].occ==10)
 			{
 				printf("★%d   ",pl[rnk].buff[0]%10000);
@@ -1496,7 +1505,7 @@ void start_turn(int now){
 		}
 		if(pl[now].occ==6){
 			pl[now].cost=min(pl[now].cost+1,pl[now].maxcost);
-			int da=5*pl[now].buff[0];
+			int da=5*(pl[now].buff[0]%100);
 			if(da<pl[now].def) pl[now].def-=da;
 			else {
 				if(pl[now].def>0) Shake(3,1);
@@ -1856,7 +1865,7 @@ int Ask(int now){
 						SetPos(0,1);
 						printf("选中的牌不存在！                  ");
 					}
-					else if(pl[now].handcard[cursor].func>=27 && pl[now].handcard[cursor].func<=29){
+					else if((pl[now].handcard[cursor].func>=27 && pl[now].handcard[cursor].func<=29) or pl[now].handcard[cursor].func==125){
 						pl[now].used[cursor]=1;
 						pl[now].rest--;
 						while(pl[now].used[cursor] && cursor<=pl[now].cardcnt+1 && pl[now].rest){
@@ -2182,7 +2191,7 @@ int Ask_same(int now){
 						SetPos(0,1);
 						printf("选中的牌不存在！                 ");
 					}
-					else if(pl[now].handcard[cursor].func>=27 && pl[now].handcard[cursor].func<=29){
+					else if((pl[now].handcard[cursor].func>=27 && pl[now].handcard[cursor].func<=29) or pl[now].handcard[cursor].func==125){
 						pl[now].used[cursor]=1;
 						pl[now].rest--;
 						while(pl[now].used[cursor] && cursor<=pl[now].cardcnt+1 && pl[now].rest){
@@ -2405,7 +2414,7 @@ bool Options(bool x){
 						player_bgn=(player_bgn+1)%3;
 					}
 					if(cursor==3){
-						mode=(mode+1)%6;
+						mode=(mode+1)%3;
 					}
 				}
 				if(input==bottom[5] || input==ENTER){
@@ -2518,7 +2527,7 @@ bool Options(bool x){
 					player_bgn=(player_bgn+1)%3;
 				}
 				if(cursor==3){
-					mode=(mode+1)%5;
+					mode=(mode+1)%3;
 				}
 			}
 			if(input==SPACE || input==ENTER){
@@ -2724,6 +2733,7 @@ int game(){
 						if(pl[now].handcard[pl[now].cardcnt].id==119) pl[now].handcard[pl[now].cardcnt].ATK+=15;
 					}
 				}
+				if(pl[now].occ==6) pl[now].buff[0]=pl[now].buff[0]%100+pl[now].buff[0]/10000*10100; 
 				if(pl[now].occ==8){
 					for(int i=1;i<=pl[now].cardcnt;i++){
 						if(pl[now].used[i]) continue;
@@ -2916,6 +2926,7 @@ int game(){
 					if(pl[now].handcard[pl[now].cardcnt].id==119) pl[now].handcard[pl[now].cardcnt].ATK+=15;
 				}
 			}
+			if(pl[now].occ==6) pl[now].buff[0]=pl[now].buff[0]%100+pl[now].buff[0]/10000*10100; 
 			if(pl[now].occ==8){
 				for(int i=1;i<=pl[now].cardcnt;i++){
 					if(pl[now].used[i]) continue;
