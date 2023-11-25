@@ -1936,7 +1936,7 @@ int Ask(int now){
 						pl[now].handcard[cursor]=pl[now].heap[(rad()%pl[now].heapn)+1];
 					else
 					{
-						if(pl[now].occ==1) pl[now].buff[0]++; 
+						if(pl[now].occ==11) pl[now].buff[0]++; 
 						pl[now].used[cursor]=1;
 						pl[now].rest--;
 						UI(now);
@@ -2283,7 +2283,7 @@ int Ask_same(int now){
 					}
 					else
 					{
-						if(pl[now].occ==1) pl[now].buff[0]++; 
+						if(pl[now].occ==11) pl[now].buff[0]++; 
 						pl[now].used[cursor]=1;
 						pl[now].rest--;
 						UI(now);
