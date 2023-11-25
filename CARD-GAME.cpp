@@ -4,9 +4,9 @@
 using namespace std;
 
 int version1=3;
-int version2=1;
-int version3=5;
-string version="3.1.5";
+int version2=2;
+int version3=0;
+string version="3.2.0";
 
 #define UP 72
 #define DOWN 80
@@ -121,8 +121,15 @@ int Card::Use(int from,int to){
 	}//失效判定
 	int damage,flag=0;
 	if(func) flag=Special(from,to);
-	if(flag==4) return 0;
+	if(flag==4)
+	{
+		UI(from);
+		return 0;
+	}
 	damage=use_card.ATK=cal_atk(from,to);
+	
+	if(pl[from].occ==11 and damage!=0 and pl[from].buff[0]>=5) pl[to].buff[4]+=1,pl[from].buff[0]-=5; 
+	
 	//护盾抵消
 	if(pl[to].def>0 && flag!=1){
 		if(pl[to].occ==9)
@@ -182,7 +189,6 @@ int Card::Use(int from,int to){
 	if(mode!=4){
 		if(HEAL<0 && pl[from].occ==2) pl[from].buff[0]++;
 		if(pl[from].occ==4 && ATK>0) pl[from].buff[0]+=2;
-		if(pl[from].occ==6) pl[from].buff[0]+=100,pl[from].hp=min(pl[from].maxhp,pl[from].hp+pl[from].buff[0]/100%100*5);
 		if(pl[from].occ==5 && flag==2){
 			pl[from].buff[0]++;
 			pl[from].maxhp+=10;
@@ -443,8 +449,7 @@ int Card::Special(int from,int to){
 		pl[from].buff[0]=max(0,pl[from].buff[0]-3);
 	}
 	else if(func==59){
-		int s1=pl[from].buff[0]%100,s2=pl[from].buff[0]/100%100,s3=pl[from].buff[0]/10000;
-		pl[from].buff[0]=(s3+1)*10000+s2*100+max(0,s1-3);
+		pl[from].buff[0]=max(0,pl[from].buff[0]-3);
 		pl[to].maxhp-=90;
 		pl[to].hp=min(pl[to].hp,pl[to].maxhp);
 		for(int i=1;i<=pl[from].heapn;i++){
@@ -778,8 +783,60 @@ int Card::Special(int from,int to){
 			}
 	}
 	else if(func==125){
-		pl[from].buff[0]+=10000;
+		pl[from].buff[0]+=2;
 	}
+	else if(func==126){
+		pl[from].buff[0]+=3;
+	}
+	else if(func==127){
+		pl[from].buff[0]+=3*cost;
+	}
+	else if(func==128){
+		if(pl[to].buff[4]>0) pl[from].buff[0]+=2;
+	}
+	else if(func==129){
+		pl[from].cost=min(pl[from].cost+pl[to].buff[4],pl[from].maxcost);
+	}
+	else if(func==131){
+		pl[from].buff[4]+=4;
+		pl[to].buff[4]+=4;
+	}
+	else if(func==132){
+		pl[from].buff[0]++;
+	}
+	else if(func==133){
+		pl[from].buff[0]*=2;
+		pl[to].buff[4]++;
+	}
+	else if(func==135){
+		for(int i=1;i<=pl[from].cardcnt;i++)
+			if(pl[from].used[i]==0) pl[from].handcard[i].ATK+=pl[from].buff[0]*2;
+	}
+	else if(func==136){
+		for(int i=1;i<=pl[from].cardcnt;i++){
+			if(pl[from].used[i]){
+				pl[from].used[i]=0;
+				pl[from].handcard[i]=fun[1][11][2];
+			}
+		}
+		pl[from].rest=pl[from].cardcnt;
+		return 4;
+	}
+	else if(func==137){
+		pl[to].buff[4]++;
+	}
+	else if(func==138){
+		pl[from].buff[0]=0; 
+	}
+	else if(func==139){
+		pl[to].buff[4]+=3;
+	}
+	else if(func==140){
+		pl[to].buff[6]=1;
+	}
+	else if(func==141){
+		pl[from].buff[4]=0;
+	} 
 	return 0;
 }
 
@@ -898,7 +955,7 @@ void init(int x){
 		pl[x].heap[i]=lib[0][i];
 		if(pl[x].occ==3 && pl[x].heap[i].HEAL>=75) i--,tot--; //法师不能抽公共牌库HEAL>=75的牌
 		if(pl[x].occ==4 && pl[x].heap[i].HEAL>0) i--,tot--;//战士不能抽公共牌库HEAL牌
-		if(pl[x].occ==5 || pl[x].occ==6 || pl[x].occ==8 || pl[x].occ==9 || pl[x].occ==10) i--,tot--;//地精、恶魔、鱼人、盾卫、赌徒不能抽公共牌库的牌
+		if(pl[x].occ==5 || pl[x].occ==6 || pl[x].occ==8 || pl[x].occ==9 || pl[x].occ==10 ||pl[x].occ==11) i--,tot--;//地精、恶魔、鱼人、盾卫、赌徒、剑客不能抽公共牌库的牌
 		if(pl[x].occ==7 && pl[x].heap[i].ATK>=80) i--,tot--;//牧师不能抽公共牌库ATK>=80的牌
 	}
 	pl[x].heapn=tot;
@@ -1056,6 +1113,20 @@ void treasure(int now){//竞技模式：宝藏牌
 		}
 		//pl[now].cardcnt-1:赌徒第4张牌被固定为[赌局开盘] 
 	}
+	if(pl[now].occ==11 && pl[now].buff[0]>=10){
+		for(int i=1;i<=pl[now].cardcnt;i++){
+			if(pl[now].used[i]) {
+				pl[now].used[i]=0;
+				gettre[now]=1;
+				pl[now].handcard[i]=fun[1][11][1];
+				break;
+			}
+		}
+		if(!gettre[now]){
+			pl[now].handcard[rad()%pl[now].cardcnt+1]=fun[1][11][1];
+			gettre[now]=1;
+		}
+	}
 }
 
 void adv(int x){
@@ -1077,8 +1148,6 @@ void adv(int x){
 		pl[x].def=75;
 	}
 	else if(pl[x].occ==5){
-		pl[x].hp+=10;
-		pl[x].maxhp+=10;
 		pl[x].def+=25;
 		pl[x].maxdef+=25;
 	}
@@ -1094,6 +1163,9 @@ void adv(int x){
 	else if(pl[x].occ==10){
 		pl[x].def=50;
 	}
+	else if(pl[x].occ==11){
+		pl[x].buff[0]=3;
+	}
 	return;
 }
 
@@ -1108,7 +1180,8 @@ string occ_name(int x){
 	else if(x==8)return "鱼人";
 	else if(x==9)return "盾卫";
 	else if(x==10)return "赌徒";
-	else if(x==11)return "随缘";
+	else if(x==11)return "剑客";
+	else if(x==12)return "随缘" ;
 	else if(x==20)return "竞技者";
 	return "";
 }
@@ -1267,12 +1340,7 @@ int UI(int now){
 		else if(pl[rnk].occ>=2){
 			SetColor(13);
 			SetPos(8,rnk*4);
-			if(pl[rnk].occ!=6 and pl[rnk].occ!=10) printf("★%d   ",pl[rnk].buff[0]);
-			if(pl[rnk].occ==6)
-			{
-				printf("★%d   ",pl[rnk].buff[0]%100);
-				SetPos(8,rnk*4+1);printf("★%d(%d)   ",pl[rnk].buff[0]/100%100,pl[rnk].buff[0]/10000);
-			}
+			if(pl[rnk].occ!=10) printf("★%d   ",pl[rnk].buff[0]);
 			if(pl[rnk].occ==10)
 			{
 				printf("★%d   ",pl[rnk].buff[0]%10000);
@@ -1506,7 +1574,7 @@ void start_turn(int now){
 		}
 		if(pl[now].occ==6){
 			pl[now].cost=min(pl[now].cost+1,pl[now].maxcost);
-			int da=5*(pl[now].buff[0]%100);
+			int da=5*pl[now].buff[0];
 			if(da<pl[now].def) pl[now].def-=da;
 			else {
 				if(pl[now].def>0) Shake(3,1);
@@ -1663,6 +1731,18 @@ int Ask(int now){
 			if(pl[now].handcard[i].func==113){
 				pl[now].handcard[i].ATK=pl[now].buff[0]%10000;
 			}
+			if(pl[now].handcard[i].func==127){
+				pl[now].handcard[i].cost=pl[now].cost;
+			}
+			if(pl[now].handcard[i].func==130){
+				pl[now].handcard[i].ATK=pl[3-now].buff[4]*30+40;
+			}
+			if(pl[now].handcard[i].func==134){
+				pl[now].handcard[i].DEF=pl[now].buff[0]*6;
+			}
+			if(pl[now].handcard[i].func==138){
+				pl[now].handcard[i].HEAL=pl[now].buff[0]*10;
+			} 
 			if(pl[now].cost>=pl[now].handcard[i].cost)SetColor(11);
 			else SetColor(3);//费用是否足够
 			printf("%d",pl[now].handcard[i].cost);
@@ -1852,12 +1932,18 @@ int Ask(int now){
 							return 1;
 						}
 					}
-					pl[now].used[cursor]=1;
-					pl[now].rest--;
-					UI(now);
-					while(pl[now].used[cursor] && cursor<=pl[now].cardcnt+1 && pl[now].rest){
-						cursor++;
-						if(cursor>pl[now].cardcnt)cursor=1;
+					if(rad()%2 and pl[now].occ==11)
+						pl[now].handcard[cursor]=pl[now].heap[(rad()%pl[now].heapn)+1];
+					else
+					{
+						if(pl[now].occ==1) pl[now].buff[0]++; 
+						pl[now].used[cursor]=1;
+						pl[now].rest--;
+						UI(now);
+						while(pl[now].used[cursor] && cursor<=pl[now].cardcnt+1 && pl[now].rest){
+							cursor++;
+							if(cursor>pl[now].cardcnt)cursor=1;
+						}
 					}
 					option_giveup=0;
 				}
@@ -1866,7 +1952,7 @@ int Ask(int now){
 						SetPos(0,1);
 						printf("选中的牌不存在！                  ");
 					}
-					else if((pl[now].handcard[cursor].func>=27 && pl[now].handcard[cursor].func<=29) or pl[now].handcard[cursor].func==125){
+					else if(pl[now].handcard[cursor].func>=27 && pl[now].handcard[cursor].func<=29){
 						pl[now].used[cursor]=1;
 						pl[now].rest--;
 						while(pl[now].used[cursor] && cursor<=pl[now].cardcnt+1 && pl[now].rest){
@@ -2038,6 +2124,18 @@ int Ask_same(int now){
 			if(pl[now].handcard[i].func==113){
 				pl[now].handcard[i].ATK=pl[now].buff[0]%10000;
 			}
+			if(pl[now].handcard[i].func==127){
+				pl[now].handcard[i].cost=pl[now].cost;
+			}
+			if(pl[now].handcard[i].func==130){
+				pl[now].handcard[i].ATK=pl[3-now].buff[4]*30+40;
+			}
+			if(pl[now].handcard[i].func==134){
+				pl[now].handcard[i].DEF=pl[now].buff[0]*6;
+			} 
+			if(pl[now].handcard[i].func==138){
+				pl[now].handcard[i].HEAL=pl[now].buff[0]*10;
+			} 
 			if(pl[now].cost>=pl[now].handcard[i].cost)SetColor(11);
 			else SetColor(3);//费用是否足够
 			printf("%d",pl[now].handcard[i].cost);
@@ -2177,14 +2275,23 @@ int Ask_same(int now){
 			}
 			else{
 				if(pl[now].occ!=6 || mode==4){
-					pl[now].used[cursor]=1;
-					pl[now].rest--;
 					giveupcard(now,cursor);
-					UI(now);
-					while(pl[now].used[cursor] && cursor<=pl[now].cardcnt+1 && pl[now].rest){
-						cursor++;
-						if(cursor>pl[now].cardcnt)cursor=1;
+					if(rad()%2 and pl[now].occ==11)
+					{
+						pl[now].handcard[cursor]=pl[now].heap[(rad()%pl[now].heapn)+1];
+						UI(now);
 					}
+					else
+					{
+						if(pl[now].occ==1) pl[now].buff[0]++; 
+						pl[now].used[cursor]=1;
+						pl[now].rest--;
+						UI(now);
+						while(pl[now].used[cursor] && cursor<=pl[now].cardcnt+1 && pl[now].rest){
+							cursor++;
+							if(cursor>pl[now].cardcnt)cursor=1;
+						}	
+					}	
 					option_giveup=0;
 				}
 				else{
@@ -2192,7 +2299,7 @@ int Ask_same(int now){
 						SetPos(0,1);
 						printf("选中的牌不存在！                 ");
 					}
-					else if((pl[now].handcard[cursor].func>=27 && pl[now].handcard[cursor].func<=29) or pl[now].handcard[cursor].func==125){
+					else if(pl[now].handcard[cursor].func>=27 && pl[now].handcard[cursor].func<=29){
 						pl[now].used[cursor]=1;
 						pl[now].rest--;
 						while(pl[now].used[cursor] && cursor<=pl[now].cardcnt+1 && pl[now].rest){
@@ -2415,7 +2522,7 @@ bool Options(bool x){
 						player_bgn=(player_bgn+1)%3;
 					}
 					if(cursor==3){
-						mode=(mode+1)%3;
+						mode=(mode+1)%6;
 					}
 				}
 				if(input==bottom[5] || input==ENTER){
@@ -2539,72 +2646,82 @@ bool Options(bool x){
 	return 0;
 }
 void Connect(){
+	SetPos(3,11);
+	SetColor(7,0);
+	printf("切换上一条目                          ");
+	SetPos(27,11);
+	printf("[%c]  [↑]",bottom[1]);
+
+	SetPos(3,12);
+	printf("切换下一条目                          ");
+	SetPos(27,12);
+	printf("[%c]  [↓]",bottom[2]);
+
+	SetPos(3,13);
+	printf("打出手牌/更改设置                          ");
+	SetPos(27,13);
+	printf("[%c]",bottom[3]);
+
+	SetPos(3,14);
+	printf("弃置手牌                          ");
+	SetPos(27,14);
+	printf("[%c]",bottom[4]);
+
+	SetPos(3,15);
+	printf("结束回合/确认                          ");
+	SetPos(27,15);
+	printf("[%c]  [ENTER]",bottom[5]);
+
+	SetPos(3,16);
+	printf("认输                          ");
+	SetPos(27,16);
+	printf("[%c]",bottom[6]);
+	
+	SetPos(3,20);
+	printf("游戏版本: v"),printf(version);
+	SetPos(3,21);
+	printf("游戏主页: https://github.com/cyw580/CARD-GAME");
+	
 	int cursor=1;
 	while(1){
 		SetColor(7,0);
-		SetPos(1,1);
+		SetPos(3,3);
 		if(cursor!=1) SetColor(7,0);
 		else SetColor(0,7);
 		printf("1.建立服务端        ");
 
-		SetPos(1,2);
+		SetPos(3,4);
 		if(cursor!=2)SetColor(7,0);
 		else SetColor(0,7);
 		printf("2.连接到已有的服务端");
 
-		SetPos(1,3);
+		SetPos(3,5);
 		if(cursor!=3)SetColor(7,0);
 		else SetColor(0,7);
 		printf("3.在本机进行游戏    ");
 
-		SetPos(1,4);
+		SetPos(3,6);
 		if(cursor!=4)SetColor(7,0);
 		else SetColor(0,7);
-		printf("4.退出游戏         ");
+		printf("4.退出游戏          ");
 
-		SetPos(1,5);
+		SetPos(3,7);
 		if(cursor!=5)SetColor(7,0);
 		else SetColor(0,7);
-		printf("5.设置按键         ");
-
-		SetPos(1,8);
-		SetColor(7,0);
-		printf("切换上一条目                          ");
-		SetPos(25,8);
-		printf("[%c]  [↑]",bottom[1]);
-
-		SetPos(1,9);
-		printf("切换下一条目                          ");
-		SetPos(25,9);
-		printf("[%c]  [↓]",bottom[2]);
-
-		SetPos(1,10);
-		printf("打出手牌/更改设置                          ");
-		SetPos(25,10);
-		printf("[%c]",bottom[3]);
-
-		SetPos(1,11);
-		printf("弃置手牌                          ");
-		SetPos(25,11);
-		printf("[%c]",bottom[4]);
-
-		SetPos(1,12);
-		printf("结束回合/确认                          ");
-		SetPos(25,12);
-		printf("[%c]  [ENTER]",bottom[5]);
-
-		SetPos(1,13);
-		printf("认输                          ");
-		SetPos(25,13);
-		printf("[%c]",bottom[6]);
+		printf("5.设置按键          ");
+		
+		SetPos(3,8);
+		if(cursor!=6)SetColor(7,0);
+		else SetColor(0,7);
+		printf("6.常见疑问解答      ");
 		
 		mouse(0);
 		input=getch();
 		if(input==bottom[1] || input==UP) cursor--;
 		if(input==bottom[2] || input==DOWN) cursor++;
-		if(input>='1' && input<='5') cursor=input-'0';
-		if(cursor>5) cursor=1;
-		if(cursor<1) cursor=5;
+		if(input>='1' && input<='6') cursor=input-'0';
+		if(cursor>6) cursor=1;
+		if(cursor<1) cursor=6;
 		if(input==bottom[5] || input==ENTER){
 			server_mode=cursor;
 			break;
@@ -2626,6 +2743,7 @@ int game(){
 		recv_message();
 		if(pl[server_mode].occ!=6 || mode==4) pl[server_mode].cost=3;//初始费用设置
 		if(pl[server_mode].occ==9) pl[server_mode].buff[0]=5;//盾卫初始5点荆棘 
+		if(pl[server_mode].occ==10) pl[server_mode].buff[0]=20;//赌徒初始20点筹码 
 		init(server_mode);//获得相应牌形成牌库
 		if(mode!=4){
 			if(pl[3-server_mode].occ==7 && pl[server_mode].occ!=7) {//获得[亵渎] 
@@ -2734,7 +2852,6 @@ int game(){
 						if(pl[now].handcard[pl[now].cardcnt].id==119) pl[now].handcard[pl[now].cardcnt].ATK+=15;
 					}
 				}
-				if(pl[now].occ==6) pl[now].buff[0]=pl[now].buff[0]%100+pl[now].buff[0]/10000*10100; 
 				if(pl[now].occ==8){
 					for(int i=1;i<=pl[now].cardcnt;i++){
 						if(pl[now].used[i]) continue;
@@ -2860,6 +2977,7 @@ int game(){
 
 		for(int i=1;i<=2;i++) if(pl[i].occ!=6 || mode==4) pl[i].cost=3;//初始费用设置
 		for(int i=1;i<=2;i++) if(pl[i].occ==9) pl[i].buff[0]=5;//盾卫初始5点荆棘 
+		for(int i=1;i<=2;i++) if(pl[i].occ==10) pl[i].buff[0]=20;//赌徒初始20点筹码 
 		for(int x=1;x<=2;x++) {
 			init(x);//获得相应牌形成牌库
 			for(int i=1;i<=pl[x].cardcnt;i++) {
@@ -2927,7 +3045,6 @@ int game(){
 					if(pl[now].handcard[pl[now].cardcnt].id==119) pl[now].handcard[pl[now].cardcnt].ATK+=15;
 				}
 			}
-			if(pl[now].occ==6) pl[now].buff[0]=pl[now].buff[0]%100+pl[now].buff[0]/10000*10100; 
 			if(pl[now].occ==8){
 				for(int i=1;i<=pl[now].cardcnt;i++){
 					if(pl[now].used[i]) continue;
@@ -2982,6 +3099,50 @@ int game(){
 	return 0;
 }
 
+void FAQ()
+{
+	SetColor(7,0);system("cls");
+	SetPos(2,3);printf("Q:为什么有些时候我按键盘没有反应？");
+	SetPos(2,4);printf("A:请确认你选中了游戏的窗口，并且检查是否开启了大写锁定，如果有请务必关掉。");
+	
+	SetPos(2,6);printf("Q:在打出一张牌的时候会发生什么？");
+	SetPos(2,7);printf("A:首先扣除等量费用，如果 MISS 了会回复一半的费用（向下取整）。");
+	SetPos(2,8);printf("  如果成功打出，先触发牌的效果，再触发角色技能，最后造成伤害，回血和套盾。");
+	
+	SetPos(2,10);printf("Q:我一不小心拖动窗口改变了大小怎么办？");
+	SetPos(2,11);printf("A:通常来讲最好不要这么做，因为可能会出神秘 BUG。建议重新打开游戏。");
+	
+	SetPos(2,13);printf("Q:能简单介绍一下这个游戏的过去与未来吗？");
+	SetPos(2,14);printf("A:起源于 2021 年暑假 cyw580 等信息学竞赛生（2021级）的制作。");
+	SetPos(2,15);printf("  后来由 Dimly 与 SHU_tist（2022级）接手制作了更多内容（盾卫及以后）。");
+	SetPos(2,16);printf("  目前 Dimly 正在完全重构代码制作第 4 代，目标是实现 PVE、AI 对战和多人对战模式。");
+	SetPos(2,17);printf("  另有 Dimly 的衍生游戏 ANOTHER-CARD-GAME：https://github.com/DimlyL/ANOTHER-CARD-GAME");
+	
+	SetPos(2,19);printf("Q:为什么本地联机模式中不能按 q 投降？");
+	SetPos(2,20);printf("A:因为没做。");
+	
+	SetPos(2,23);printf("按任意键以查看下一页");
+	
+	getch(); 
+	
+	system("cls");
+	SetPos(2,3);printf("Q:详细说明一下游戏中的所有 buff？");
+	SetPos(2,4);printf("A:燃烧：回合开始时减少一层，HP 减少 40 点。");
+	SetPos(2,5);printf("  中毒：回合开始时减少一层，HP 减少 20%。");
+	SetPos(2,6);printf("  治疗：回合开始时减少一层，HP 回复 30 点。");
+	SetPos(2,7);printf("  狂暴：回合结束时减少一层，拥有[狂暴]时牌的 ATK 翻倍。");
+	SetPos(2,8);printf("  虚弱：回合结束时减少一层，拥有[虚弱]时牌的 ATK 和 HEAL(负数同样生效) 变为 70%。");
+	SetPos(2,9);printf("  迷惑：回合结束时减少一层，拥有[迷惑]时牌的 MISS 增加 25 点。");
+	
+	SetPos(2,11);printf("Q:为什么有些时候我的游戏不动了？");
+	SetPos(2,12);printf("A:检查一下你是否使用过鼠标点击了这个窗口的内部，标志是某个地方会有全白色的方框。");
+	SetPos(2,13);printf("  解决方法是按任意键以解除这种状态。");
+	
+	SetPos(2,16);printf("按任意键以继续");
+	
+	getch(); 
+}
+
 int main(){
 	mouse(0);
 	srand(time(NULL));
@@ -2997,9 +3158,9 @@ int main(){
 			connect_established=1;
 			system("cls");
 			Connect();
-			if(server_mode==3 || server_mode==4 || server_mode==5) break;
-			SetColor(7,0);
-			if(server_mode==2) WSAstart(),printf("\n输入服务端ip地址:");
+			if(server_mode==3 || server_mode==4 || server_mode==5 || server_mode==6) break;
+			SetColor(7,0);SetPos(26,4);
+			if(server_mode==2) WSAstart(),printf("输入服务端ip地址:");
 			else {
 				WSAstart();
 				system("cls");
@@ -3024,6 +3185,10 @@ int main(){
 					getch();
 				}
 			}
+		}
+		if(server_mode==6){
+			FAQ();
+			continue;
 		}
 		if(server_mode==5){
 			bot();
@@ -3143,3 +3308,4 @@ int main(){
 	SetColor(7,0);
 	return 0;
 }
+
