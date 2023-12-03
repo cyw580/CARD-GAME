@@ -259,6 +259,23 @@ void showresult(){
 	while(_kbhit()) getch();
 }
 
+string occ_name(int x){
+	if(x==1)return "浪人";
+	else if(x==2)return "术士";
+	else if(x==3)return "法师";
+	else if(x==4)return "战士";
+	else if(x==5)return "地精";
+	else if(x==6)return "恶魔";
+	else if(x==7)return "牧师";
+	else if(x==8)return "鱼人";
+	else if(x==9)return "盾卫";
+	else if(x==10)return "赌徒";
+	else if(x==11)return "剑客";
+	else if(x==12)return "随缘" ;
+	else if(x==20)return "竞技者";
+	return "";
+}
+
 string Card::Intro(){
 	if(func==1) return "+4◆";
 	if(func==2)return "+1◆并+1◆上限";
@@ -301,7 +318,7 @@ string Card::Intro(){
 	if(func==39)return "双方[治疗]2回合";
 	if(func==40)return "将对手牌库的一张牌清除特效和MISS后放入手牌";
 	if(func==41)return "此牌在手牌中时,你每打出一张牌ATK+10";
-	if(func==42)return "回合结束时,若手牌里全是[神圣意志],直接获胜";
+	if(func==42)return "回合结束时,若手牌的所有位置都是[神圣意志],则直接获胜";
 	if(func==43)return "刷1张[神圣意志]进入牌库";
 	if(func==44)return "将随机一个手牌槽位变为[神圣意志]";
 	if(func==45)return "将对手牌库的一张牌特效改为\"+2◆\"后洗入牌库";
@@ -378,29 +395,31 @@ string Card::Intro(){
 	if(func==116)return "对手[迷惑]2回合";
 	if(func==117)return "+3<★筹码>"; 
 	if(func==118)return "+18<★筹码>"; 
-	if(func==119)return "MISS率固定为97%,被[不完全记忆]夺走时ATK清空";
+	if(func==119)return "MISS率固定为97%,这张牌在赌徒手中时ATK为9999,否则为0";
 	if(func==120)return "<★筹码>*1.5";
 	if(func==121)return "扣除max(70,HP/5)的HP,<★筹码>*1.5";
 	if(func==122)return "(宝藏)MISS率固定为0%,<★筹码>*2";
 	if(func==123)return "将<★底牌>全部转化为<★筹码>";
 	if(func==124)return "对方所有手牌MISS+20%";
 	if(func==125)return "+2<★剑气>"; 
-	if(func==126)return "+3<★剑气>";
+	if(func==126)return "-3<★剑气>";
 	if(func==127)return "消耗所有◆,获得(◆*3)个<★剑气>";
-	if(func==128)return "若对手[虚弱]+2<★剑气>";
+	if(func==128)return "伤害为（对手[虚弱]层数)*35，清除对手所有[虚弱]，每层+3<★剑气>";
 	if(func==129)return "回复对手[虚弱]层数等量◆";
-	if(func==130)return "伤害为40+(对手[虚弱]层数)*30"; 
+	if(func==130)return "伤害为50+(对手[虚弱]层数)*15"; 
 	if(func==131)return "你与对手获得4层[虚弱]";
 	if(func==132)return "+1<★剑气>"; 
 	if(func==133)return "(宝藏)<★剑气>*2,对手[虚弱]1回合";
 	if(func==134)return "获得<★剑气>层数*6 DEF"; 
-	if(func==135)return "所有牌增加<★剑气>层数*2的ATK";
+	if(func==135)return "所有牌增加<★剑气>层数*4的ATK";
 	if(func==136)return "将所有空位替换为[灵巧刺击]";
-	if(func==137)return "对手[虚弱]1回合";
+	if(func==137)return "对手[虚弱]1回合,刷1张[强风一击]进入牌库";
 	if(func==138)return "回复<★剑气>层数*10 HP,清空<★剑气>";
 	if(func==139)return "对手[虚弱]3回合";
 	if(func==140)return "对手下回合[迷惑]";
 	if(func==141)return "清空自己的[虚弱]";
+	if(func==142)return "刷1张[强风一击]至牌库";
+	if(func==143)return "自身[虚弱]层数减半，对手+2◆";
 	return "                                                     ";
 }
 
@@ -641,10 +660,10 @@ void previous(){
 	funcnt[1][10]=1;
 	job[10]={450,4,80,5};
 	//剑客
-	lib[11][1]=(Card){0,0,0,0,0,125,191};
-	lib[11][2]=(Card){1,0,-20,0,0,126,192};
+	lib[11][1]=(Card){0,0,25,0,0,125,191};
+	lib[11][2]=(Card){1,70,0,0,0,126,192};
 	lib[11][3]=(Card){0,0,0,0,0,127,193};
-	lib[11][4]=(Card){0,0,0,0,0,128,194};
+	lib[11][4]=(Card){2,0,0,0,0,128,194};
 	lib[11][5]=(Card){1,0,0,0,0,129,195};
 	lib[11][6]=(Card){1,40,0,0,0,130,196};
 	lib[11][7]=(Card){3,60,0,0,10,131,197}; 
@@ -657,7 +676,9 @@ void previous(){
 	lib[11][14]=(Card){1,0,-120,0,5,139,206};
 	lib[11][15]=(Card){2,0,0,20,10,140,207};
 	lib[11][16]=(Card){2,0,55,10,0,141,208};
-	libcnt[11]=16;
+	lib[11][17]=(Card){2,0,0,30,0,142,209};
+	libcnt[11]=17;
+	lib[11][libcnt[11]+1]=(Card){2,0,0,0,10,143,210};
 	fun[1][11][1]=(Card){3,0,0,0,0,133,199};
 	fun[1][11][2]=(Card){0,10,0,0,10,0,201};
 	funcnt[1][11]=2;
@@ -885,9 +906,9 @@ string Card::Name(){
 	if(id==189) return "[神经致幻]";
 	if(id==190) return "[蛮力冲撞]";
 	if(id==191) return "[御气]";
-	if(id==192) return "[化体为气]";
+	if(id==192) return "[剑走偏锋]";
 	if(id==193) return "[化心为气]";
-	if(id==194) return "[气之所依]";
+	if(id==194) return "[绝息斩]";
 	if(id==195) return "[化气为灵]";
 	if(id==196) return "[强风一击]"; 
 	if(id==197) return "[终结风暴]";
@@ -902,6 +923,8 @@ string Card::Name(){
 	if(id==206) return "[腥风血雨]";
 	if(id==207) return "[风云变幻]";
 	if(id==208) return "[伤药葫芦]";
+	if(id==209) return "[风之领悟]";
+	if(id==210) return "[虚弱疗愈]";
 	return "[未命名]";
 }
 
@@ -996,12 +1019,12 @@ void occ_func(int x){
 	}
 	else if(x==11){
 		SetPos(pos1,pos2-1),printf("HP 450   MAX_DEF 100  手牌上限 4   ◆3/5   后手:+3<★剑气> ");SetColor(13);
-		SetPos(pos1,pos2+1),printf("<★剑气>可以通过卡牌积攒，消耗时使对手[虚弱]               ");SetColor(7);
+		SetPos(pos1,pos2+1),printf("<★剑气>可以通过卡牌与技能积攒，消耗时使对手[虚弱]         ");SetColor(7);
 		SetPos(pos1,pos2+2),printf("1.[呼啸剑气] 打出ATK>0的牌后若★>=5,将消耗5★并使对手[虚弱]");
-		SetPos(pos1,pos2+3),printf("2.[疾行] 弃牌时50%概率抽1张牌                              ");
-		SetPos(pos1,pos2+4),printf("3.[幻影剑客] 若弃牌时未触发[疾行],则+1<★剑气>             ");
-		SetPos(pos1,pos2+5),printf("4.[与世隔绝] 无法抽到公共牌库中的牌                        "); 
-		SetPos(pos1,pos2+6),printf("                                                           ");
+		SetPos(pos1,pos2+3),printf("2.[疾行] 弃牌时50%概率抽1张牌,否则+1<★剑气>               ");
+		SetPos(pos1,pos2+4),printf("3.[领悟] 回合结束时,有<★剑气>%概率将一张[强风一击]刷入牌库");
+		SetPos(pos1,pos2+5),printf("4.[百密一疏] 你的非剑客对手牌库中增加[虚弱疗意]牌          "); 
+		SetPos(pos1,pos2+6),printf("5.[洒脱] 无法抽到公共牌库中的牌                            "); 
 	}
 	else if(x==12){
 		SetPos(pos1,pos2-1),printf("HP ???   MAX_DEF ???  手牌上限 ?   ◆?/?   后手:???        ");
@@ -1085,4 +1108,160 @@ string env_brief(int id){
 	else if(id==7) return "双方每回合额外+1◆   ";
 	else           return "无特殊效果                 ";
 }
+
+void FAQ_part1()
+{
+	ofstream fout("FAQ.txt");
+	fout<<"Q:为什么有些时候我按键盘没有反应？"<<endl;
+	fout<<"A:请确认你选中了游戏的窗口，并且检查是否开启了大写锁定，如果有请务必关掉。"<<endl;
+	fout<<endl;
+	fout<<"Q:为什么有些时候我的游戏不继续运行了？"<<endl;
+	fout<<"A:检查一下你是否使用过鼠标点击了这个窗口的内部，标志是某个地方会有全白色的方框。解决方法是按任意键以解除这种状态。"<<endl;
+	fout<<endl;
+	fout<<"Q:我一不小心拖动窗口改变了大小怎么办？"<<endl;
+	fout<<"A:通常来讲最好不要这么做，因为可能会出神秘 BUG。建议重新打开游戏。"<<endl;
+	fout<<endl;
+	fout<<"Q:为什么本地联机模式中不能按 q 投降？"<<endl;
+	fout<<"A:因为没做。"<<endl;
+	fout<<endl;
+	fout<<"Q:为什么那么多角色都不能使用公共牌库的牌？"<<endl;
+	fout<<"A:你不懂了吧？我也不太懂。"<<endl;
+	fout<<endl;
+	fout<<"Q:真实伤害是什么意思？"<<endl;
+	fout<<"A:意思是其伤害会无视护盾直接作用于对手的 HP 上。"<<endl;
+	fout<<endl;
+	fout<<"Q:在我打出一张牌的时候会发生什么？"<<endl;
+	fout<<"A:首先扣除等量费用，如果 MISS 了会回复一半的费用（向下取整）。如果成功打出，先触发牌的效果，再触发角色技能，最后造成伤害，回血和套盾。"<<endl;
+	fout<<endl;
+	fout<<"Q:在这个游戏里，摸牌的机制是怎样的？"<<endl;
+	fout<<"A:每名玩家都有一个属于自己的牌库，这个牌库初始时为职业的牌库，具体可见 职业.txt 内的介绍。"<<endl;
+	fout<<"  每次摸牌时，将随机选定自己牌库中的一张牌，并将其复制到自己手牌的相应位置。请注意是复制而不是抽出。"<<endl;
+	fout<<endl;
+	fout<<"Q:牧师的<★信仰>是如何实现抽牌的？"<<endl;
+	fout<<"A:实际上，对于牧师而言，每次摸牌前会先判断<★信仰>*2%的概率，如果成功则直接摸到[神圣意志]，如果失败则进入上述正常摸牌流程。"<<endl;
+	fout<<endl;
+	fout<<"Q:为什么有时候我集齐了4张[神圣意志]却没有获得胜利？"<<endl;
+	fout<<"A:请确保这4张牌真的都是[神圣意志]，如果你的对手恰好也是牧师，而你又使用过[不完全记忆]或者[法力赋予]偷走了对方的[神圣意志]，你所偷来的只是一张叫[神圣意志]的牌而没有其效果。"<<endl;
+	fout<<endl;
+	fout<<"Q:关于赌徒的第4张牌被固定为[赌局开盘]？"<<endl;
+	fout<<"A:实际上，具体实现方式是每回合初把一张新的[赌局开盘]强制替换到第4张牌的位置。因此像是[禁锢思维I]、[禁锢思维II]之类的牌即使命中了第4张牌也没有用。"<<endl;
+	fout<<endl;
+	fout<<"Q:为什么有时候第1回合[禁锢思维II]、[神经致幻]之类的牌无用？"<<endl;
+	fout<<"A:在游戏刚刚开始时，实际上双方手牌都是空的。随后，先手摸了牌，但后手的手牌仍然是0张，因此这种牌可能会失效。"<<endl;
+	fout<<endl;
+	fout<<"Q:能简单介绍一下这个游戏的过去与未来吗？"<<endl;
+	fout<<"A:起源于 2021 年暑假 cyw580 等信息学竞赛生（2021级）的制作,后来由 Dimly 与 SHU_tist（2022级）接手制作了更多内容（盾卫及以后）。"<<endl;
+	fout<<"  目前 Dimly 正在完全重构代码制作第 4 代，目标是实现 PVE、AI 对战和多人对战模式。另有 Dimly 的衍生游戏 ANOTHER-CARD-GAME：https://github.com/DimlyL/ANOTHER-CARD-GAME"<<endl;
+	fout<<endl;
+	fout<<"Q:详细说明一下游戏中的所有 buff？"<<endl;
+	fout<<"A:燃烧：回合开始时减少一层，HP 减少 40 点。"<<endl;
+	fout<<"  中毒：回合开始时减少一层，HP 减少 20%。"<<endl;
+	fout<<"  治疗：回合开始时减少一层，HP 回复 30 点。"<<endl;
+	fout<<"  狂暴：回合结束时减少一层，拥有[狂暴]时牌的 ATK 翻倍。"<<endl;
+	fout<<"  虚弱：回合结束时减少一层，拥有[虚弱]时牌的 ATK 和 HEAL(负数同样生效) 变为 70%。"<<endl;
+	fout<<"  迷惑：回合结束时减少一层，拥有[迷惑]时牌的 MISS 增加 25 点。"<<endl;
+	fout<<endl;
+	fout<<"Q:我应该怎么联系开发者，对这个游戏提出建议？"<<endl;
+	fout<<"A:最方便的方法是在学校里直接找人。或者你可以加 QQ 或者发邮件给 Dimly：2138527518"<<endl;
+	fout<<endl;
+	fout.close();
+}
+
+string int_to_string(int x)
+{
+	if(x==0) return "0";
+	string res="";int flag=0;
+	if(x<0) flag=1,x=-x;
+	while(x) res+=char('0'+x%10),x/=10;
+	reverse(res.begin(),res.end());
+	if(flag) res="-"+res;
+	return res;
+}
+
+string FAQ_card(Card t)
+{
+	string s1=t.Name();
+	string s2=int_to_string(t.cost);
+	string s3=int_to_string(t.ATK);
+	string s4=int_to_string(t.HEAL);
+	string s5=int_to_string(t.DEF);
+	string s6=int_to_string(t.MISS);
+	string s7=t.Intro();
+	return s1+string(18-s1.size(),' ')+s2+string(6-s2.size(),' ')+s3+string(8-s3.size(),' ')+s4+string(8-s4.size(),' ')+s5+string(8-s5.size(),' ')+s6+"%"+string(7-s6.size(),' ')+s7;
+}
+
+void FAQ_part2()
+{
+	ofstream fout("职业.txt");
+	
+	fout<<"公共牌库："<<endl;
+	fout<<"名称              ◆    ATK     HEAL    DEF     MISS"<<endl;
+	for(int i=1;i<=libcnt[0];i++)
+		fout<<FAQ_card(lib[0][i])<<endl;
+	fout<<endl<<"-------------------------------------------------------------------------"<<endl<<endl;
+	for(int occ=1;occ<=sumjob;occ++)
+	{
+		fout<<occ_name(occ)<<endl<<endl;
+		fout<<"初始牌库："<<endl;
+		fout<<"名称              ◆    ATK     HEAL    DEF     MISS    效果"<<endl;
+		for(int i=1;i<=libcnt[0];i++)
+		{
+			if(occ==3 && lib[0][i].HEAL>=75) continue; //法师不能抽公共牌库HEAL>=75的牌
+			if(occ==4 && lib[0][i].HEAL>0) continue;//战士不能抽公共牌库HEAL牌
+			if(occ==5 || occ==6 || occ==8 || occ==9 || occ==10 || occ==11) continue;//地精、恶魔、鱼人、盾卫、赌徒、剑客不能抽公共牌库的牌
+			if(occ==7 && lib[0][i].ATK>=80) continue;//牧师不能抽公共牌库ATK>=80的牌
+			fout<<FAQ_card(lib[0][i])<<endl;
+		}
+		for(int i=1;i<=libcnt[occ];i++)
+			fout<<FAQ_card(lib[occ][i])<<endl;
+		fout<<endl<<"宝藏牌："<<endl;
+		fout<<"名称              ◆    ATK     HEAL    DEF     MISS    效果"<<endl;
+		fout<<FAQ_card(fun[1][occ][1])<<endl;
+		if(occ==1 or occ==3 or occ==6 or occ==7 or occ==9 or occ==11)
+		{
+			fout<<endl<<"衍生牌："<<endl;
+			fout<<"名称              ◆    ATK     HEAL    DEF     MISS    效果"<<endl;
+		}
+		if(occ==1)
+		{
+			Card now=lib[1][1];now.id=-17,now.cost=2,now.ATK=20;fout<<FAQ_card(now)<<endl;
+			now=lib[1][5];now.id=-21,now.ATK=20;fout<<FAQ_card(now)<<endl;
+			now=lib[1][9];now.id=-25,now.HEAL=90;fout<<FAQ_card(now)<<endl;
+			now=lib[1][3];now.id=-19,now.cost=0;fout<<FAQ_card(now)<<endl;
+			now=lib[1][7];now.id=-23,now.MISS=5;fout<<FAQ_card(now)<<endl;
+		}
+		if(occ==3)
+			fout<<FAQ_card(fun[1][3][2])<<endl;
+		if(occ==6)
+		{
+			fout<<FAQ_card(lib[6][libcnt[6]+1])<<endl;
+			fout<<FAQ_card(lib[6][libcnt[6]+2])<<endl;
+		}
+		if(occ==7)
+		{
+			fout<<FAQ_card(lib[7][libcnt[7]+1])<<endl;
+			fout<<FAQ_card(lib[7][libcnt[7]+2])<<endl;
+			fout<<FAQ_card(lib[7][libcnt[7]+3])<<endl;
+			fout<<FAQ_card(fun[1][7][2])<<endl;
+		}
+		if(occ==9)
+			fout<<FAQ_card(lib[9][libcnt[9]+1])<<endl;
+		if(occ==11)
+		{
+			fout<<FAQ_card(lib[11][libcnt[11]+1])<<endl;
+			fout<<FAQ_card(fun[1][11][2])<<endl;
+		}
+		fout<<endl<<"-------------------------------------------------------------------------"<<endl<<endl;
+	}
+	fout.close();
+}
+
+void FAQ()
+{
+	FAQ_part1();
+	FAQ_part2();
+	MessageBox(NULL,("FAQ.txt 和 职业.txt 已生成在同目录下\n请自行打开查看"),("CARD-GAME"),MB_OK|MB_ICONINFORMATION);
+	SetColor(7,0);system("cls");
+}
+
 

@@ -5,8 +5,8 @@ using namespace std;
 
 int version1=3;
 int version2=2;
-int version3=0;
-string version="3.2.0";
+int version3=1;
+string version="3.2.1";
 
 #define UP 72
 #define DOWN 80
@@ -35,7 +35,11 @@ int Card::cal_atk(int from,int to){//计算实际攻击力
 	double damage=ATK;
 	if(func==15) return damage;//[背水一战]无视buff
 	if(func==89) return damage+pl[from].buff[0]*1.5;//[指挥进攻]无视buff
-	if(func==119) return damage;//[命运]为了好看固定为9999 
+	if(func==119) //[命运] 
+	{
+		if(pl[from].occ==10) return 9999;
+		else return 0;
+	}
 	if(pl[from].occ==2 && ATK>0) damage=ATK+5*pl[from].buff[0];//术士
 	if(pl[from].occ==5 && ATK>0) damage=ATK+ATK*pl[from].buff[0]*0.09;//地精
 	if(pl[from].occ==4 && pl[from].buff[0])//战士
@@ -786,13 +790,14 @@ int Card::Special(int from,int to){
 		pl[from].buff[0]+=2;
 	}
 	else if(func==126){
-		pl[from].buff[0]+=3;
+		pl[from].buff[0]=max(0,pl[from].buff[0]-3);
 	}
 	else if(func==127){
 		pl[from].buff[0]+=3*cost;
 	}
 	else if(func==128){
-		if(pl[to].buff[4]>0) pl[from].buff[0]+=2;
+		pl[from].buff[0]+=pl[to].buff[4]*3;
+		pl[to].buff[4]=0;
 	}
 	else if(func==129){
 		pl[from].cost=min(pl[from].cost+pl[to].buff[4],pl[from].maxcost);
@@ -810,7 +815,7 @@ int Card::Special(int from,int to){
 	}
 	else if(func==135){
 		for(int i=1;i<=pl[from].cardcnt;i++)
-			if(pl[from].used[i]==0) pl[from].handcard[i].ATK+=pl[from].buff[0]*2;
+			if(pl[from].used[i]==0) pl[from].handcard[i].ATK+=pl[from].buff[0]*4;
 	}
 	else if(func==136){
 		for(int i=1;i<=pl[from].cardcnt;i++){
@@ -824,6 +829,7 @@ int Card::Special(int from,int to){
 	}
 	else if(func==137){
 		pl[to].buff[4]++;
+		pl[from].heap[++pl[from].heapn]=lib[11][6];
 	}
 	else if(func==138){
 		pl[from].buff[0]=0; 
@@ -837,6 +843,13 @@ int Card::Special(int from,int to){
 	else if(func==141){
 		pl[from].buff[4]=0;
 	} 
+	else if(func==142){
+		pl[from].heap[++pl[from].heapn]=lib[11][6];
+	}
+	else if(func==143){
+		pl[from].buff[4]/=2;
+		pl[to].cost=min(pl[to].maxcost,pl[to].cost+2);
+	}
 	return 0;
 }
 
@@ -852,7 +865,6 @@ void extra(int now,int cursor){
 		pl[now].used[cursor]=0;
 		pl[now].rest++;
 		pl[now].handcard[cursor]=pl[3-now].heap[(rad()%pl[3-now].heapn)+1];
-		if(pl[now].handcard[cursor].func==119) pl[now].handcard[cursor].ATK=0;
 		pl[now].handcard[cursor].MISS=pl[now].handcard[cursor].func=0;
 	}//[不完全记忆]
 	if(pl[now].handcard[cursor].func==60){
@@ -1169,23 +1181,6 @@ void adv(int x){
 	return;
 }
 
-string occ_name(int x){
-	if(x==1)return "浪人";
-	else if(x==2)return "术士";
-	else if(x==3)return "法师";
-	else if(x==4)return "战士";
-	else if(x==5)return "地精";
-	else if(x==6)return "恶魔";
-	else if(x==7)return "牧师";
-	else if(x==8)return "鱼人";
-	else if(x==9)return "盾卫";
-	else if(x==10)return "赌徒";
-	else if(x==11)return "剑客";
-	else if(x==12)return "随缘" ;
-	else if(x==20)return "竞技者";
-	return "";
-}
-
 void Choose(int now){
 	SetColor(7);
 	if(mode==3){
@@ -1278,38 +1273,6 @@ void Choose(int now){
 			}
 		}
 	}
-//	while(1){
-//		SetPos(0,lastcursor+1),SetColor(7,0);printf("                                                              ");
-//		SetPos(0,lastcursor+1);printf("   %2d ",lastcursor);
-//		SetPos(0,cursor+1),SetColor(0,7);printf("                                                              ");
-//		SetPos(0,cursor+1);printf("   %2d ",cursor);
-//		
-//		SetPos(0,14);
-//		occ_func(cursor);
-//		if(mode==1){
-//			SetPos(0,25);
-//			occ_treasure(cursor);
-//		}
-//		if(fight) printf("\n\n(你可以查看这些职业说明,但你的职业是随缘的)");
-//		lastcursor=cursor;
-//		input=getch();
-//		if(input==bottom[1] || input==UP)
-//			cursor--;
-//		if(input==bottom[2] || input==DOWN)
-//			cursor++;
-//		if(cursor>sumjob+1) cursor=1;
-//		if(cursor<1) cursor=sumjob+1;
-//		if(input==bottom[5] || input==ENTER){
-//			if(fight || cursor>sumjob){
-//				pl[now].occ=rad()%sumjob+1;
-//				return;
-//			}
-//			else {
-//				pl[now].occ=cursor;
-//				return;
-//			}
-//		}
-//	}
 }
 
 int UI(int now){
@@ -1585,6 +1548,9 @@ void start_turn(int now){
 			pl[now].hp-=15;
 			pl[now].buff[0]+=10;
 		}//鱼人扣15血获得10<★鱼仔>
+		if(pl[now].occ==11){
+			if(rad()%100<=pl[now].buff[0]) pl[now].heap[++pl[now].heapn]=lib[11][6];
+		}//剑客概率刷[强风一击]
 	}
 	
 	if(env_now==7)
@@ -1734,8 +1700,11 @@ int Ask(int now){
 			if(pl[now].handcard[i].func==127){
 				pl[now].handcard[i].cost=pl[now].cost;
 			}
+			if(pl[now].handcard[i].func==128){
+				pl[now].handcard[i].ATK=pl[3-now].buff[4]*35;
+			}
 			if(pl[now].handcard[i].func==130){
-				pl[now].handcard[i].ATK=pl[3-now].buff[4]*30+40;
+				pl[now].handcard[i].ATK=pl[3-now].buff[4]*15+50;
 			}
 			if(pl[now].handcard[i].func==134){
 				pl[now].handcard[i].DEF=pl[now].buff[0]*6;
@@ -2127,8 +2096,11 @@ int Ask_same(int now){
 			if(pl[now].handcard[i].func==127){
 				pl[now].handcard[i].cost=pl[now].cost;
 			}
+			if(pl[now].handcard[i].func==128){
+				pl[now].handcard[i].ATK=pl[3-now].buff[4]*35;
+			}
 			if(pl[now].handcard[i].func==130){
-				pl[now].handcard[i].ATK=pl[3-now].buff[4]*30+40;
+				pl[now].handcard[i].ATK=pl[3-now].buff[4]*15+50;
 			}
 			if(pl[now].handcard[i].func==134){
 				pl[now].handcard[i].DEF=pl[now].buff[0]*6;
@@ -2442,67 +2414,68 @@ void bot(){
 bool Options(bool x){
 	if(x){
 		system("cls");
-		SetPos(0,0);
+		SetPos(3,2);
 		printf("※ 设置 Options ※");
 		int cursor=1;
+		if(server_mode!=1) cursor=0;
 		while(1){
 
-			SetPos(1,3);
+			SetPos(3,5);
 			if(cursor!=1)SetColor(7,0);
 			else SetColor(0,7);
-			printf("天气环境变化                          ");
-			SetPos(25,3);
+			printf("天气变化                                    ");
+			SetPos(27,5);
 			if(env_on==1)printf("■开");
 			else printf("关■");//天气设定
 
-			SetPos(1,5);
+			SetPos(3,7);
 			if(cursor!=2)SetColor(7,0);
 			else SetColor(0,7);
-			printf("先手玩家                             ");
-			SetPos(25,5);
+			printf("先手玩家                                    ");
+			SetPos(27,7);
 			if(player_bgn>0)
 				printf("P%d",player_bgn);
 			else
 				printf("随机");//先手玩家设定
 
-			SetPos(1,7);
+			SetPos(3,9);
 			if(cursor!=3) SetColor(7,0);
 			else SetColor(0,7);
-			printf("游戏模式                                   ");
-			SetPos(25,7);
+			printf("游戏模式                                    ");
+			SetPos(27,9);
 			if(mode==0){
 				printf("经典模式");
-				SetPos(8,15);SetColor(7,0);
+				SetPos(8,14);SetColor(7,0);
 				printf("最经典的游戏模式                                             ");
 				printf("\n\t                                          ");
 			}
 			else if(mode==1){
 				printf("竞技模式：宝藏牌");
-				SetPos(8,15);SetColor(7,0);
+				SetPos(8,14);SetColor(7,0);
 				printf("各职业增加宝藏牌,特殊条件下会置入手牌,每局仅1次                    ");
 				printf("\n\t                                          ");
 			}
 			else if(mode==2){
 				printf("欢乐模式：随机buff");
-				SetPos(8,15);SetColor(7,0);
+				SetPos(8,14);SetColor(7,0);
 				printf("每回合开始时获得1回合随机buff,双方牌库中添加娱乐牌");
 				printf("\n\t所有牌ATK/HEAL/DEF降为原先的70%%          ");
 			}
 			else if(mode==3){
 				printf("竞技模式：攻防之战");
-				SetPos(8,15);SetColor(7,0);
+				SetPos(8,14);SetColor(7,0);
 				printf("进攻与防守的结合,有多种胜利方式,考验玩家的操作                  ");
 				printf("\n\t                                          ");
 			}
 			else if(mode==4){
 				printf("欢乐模式：假面舞会");
-				SetPos(8,15);SetColor(7,0);
+				SetPos(8,14);SetColor(7,0);
 				printf("每隔几个回合所有玩家的职业将随机变动,让隐藏连招成为可能             ");
 				printf("\n\t                                          ");
 			}
 			else if(mode==5){
 				printf("竞技模式：热血竞技");
-				SetPos(8,15);SetColor(7,0);
+				SetPos(8,14);SetColor(7,0);
 				printf("三局两胜的热血竞技,体验其他竞技模式,是时候展现你真正的实力了!             ");
 				printf("\n\t依次进行:经典模式->攻防之战->宝藏牌           ");
 			}
@@ -2562,61 +2535,60 @@ bool Options(bool x){
 		}
 	}
 	else {
-		SetPos(0,0);
+		SetPos(3,2);
 		printf("※ 设置 Options ※");
 		int cursor=1;
 		while(1){
-
-			SetPos(1,3);
+			SetPos(3,5);
 			if(cursor!=1)SetColor(7,0);
 			else SetColor(0,7);
-			printf("天气环境变化                          ");
-			SetPos(25,3);
+			printf("天气变化                                    ");
+			SetPos(27,5);
 			if(env_on==1)printf("■开");
 			else printf("关■");//天气设定
 
-			SetPos(1,5);
+			SetPos(3,7);
 			if(cursor!=2)SetColor(7,0);
 			else SetColor(0,7);
-			printf("先手玩家                             ");
-			SetPos(25,5);
+			printf("先手玩家                                    ");
+			SetPos(27,7);
 			if(player_bgn>0)
 				printf("P%d",player_bgn);
 			else
 				printf("随机");//先手玩家设定
 
-			SetPos(1,7);
+			SetPos(3,9);
 			if(cursor!=3) SetColor(7,0);
 			else SetColor(0,7);
-			printf("游戏模式                                   ");
-			SetPos(25,7);
+			printf("游戏模式                                    ");
+			SetPos(27,9);
 			if(mode==0){
 				printf("经典模式");
-				SetPos(8,15);SetColor(7,0);
+				SetPos(8,14);SetColor(7,0);
 				printf("最经典的游戏模式                                             ");
 				printf("\n\t                                          ");
 			}
 			else if(mode==1){
 				printf("竞技模式：宝藏牌");
-				SetPos(8,15);SetColor(7,0);
+				SetPos(8,14);SetColor(7,0);
 				printf("各职业增加宝藏牌,特殊条件下会置入手牌,每局仅1次                    ");
 				printf("\n\t                                          ");
 			}
 			else if(mode==2){
 				printf("欢乐模式：随机buff");
-				SetPos(8,15);SetColor(7,0);
+				SetPos(8,14);SetColor(7,0);
 				printf("每回合开始时获得1回合随机buff,双方牌库中添加娱乐牌                ");
 				printf("\n\t所有牌ATK/HEAL/DEF降为原先的70%%");
 			}
 			else if(mode==3){
 				printf("竞技模式：攻防之战");
-				SetPos(8,15);SetColor(7,0);
+				SetPos(8,14);SetColor(7,0);
 				printf("进攻与防守的结合,有多种胜利方式,考验玩家的操作                  ");
 				printf("\n\t                                          ");
 			}
 			else if(mode==4){
 				printf("欢乐模式：假面舞会");
-				SetPos(8,15);SetColor(7,0);
+				SetPos(8,14);SetColor(7,0);
 				printf("每隔几个回合所有玩家的职业将随机变动,让隐藏连招成为可能             ");
 				printf("\n\t                                          ");
 			}
@@ -2751,6 +2723,9 @@ int game(){
 			}
 			if(pl[3-server_mode].occ==9 && pl[server_mode].occ!=9) {//获得[防御攻破] 
 				pl[server_mode].heap[++pl[server_mode].heapn]=lib[9][libcnt[9]+1];
+			}
+			if(pl[3-server_mode].occ==11 && pl[server_mode].occ!=11){//获得[虚弱疗愈]
+				pl[server_mode].heap[++pl[server_mode].heapn]=lib[11][libcnt[11]+1];
 			}
 		}
 		for(int i=1;i<=pl[server_mode].cardcnt;i++) {
@@ -2990,6 +2965,9 @@ int game(){
 				if(pl[3-x].occ==9 && pl[x].occ!=9) {//获得[防御攻破] 
 					pl[x].heap[++pl[x].heapn]=lib[9][libcnt[9]+1];
 				}
+				if(pl[3-x].occ==11 && pl[x].occ!=11){//获得[虚弱疗愈]
+					pl[x].heap[++pl[x].heapn]=lib[11][libcnt[11]+1];
+				}
 			}
 		}
 
@@ -3099,50 +3077,6 @@ int game(){
 	return 0;
 }
 
-void FAQ()
-{
-	SetColor(7,0);system("cls");
-	SetPos(2,3);printf("Q:为什么有些时候我按键盘没有反应？");
-	SetPos(2,4);printf("A:请确认你选中了游戏的窗口，并且检查是否开启了大写锁定，如果有请务必关掉。");
-	
-	SetPos(2,6);printf("Q:在打出一张牌的时候会发生什么？");
-	SetPos(2,7);printf("A:首先扣除等量费用，如果 MISS 了会回复一半的费用（向下取整）。");
-	SetPos(2,8);printf("  如果成功打出，先触发牌的效果，再触发角色技能，最后造成伤害，回血和套盾。");
-	
-	SetPos(2,10);printf("Q:我一不小心拖动窗口改变了大小怎么办？");
-	SetPos(2,11);printf("A:通常来讲最好不要这么做，因为可能会出神秘 BUG。建议重新打开游戏。");
-	
-	SetPos(2,13);printf("Q:能简单介绍一下这个游戏的过去与未来吗？");
-	SetPos(2,14);printf("A:起源于 2021 年暑假 cyw580 等信息学竞赛生（2021级）的制作。");
-	SetPos(2,15);printf("  后来由 Dimly 与 SHU_tist（2022级）接手制作了更多内容（盾卫及以后）。");
-	SetPos(2,16);printf("  目前 Dimly 正在完全重构代码制作第 4 代，目标是实现 PVE、AI 对战和多人对战模式。");
-	SetPos(2,17);printf("  另有 Dimly 的衍生游戏 ANOTHER-CARD-GAME：https://github.com/DimlyL/ANOTHER-CARD-GAME");
-	
-	SetPos(2,19);printf("Q:为什么本地联机模式中不能按 q 投降？");
-	SetPos(2,20);printf("A:因为没做。");
-	
-	SetPos(2,23);printf("按任意键以查看下一页");
-	
-	getch(); 
-	
-	system("cls");
-	SetPos(2,3);printf("Q:详细说明一下游戏中的所有 buff？");
-	SetPos(2,4);printf("A:燃烧：回合开始时减少一层，HP 减少 40 点。");
-	SetPos(2,5);printf("  中毒：回合开始时减少一层，HP 减少 20%。");
-	SetPos(2,6);printf("  治疗：回合开始时减少一层，HP 回复 30 点。");
-	SetPos(2,7);printf("  狂暴：回合结束时减少一层，拥有[狂暴]时牌的 ATK 翻倍。");
-	SetPos(2,8);printf("  虚弱：回合结束时减少一层，拥有[虚弱]时牌的 ATK 和 HEAL(负数同样生效) 变为 70%。");
-	SetPos(2,9);printf("  迷惑：回合结束时减少一层，拥有[迷惑]时牌的 MISS 增加 25 点。");
-	
-	SetPos(2,11);printf("Q:为什么有些时候我的游戏不动了？");
-	SetPos(2,12);printf("A:检查一下你是否使用过鼠标点击了这个窗口的内部，标志是某个地方会有全白色的方框。");
-	SetPos(2,13);printf("  解决方法是按任意键以解除这种状态。");
-	
-	SetPos(2,16);printf("按任意键以继续");
-	
-	getch(); 
-}
-
 int main(){
 	mouse(0);
 	srand(time(NULL));
@@ -3159,17 +3093,16 @@ int main(){
 			system("cls");
 			Connect();
 			if(server_mode==3 || server_mode==4 || server_mode==5 || server_mode==6) break;
-			SetColor(7,0);SetPos(26,4);
-			if(server_mode==2) WSAstart(),printf("输入服务端ip地址:");
+			SetColor(7,0);
+			if(server_mode==2) WSAstart(),SetPos(26,4),printf("输入服务端ip地址:");
 			else {
 				WSAstart();
-				system("cls");
 				char hostname[256]={0},ip[256]={0};
 				gethostname(hostname,sizeof(hostname));
 				HOSTENT* host=gethostbyname(hostname);
 				strcpy(ip,inet_ntoa(*(in_addr*)*host->h_addr_list));
-				printf("你的ip地址是:%s\n",ip);
-				SetPos(0,2),printf("等待玩家连入...\n");
+				SetPos(26,3),printf("你的ip地址是:%s",ip);
+				SetPos(26,4),printf("等待玩家连入中...");
 			}
 			if(TCP_initialize(server_mode)!=0){
 				connect_established=0;
@@ -3236,15 +3169,6 @@ int main(){
 		else {
 			SetColor(7,0);
 			system("cls");
-			printf("WELCOME!!\n");
-			for(int i=1;i<=2;i++){
-				printf("请输入P%d的名字:",i);
-				cin>>pl[i].name;
-			}//输入姓名
-			Sleep(200);
-			while(_kbhit()) getch();
-			system("cls");//清屏并切换到Option界面
-
 			SetConsoleTitle("CARD GAME:Options");
 			Options(0);
 			SetColor(0,7);
@@ -3308,4 +3232,5 @@ int main(){
 	SetColor(7,0);
 	return 0;
 }
+
 
