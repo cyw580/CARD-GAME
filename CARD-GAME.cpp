@@ -4,9 +4,9 @@
 using namespace std;
 
 int version1=3;
-int version2=2;
-int version3=1;
-string version="3.2.1";
+int version2=3;
+int version3=0;
+string version="3.3.0";
 
 #define UP 72
 #define DOWN 80
@@ -33,65 +33,71 @@ int Check(int now){
 
 int Card::cal_atk(int from,int to){//计算实际攻击力
 	double damage=ATK;
-	if(func==15) return damage;//[背水一战]无视buff
-	if(func==89) return damage+pl[from].buff[0]*1.5;//[指挥进攻]无视buff
-	if(func==119) //[命运] 
+	if(func==121) return damage;//[天使92]固定 
+	if(func==15) ;
+	else if(func==89) damage+=pl[from].buff[0]*1.5;//[指挥进攻]无视buff
+	else
 	{
-		if(pl[from].occ==10) return 9999;
-		else return 0;
+		if(pl[from].occ==2 && ATK>0) damage=ATK+5*pl[from].buff[0];//术士
+		if(pl[from].occ==5 && ATK>0) damage=ATK+ATK*pl[from].buff[0]*0.09;//地精
+		if(pl[from].occ==4 && pl[from].buff[0])//战士
+			damage-=0.04*damage*pl[from].buff[0];
+		if(pl[to].occ==20 && pl[to].buff[0]) damage-=0.02*damage*pl[to].buff[0];
+		if(func==115 and pl[from].occ==10 and pl[from].buff[0]%11==0) damage*=2;
+		//职业影响
+		if(pl[from].buff[3])//狂暴
+			damage*=2;
+		if(pl[from].buff[4])//虚弱
+			damage*=0.7;
+		//Buff影响
+		if(env_now==1)//血月
+			damage*=1.2;
+		if(env_now==2)//暴雨
+			damage*=0.8;
+		//天气影响	
 	}
-	if(pl[from].occ==2 && ATK>0) damage=ATK+5*pl[from].buff[0];//术士
-	if(pl[from].occ==5 && ATK>0) damage=ATK+ATK*pl[from].buff[0]*0.09;//地精
-	if(pl[from].occ==4 && pl[from].buff[0])//战士
-		damage-=0.04*damage*pl[from].buff[0];
-	if(pl[to].occ==20 && pl[to].buff[0]) damage-=0.02*damage*pl[to].buff[0];
-	//职业影响
-	if(pl[from].buff[3])//狂暴
-		damage*=2;
-	if(pl[from].buff[4])//虚弱
+	if(mode[4]) //随机buff
 		damage*=0.7;
-	//Buff影响
-	if(env_now==1)//血月
-		damage*=1.2;
-	if(env_now==2)//暴雨
-		damage*=0.8;
-	//天气影响
-	if(mode==2) //欢乐模式：随机buff
-		damage*=0.7;
+	if(mode[5]) //高失误 
+		damage*=1.25; 
+	
 	return (int)damage;
 }
 
 int Card::cal_heal(int from,int to){//计算实际恢复量
 	double heal=HEAL;
-	if(func==90) heal+=pl[from].buff[0]*2;
 	if(pl[from].buff[4])//虚弱
 		heal*=0.7;
-	if(pl[from].occ==20 && pl[from].buff[0]) heal-=0.01*heal*pl[from].buff[0];
-	if(mode==2) //欢乐模式：随机buff
+	if(mode[4]) //随机buff
 		heal*=0.7;
+	if(mode[5]) //高失误 
+		heal*=1.25;
 	return heal;
 }
 
 int Card::cal_def(int from,int to){//计算实际叠盾
 	double def=DEF;
-	if(mode==2) //欢乐模式：随机buff
+	if(mode[4]) //随机buff
 		def*=0.7;
+	if(mode[5]) //高失误 
+		def*=1.25;
 	return def;
 }
 
 int Card::cal_miss(int from,int to){
 	int miss=MISS;
-	if(func==109) return miss;
-	if(func==119) return miss;
+	if(110<=func and func<=114) return miss;
+	if(func==121) return miss;
 	if(func==122) return miss;
 	if(env_now==3)
 		miss+=10;
 	if(env_now==4)
 		miss-=10;
-	if(pl[from].occ==10 and pl[from].hp<pl[from].maxhp/2)
-		miss-=15; 
-	//天气对失误率的影响
 	if(pl[from].buff[6])//迷惑
+		miss+=25;
+	if(pl[to].occ==10)
+		miss+=5;
+	if(mode[5]) //高失误 
 		miss+=25;
 	if(miss>100) miss=100;
 	if(miss<0) miss=0;
@@ -110,13 +116,6 @@ int Card::Use(int from,int to){
 		SetPos(0,1);
 		printf("操作失误了!");
 		if(pl[from].occ==4 && ATK>0) pl[from].buff[0]+=2;
-		if(pl[from].occ==10 and id==178) pl[from].buff[0]=pl[from].buff[0]/10000*10000;
-		if(pl[from].occ==10 and id==174) 
-		{
-			int s1=pl[from].buff[0]/10000,s2=pl[from].buff[0]%10000;
-			s1=min(500,s1+s2-s2/2),s2/=2;
-			pl[from].buff[0]=s1*10000+s2; 
-		}
 		if(pl[from].occ==10) pl[from].hp=min(pl[from].hp+15*(cost+1),pl[from].maxhp);
 		pl[from].cost=min(pl[from].maxcost,pl[from].cost+cost/2);
 		UI(from);
@@ -127,6 +126,8 @@ int Card::Use(int from,int to){
 	if(func) flag=Special(from,to);
 	if(flag==4)
 	{
+		for(int i=1;i<=2;i++)
+			if(pl[i].occ==10) pl[i].buff[0]=rad()%100; 
 		UI(from);
 		return 0;
 	}
@@ -164,10 +165,11 @@ int Card::Use(int from,int to){
 		pl[to].hp-=damage;
 	}
 	if(damage>=150){//重击动画
-		system("color 47");
+		if(damage>=3000) system("color E7");
+		else system("color 47");
 		Shake(10,1);
 		system("color 07");
-		system("cls");
+		cls();
 		UI(from);
 	}
 	//进攻
@@ -190,22 +192,22 @@ int Card::Use(int from,int to){
 		}
 	pl[from].def=min(pl[from].maxdef,pl[from].def+def);
 	//套盾与回血
-	if(mode!=4){
-		if(HEAL<0 && pl[from].occ==2) pl[from].buff[0]++;
-		if(pl[from].occ==4 && ATK>0) pl[from].buff[0]+=2;
-		if(pl[from].occ==5 && flag==2){
-			pl[from].buff[0]++;
-			pl[from].maxhp+=10;
-			pl[from].maxdef+=5;
-			pl[from].hp=min(pl[from].maxhp,pl[from].hp+12);
-		}
-		if(pl[from].occ==5 && flag==3){
-			pl[from].buff[0]+=2;
-			pl[from].maxhp+=20;
-			pl[from].maxdef+=10;
-			pl[from].hp=min(pl[from].maxhp,pl[from].hp+24);
-		}
+	if(HEAL<0 && pl[from].occ==2) pl[from].buff[0]++;
+	if(pl[from].occ==4 && ATK>0) pl[from].buff[0]+=2;
+	if(pl[from].occ==5 && flag==2){
+		pl[from].buff[0]++;
+		pl[from].maxhp+=10;
+		pl[from].maxdef+=5;
+		pl[from].hp=min(pl[from].maxhp,pl[from].hp+12);
 	}
+	if(pl[from].occ==5 && flag==3){
+		pl[from].buff[0]+=2;
+		pl[from].maxhp+=20;
+		pl[from].maxdef+=10;
+		pl[from].hp=min(pl[from].maxhp,pl[from].hp+24);
+	}
+	if(pl[from].occ==10 and (func!=109 and func!=117 and func!=121)) pl[from].buff[0]=rad()%100; 
+	if(pl[to].occ==10) pl[to].buff[0]=rad()%10;
 	UI(from);
 	if(Check(to)){
 		return 1;
@@ -408,7 +410,7 @@ int Card::Special(int from,int to){
 	else if(func==48){
 		for(int i=1;i<=pl[to].cardcnt;i++){
 			if(pl[to].used[i]) continue;
-			if(pl[to].handcard[i].id==114) pl[to].used[i]=1,pl[to].buff[0]+=2; //114-->[神圣意志]
+			if(pl[to].handcard[i].func==42) pl[to].used[i]=1,pl[to].buff[0]+=2; //42-->[神圣意志]
 		}
 	}
 	else if(func==49){
@@ -712,80 +714,83 @@ int Card::Special(int from,int to){
 		pl[from].def=min(pl[from].def,pl[from].maxdef);
 	}
 	else if(func==109){
-		int s1=pl[from].buff[0]/10000,s2=pl[from].buff[0]%10000;
-		pl[from].buff[0]=s1*10000+min(1000,s2*2);
-	}
-	else if(func==110){
-		int s1=pl[from].buff[0]/10000,s2=pl[from].buff[0]%10000;
-		pl[from].buff[0]=s1*10000+min(1000,s2+5);
-	}
-	else if(func==111){
-		int s1=pl[from].buff[0]/10000,s2=pl[from].buff[0]%10000;
-		pl[from].buff[0]=s1*10000+min(1000,s2+11);
+		if(rad()%100<3) pl[from].buff[0]=92;
+		else
+		{
+			vector<int> qwq;
+			for(int i=0;i<=11;i++) qwq.push_back(0);
+			for(int i=1;i<=pl[from].cardcnt;i++)
+				if(!pl[from].used[i])
+				{
+					if(pl[from].handcard[i].func==110) qwq[6]=1;
+					if(pl[from].handcard[i].func==111) qwq[2]=qwq[3]=qwq[5]=qwq[7]=1;
+					if(pl[from].handcard[i].func==112) qwq[1]=1;
+					if(pl[from].handcard[i].func==113) qwq[1]=qwq[3]=qwq[5]=qwq[7]=qwq[9]=1;
+					if(pl[from].handcard[i].func==114) qwq[8]=1;
+					if(pl[from].handcard[i].func==115) qwq[10]=1;
+					if(pl[from].handcard[i].func==118) qwq[11]=1;
+					if(pl[from].handcard[i].func==122) qwq[5]=1;
+					if(pl[from].handcard[i].func==124) qwq[11]=1;
+				}
+			int qwqcnt=0;
+			for(int i=0;i<=11;i++) qwqcnt+=qwq[i];
+			if(qwqcnt==0)
+			{
+				pl[from].buff[0]=rad()%100;
+				return 0;
+			}
+			while(1)
+			{
+				pl[from].buff[0]=rad()%100;
+				int flag=0;
+				for(int i=0;i<=9;i++)
+					if(qwq[i]==1 and (pl[from].buff[0]%10==i or pl[from].buff[0]/10==i))
+						flag=1;
+				if(qwq[10]==1 and pl[from].buff[0]%11==0) flag=1;
+				if(qwq[11]==1 and pl[from].buff[0]>=60) flag=1;
+				if(flag==1) break;
+			}
+		} 
 	}
 	else if(func==112){
-		int s1=pl[from].buff[0]/10000,s2=pl[from].buff[0]%10000;
-		if(s2>pl[from].maxhp-pl[from].hp)
-		{
-			s2-=pl[from].maxhp-pl[from].hp;
-			pl[from].hp=pl[from].maxhp;
-			if(s2>pl[from].maxdef-pl[from].def)
-			{
-				s2-=pl[from].maxdef-pl[from].def;
-				pl[from].def=pl[from].maxdef;
-			}
-			else pl[from].def+=s2,s2=0; 
-		}
-		else pl[from].hp+=s2,s2=0;
-		pl[from].buff[0]=s1*10000+s2;
+		pl[to].buff[6]+=3;
 	}
 	else if(func==113){
-		pl[from].buff[0]=pl[from].buff[0]/10000*10000;
-	}
-	else if(func==114){
-		pl[from].cost+=2;
-		int s1=pl[from].buff[0]/10000,s2=pl[from].buff[0]%10000;
-		pl[from].buff[0]=s1*10000+min(1000,s2+10);
-	}
-	else if(func==115){
-		pl[from].buff[6]+=2;
+		pl[from].cost=min(pl[from].cost+2,pl[from].maxcost);
 	}
 	else if(func==116){
-		pl[to].buff[6]+=2;
+		pl[from].buff[4]+=2;
 	}
 	else if(func==117){
-		int s1=pl[from].buff[0]/10000,s2=pl[from].buff[0]%10000;
-		pl[from].buff[0]=s1*10000+min(1000,s2+3);
+		pl[from].buff[0]=pl[to].hp%100; 
 	}
-	else if(func==118){
-		int s1=pl[from].buff[0]/10000,s2=pl[from].buff[0]%10000;
-		pl[from].buff[0]=s1*10000+min(1000,s2+18);
+	else if(func==119){
+		pl[to].buff[1]++;
+		pl[to].buff[2]++;
+		pl[from].buff[3]++;
+		pl[to].buff[4]++;
+		pl[from].buff[5]++;
+		pl[to].buff[6]++;
 	}
 	else if(func==120){
-		int s1=pl[from].buff[0]/10000,s2=pl[from].buff[0]%10000;
-		pl[from].buff[0]=s1*10000+min(1000,(int)(s2*1.5));
-	}
-	else if(func==121){
-		pl[from].hp-=max(70,pl[from].hp/5);
-		int s1=pl[from].buff[0]/10000,s2=pl[from].buff[0]%10000;
-		pl[from].buff[0]=s1*10000+min(1000,(int)(s2*1.5));
-	}
-	else if(func==122){
-		int s1=pl[from].buff[0]/10000,s2=pl[from].buff[0]%10000;
-		pl[from].buff[0]=s1*10000+min(1000,s2*2);
-	}
-	else if(func==123){
-		int s1=pl[from].buff[0]/10000,s2=pl[from].buff[0]%10000;
-		pl[from].buff[0]=min(1000,s2+s1);
-	}
-	else if(func==124){
 		for(int i=1;i<=pl[to].cardcnt;i++)
 			if(!pl[to].used[i]) {
-				if(func==109 or func==119 or func==122) continue;
+				int func2=pl[to].handcard[i].func;
+				if((110<=func2 and func2<=114) or func2==121 or func2==122) continue;
 				pl[to].handcard[i].MISS+=20;
 				if(pl[to].handcard[i].MISS>100) pl[to].handcard[i].MISS=100;
 			}
 	}
+	else if(func==122){
+		pl[from].cost=min(pl[from].cost+3,pl[from].maxcost);
+	}
+	else if(func==123){
+		for(int i=1;i<=pl[from].heapn;i++){
+			int func2=pl[from].heap[i].func;
+			if((110<=func2 and func2<=114) or func2==121 or func2==122) continue;
+			pl[from].heap[i].MISS=max(0,pl[from].heap[i].MISS-10);
+		}
+	} 
 	else if(func==125){
 		pl[from].buff[0]+=2;
 	}
@@ -796,7 +801,7 @@ int Card::Special(int from,int to){
 		pl[from].buff[0]+=3*cost;
 	}
 	else if(func==128){
-		pl[from].buff[0]+=pl[to].buff[4]*3;
+		pl[from].buff[0]+=pl[to].buff[4]*4;
 		pl[to].buff[4]=0;
 	}
 	else if(func==129){
@@ -807,7 +812,9 @@ int Card::Special(int from,int to){
 		pl[to].buff[4]+=4;
 	}
 	else if(func==132){
-		pl[from].buff[0]++;
+		pl[from].buff[0]+=3;
+		pl[to].buff[4]+=pl[from].buff[0]/5;
+		pl[from].buff[0]=pl[from].buff[0]%5;
 	}
 	else if(func==133){
 		pl[from].buff[0]*=2;
@@ -936,26 +943,6 @@ bool giveupcard(int now,int cursor){
 }
 				
 void init(int x){
-	if(mode==4){
-		if(!pl[x].maxhp) pl[x].maxhp=500;
-		pl[x].cardcnt=6;
-		pl[x].maxdef=120;
-		pl[x].maxcost=8;
-		if(!pl[x].hp) pl[x].hp=pl[x].maxhp;
-		int tot=libcnt[0];
-		for(int i=1;i<=tot;i++){
-			pl[x].heap[i]=lib[0][i];
-		}
-		pl[x].heapn=tot;
-		tot=libcnt[pl[x].occ];
-		for(int i=1;i<=tot;i++) {
-			pl[x].heap[i+pl[x].heapn]=lib[pl[x].occ][i];
-			if(pl[x].occ==4) pl[x].heap[i+pl[x].heapn].ATK*=0.8;
-		}
-		pl[x].heapn+=tot;
-		pl[x].heap[++pl[x].heapn]=lib[1][7];
-		return;
-	}
 	pl[x].maxhp=job[pl[x].occ].maxhp;
 	pl[x].cardcnt=job[pl[x].occ].cardcnt;
 	pl[x].maxdef=job[pl[x].occ].maxdef;
@@ -967,8 +954,9 @@ void init(int x){
 		pl[x].heap[i]=lib[0][i];
 		if(pl[x].occ==3 && pl[x].heap[i].HEAL>=75) i--,tot--; //法师不能抽公共牌库HEAL>=75的牌
 		if(pl[x].occ==4 && pl[x].heap[i].HEAL>0) i--,tot--;//战士不能抽公共牌库HEAL牌
-		if(pl[x].occ==5 || pl[x].occ==6 || pl[x].occ==8 || pl[x].occ==9 || pl[x].occ==10 ||pl[x].occ==11) i--,tot--;//地精、恶魔、鱼人、盾卫、赌徒、剑客不能抽公共牌库的牌
+		if(pl[x].occ==5 || pl[x].occ==6 || pl[x].occ==8 || pl[x].occ==9 || pl[x].occ==11) i--,tot--;//地精、恶魔、鱼人、盾卫、剑客不能抽公共牌库的牌
 		if(pl[x].occ==7 && pl[x].heap[i].ATK>=80) i--,tot--;//牧师不能抽公共牌库ATK>=80的牌
+		if(pl[x].occ==10 && pl[x].heap[i].cost!=0) i--,tot--;//赌徒只能抽公共牌库费用=0的牌 
 	}
 	pl[x].heapn=tot;
 	tot=libcnt[pl[x].occ];
@@ -976,7 +964,7 @@ void init(int x){
 		pl[x].heap[i+pl[x].heapn]=lib[pl[x].occ][i];
 	}
 	pl[x].heapn+=tot;
-	if(mode==2){//欢乐模式：随机buff
+	if(mode[4]){//欢乐模式：随机buff
 		tot=funcnt[2][0];
 		for(int i=1;i<=tot;i++) pl[x].heap[i+pl[x].heapn]=fun[2][0][i];
 		pl[x].heapn+=tot;
@@ -1110,8 +1098,8 @@ void treasure(int now){//竞技模式：宝藏牌
 			gettre[now]=1;
 		}
 	}
-	if(pl[now].occ==10 && pl[now].buff[0]%10000>=200){
-		for(int i=1;i<=pl[now].cardcnt-1;i++){
+	if(pl[now].occ==10 && pl[now].hp<=200){
+		for(int i=1;i<=pl[now].cardcnt;i++){
 			if(pl[now].used[i]) {
 				pl[now].used[i]=0;
 				gettre[now]=1;
@@ -1120,12 +1108,11 @@ void treasure(int now){//竞技模式：宝藏牌
 			}
 		}
 		if(!gettre[now]){
-			pl[now].handcard[rad()%(pl[now].cardcnt-1)+1]=fun[1][10][1];
+			pl[now].handcard[rad()%pl[now].cardcnt+1]=fun[1][10][1];
 			gettre[now]=1;
 		}
-		//pl[now].cardcnt-1:赌徒第4张牌被固定为[赌局开盘] 
 	}
-	if(pl[now].occ==11 && pl[now].buff[0]>=10){
+	if(pl[now].occ==11 && pl[now].buff[0]>=20){
 		for(int i=1;i<=pl[now].cardcnt;i++){
 			if(pl[now].used[i]) {
 				pl[now].used[i]=0;
@@ -1142,10 +1129,6 @@ void treasure(int now){//竞技模式：宝藏牌
 }
 
 void adv(int x){
-	if(mode==4){
-		pl[x].cost=min(pl[x].maxcost,pl[x].cost+1);
-		return;
-	}
 	if(pl[x].occ==1 || pl[x].occ==20){
 		pl[x].def=40;
 	}
@@ -1183,57 +1166,7 @@ void adv(int x){
 
 void Choose(int now){
 	SetColor(7);
-	if(mode==3){
-		pl[now].occ=20;
-		SetPos(0,0);
-		printf("请仔细阅读游戏规则:");
-		SetPos(0,2);
-		printf("1.攻防之战可以通过杀死对方或积累50个<★防御>标记获得胜利");
-		SetPos(0,4);
-		printf("2.开始时每人都有一张[蓄力之击](不会MISS),每局只有一张(无论是否弃置)");
-		SetPos(0,6);
-		printf("3.每个<★防御>标记减少你受到的2%伤害,同时也会减少你1%的HEAL回复量");
-		SetPos(0,8);
-		printf("4.每回合稳定+1◆,并另有10%(这个数值随[蓄力之击]ATK增高而增加)额外+1◆");
-		SetPos(0,10);
-		printf("5.玩家信息:HP 600   MAX_DEF 120   手牌上限5   ◆3/8");
-		SetPos(0,12);
-		printf("6.回合结束若没有◆,<★防御>+1且[蓄力之击]+15ATK");
-		SetPos(0,14);
-		printf("7.按下你的“确认”键进入游戏");
-		while(1){
-			input=getch();
-			if(input==bottom[5] || input==ENTER){
-				return;
-			}
-		}
-	}
 	int cursor=1,lastcursor=1;
-	if(mode==4){
-		pl[now].occ=rad()%sumjob+1;
-		SetPos(0,0);
-		printf("请仔细阅读游戏规则:");
-		SetPos(0,2);
-		printf("1.假面舞会中保证每一次变为新职业时至少持续2个回合");
-		SetPos(0,4);
-		printf("2.获得新职业时牌库变为相应职业初始牌库(即刷入牌库的牌也被清空),手牌不会变动");
-		SetPos(0,6);
-		printf("3.公共牌库始终在你的牌库中,且会额外刷入一张[无中生有]");
-		SetPos(0,8);
-		printf("4.职业标记相关的效果不会实现,你不会获得相应职业的特性,也无法通过集齐[神圣意志]胜利");
-		SetPos(0,10);
-		printf("5.每回合稳定+2◆,后手优势为开局+1◆");
-		SetPos(0,12);
-		printf("6.玩家信息:HP 500   MAX_DEF 120   手牌上限6   ◆3/8");
-		SetPos(0,14);
-		printf("7.按下你的“确认”键进入游戏");
-		while(1){
-			input=getch();
-			if(input==bottom[5] || input==ENTER){
-				return;
-			}
-		}
-	}
 	SetPos(6,5);
 	printf("◇选择P%d",now);printf("的职业◇");
 	for(int i=1;i<=sumjob+1;i++){
@@ -1245,7 +1178,7 @@ void Choose(int now){
 		SetPos(9,cursor+6);SetColor(0,7);printf("   ");printf(occ_name(cursor));printf("   ");
 		
 		occ_func(cursor);
-		if(mode==1){
+		if(mode[3]){
 			SetPos(26,17);
 			occ_treasure(cursor);
 		}
@@ -1299,15 +1232,18 @@ int UI(int now){
 		printf(occ_name(pl[rnk].occ));
 		
 		//buff0
-		if(mode==4) pl[rnk].buff[0]=0;
-		else if(pl[rnk].occ>=2){
+		if(pl[rnk].occ>=2){
 			SetColor(13);
 			SetPos(8,rnk*4);
 			if(pl[rnk].occ!=10) printf("★%d   ",pl[rnk].buff[0]);
 			if(pl[rnk].occ==10)
 			{
-				printf("★%d   ",pl[rnk].buff[0]%10000);
-				SetPos(8,rnk*4+1);printf("★%d   ",pl[rnk].buff[0]/10000);
+				if(pl[rnk].buff[0]<10) printf("★0%d   ",pl[rnk].buff[0]);
+				else 
+				{
+					if(pl[rnk].buff[0]==92) SetColor(14);
+					printf("★%d   ",pl[rnk].buff[0]);
+				}
 			}
 		}
 
@@ -1336,11 +1272,6 @@ int UI(int now){
 		
 		//Buff绘制
 		SetPos(26,rnk*4+2-2);
-		if(mode==3){
-			SetColor(7),printf("(每回合)");
-			SetColor(12),printf("蓄力+%dATK  ",pl[rnk].buff[7]);
-			SetColor(9),printf("[防御]+%d ",pl[rnk].buff[8]);
-		}
 		int qwqcnt=0;
 		if(pl[rnk].buff[1])
 			SetColor(6),printf("燃烧 %d : ",pl[rnk].buff[1]);
@@ -1407,7 +1338,7 @@ void UI_other(){
 	printf("P%d",now); 
 	SetPos(5,Row-1);
 	printf("  剩余手牌:%d/%d",pl[3-server_mode].rest,pl[3-server_mode].cardcnt); 
-	if(pl[3-server_mode].occ==7 && mode!=4){
+	if(pl[3-server_mode].occ==7){
 		SetColor(6);
 		SetPos(30,Row-1);
 		printf("  [神圣意志]:%d/%d",pl[3-server_mode].buff[10],pl[3-server_mode].cardcnt); 
@@ -1504,54 +1435,47 @@ void UI_other(){
 
 void start_turn(int now){
 	for(int i=1;i<=2;i++) pl[i].prehp=pl[i].hp;//记录回合开始血量
-	if(mode==4) pl[now].cost=min(pl[now].cost+1,pl[now].maxcost);//加费 
-	if(mode==3){
-		if(pl[now].handcard[pl[now].cardcnt].id==119) {
-			if(rad()%100<10+(pl[now].handcard[pl[now].cardcnt].ATK)/12) pl[now].cost=min(pl[now].cost+1,pl[now].maxcost);//加费
-		}
-		else if(rad()%100<10) pl[now].cost=min(pl[now].cost+1,pl[now].maxcost);//加费
-	}
-
 	//职业特性
-	if(mode!=4){
-		if(pl[now].occ==1) {
-			if(pl[now].cost==0){
-				if(rad()%100<80) {
-					pl[now].cost++;//浪人[拾荒]
-					pl[now].buff[0]++;
-				}
+	if(pl[now].occ==1) {
+		if(pl[now].cost==0){
+			if(rad()%100<80) {
+				pl[now].cost++;//浪人[拾荒]
+				pl[now].buff[0]++;
 			}
 		}
-		if(pl[now].occ==3){
-			pl[now].hp=min(pl[now].maxhp,pl[now].hp+8*pl[now].buff[0]);
-			pl[now].cost=min(pl[now].maxcost,pl[now].cost+pl[now].buff[0]);
-			pl[now].buff[0]=0;
-			if(rad()%100<45) pl[now].buff[0]++;
-		}//法师<★法力>标记获得费用
-		if(pl[now].occ==4) {
-			if(pl[now].def==0) pl[now].def=30;
-			pl[now].buff[0]=max(0,pl[now].buff[0]-1);
-		}//战士叠甲并清除<★疲惫>
-		if(pl[now].occ==5){
-			pl[now].cost=min(pl[now].cost+2,pl[now].maxcost);//地精每回合3费
-		}
-		if(pl[now].occ==6){
-			pl[now].cost=min(pl[now].cost+1,pl[now].maxcost);
-			int da=5*pl[now].buff[0];
-			if(da<pl[now].def) pl[now].def-=da;
-			else {
-				if(pl[now].def>0) Shake(3,1);
-				pl[now].hp-=da-pl[now].def,pl[now].def=0;
-			}
-		}//恶魔<★原罪>让自己受伤
-		if(pl[now].occ==8){
-			pl[now].hp-=15;
-			pl[now].buff[0]+=10;
-		}//鱼人扣15血获得10<★鱼仔>
-		if(pl[now].occ==11){
-			if(rad()%100<=pl[now].buff[0]) pl[now].heap[++pl[now].heapn]=lib[11][6];
-		}//剑客概率刷[强风一击]
 	}
+	if(pl[now].occ==3){
+		pl[now].hp=min(pl[now].maxhp,pl[now].hp+8*pl[now].buff[0]);
+		pl[now].cost=min(pl[now].maxcost,pl[now].cost+pl[now].buff[0]);
+		pl[now].buff[0]=0;
+		if(rad()%100<45) pl[now].buff[0]++;
+	}//法师<★法力>标记获得费用
+	if(pl[now].occ==4) {
+		if(pl[now].def==0) pl[now].def=30;
+		pl[now].buff[0]=max(0,pl[now].buff[0]-1);
+	}//战士叠甲并清除<★疲惫>
+	if(pl[now].occ==5){
+		pl[now].cost=min(pl[now].cost+2,pl[now].maxcost);//地精每回合3费
+	}
+	if(pl[now].occ==6){
+		pl[now].cost=min(pl[now].cost+1,pl[now].maxcost);
+		int da=5*pl[now].buff[0];
+		if(da<pl[now].def) pl[now].def-=da;
+		else {
+			if(pl[now].def>0) Shake(3,1);
+			pl[now].hp-=da-pl[now].def,pl[now].def=0;
+		}
+	}//恶魔<★原罪>让自己受伤
+	if(pl[now].occ==8){
+		pl[now].hp-=15;
+		pl[now].buff[0]+=10;
+	}//鱼人扣15血获得10<★鱼仔>
+	if(pl[now].occ==10){
+		pl[now].hp=max(pl[now].hp,pl[now].buff[0]);
+	}//赌徒HP回复至<★局面> 
+	if(pl[now].occ==11){
+		pl[now].hp=min(pl[now].maxhp,pl[now].hp+min(30,pl[now].buff[0])); 
+	}//剑客回复<★剑气>HP
 	
 	if(env_now==7)
 		pl[now].cost=min(pl[now].cost+1,pl[now].maxcost);//环境加费 
@@ -1566,7 +1490,7 @@ void start_turn(int now){
 	pl[now].UpdateBuff(1);
 	//buff前判
 
-	if(mode==2){
+	if(mode[4]){
 		pl[now].buff[rad()%6+1]++;
 	}//娱乐模式：随机buff
 
@@ -1577,30 +1501,10 @@ void start_turn(int now){
 		pl[now].hp=(pl[now].hp-pl[now].maxhp*0.05);
 	}//酸雨
 	//环境判断
-	if(mode==3){
-		pl[now].buff[0]+=pl[now].buff[8];
-		if(pl[now].handcard[pl[now].cardcnt].id==119) {
-			pl[now].handcard[pl[now].cardcnt].ATK+=pl[now].buff[7];
-			if(pl[now].handcard[pl[now].cardcnt].ATK>=400 && !gettre[now]) { //获得[破防]
-				for(int i=1;i<=pl[now].cardcnt-1;i++){ //不会覆盖[蓄力之击]
-					if(pl[now].used[i]) {
-						pl[now].used[i]=0;
-						gettre[now]=1;
-						pl[now].handcard[i]=lib[20][libcnt[20]+1];
-						break;
-					}
-				}
-				if(!gettre[now]){
-					pl[now].handcard[rad()%(pl[now].cardcnt-1)+1]=lib[20][libcnt[20]+1]; //不会覆盖[蓄力之击]
-					gettre[now]=1;
-				}
-			}
-		}
-	}
 }
 
 void another_player_quit(int server_mode){
-	system("cls");
+	cls();
 	SetPos(11,0);
 	printf("对方退出了游戏，他也许是投降了...\n");
 	Sleep(1500);
@@ -1608,7 +1512,7 @@ void another_player_quit(int server_mode){
 int Ask(int now){
 	int option_use=0,option_giveup=0,option_over=0,option_quit=0;
 	start_turn(now);
-	if(mode==1) treasure(now);
+	if(mode[3]) treasure(now);
 	UI(now);
 	if(Check(now)){send_gaming(void_card); return 1;}
 	//死亡判断
@@ -1626,13 +1530,10 @@ int Ask(int now){
 	}
 	pl[now].rest=pl[now].cardcnt;
 	//补充手牌
-	if(pl[now].occ==10){
-		pl[now].handcard[4]=lib[10][1];
-	}//赌徒第4张牌变为[赌局开盘] 
 	if(pl[now].occ==7){
 		pl[now].buff[10]=0;
 		for(int i=1;i<=pl[now].cardcnt;i++) 
-			if(!pl[now].used[i] && pl[now].handcard[i].id==114) pl[now].buff[10]++; //114-->[神圣意志]
+			if(!pl[now].used[i] && pl[now].handcard[i].func==42) pl[now].buff[10]++; //42-->[神圣意志]
 	}//牧师检索[神圣意志]
 	use_card=(Card){0,0,0,0,0,-2,0};
 	if(send_gaming(use_card)<0) {
@@ -1669,6 +1570,7 @@ int Ask(int now){
 			else if(cursor==i && option_giveup) SetColor(color=15),printf("×"); 
 			else if(cursor==i && option_use) SetColor(color=15),printf("●"); 
 			else SetColor(color=7),printf("  "); 
+			if(pl[now].occ==10 and pl[now].handcard[i].func==121 and pl[now].buff[0]==92) color--;
 			SetPos(7,Row+i),printf("%d",i); 
 			if(pl[now].used[i]){
 				SetColor(8);
@@ -1691,11 +1593,52 @@ int Ask(int now){
 				}
 				pl[now].handcard[i].ATK=da;
 			}
+			if(pl[now].handcard[i].func==90){
+				pl[now].handcard[i].HEAL=pl[now].buff[0]*2;
+			}
 			if(pl[now].handcard[i].func==102){
 				pl[now].handcard[i].ATK=pl[now].def*1.75;
 			}
+			if(pl[now].handcard[i].func==110){
+				if(pl[now].buff[0]%10==6 or pl[now].buff[0]/10==6) pl[now].handcard[i].MISS=0;
+				else pl[now].handcard[i].MISS=100;
+			}
+			if(pl[now].handcard[i].func==111){
+				if(pl[now].buff[0]%10==2 or pl[now].buff[0]/10==2) pl[now].handcard[i].MISS=20;
+				else if(pl[now].buff[0]%10==3 or pl[now].buff[0]/10==3) pl[now].handcard[i].MISS=20;
+				else if(pl[now].buff[0]%10==5 or pl[now].buff[0]/10==5) pl[now].handcard[i].MISS=20;
+				else if(pl[now].buff[0]%10==7 or pl[now].buff[0]/10==7) pl[now].handcard[i].MISS=20;
+				else pl[now].handcard[i].MISS=100;
+			}
+			if(pl[now].handcard[i].func==112){
+				if(pl[now].buff[0]%10==1 or pl[now].buff[0]/10==1) pl[now].handcard[i].MISS=20;
+				else pl[now].handcard[i].MISS=100;
+			}
 			if(pl[now].handcard[i].func==113){
-				pl[now].handcard[i].ATK=pl[now].buff[0]%10000;
+				if(pl[now].buff[0]%10==1 or pl[now].buff[0]/10==1) pl[now].handcard[i].MISS=20;
+				else if(pl[now].buff[0]%10==3 or pl[now].buff[0]/10==3) pl[now].handcard[i].MISS=20;
+				else if(pl[now].buff[0]%10==5 or pl[now].buff[0]/10==5) pl[now].handcard[i].MISS=20;
+				else if(pl[now].buff[0]%10==7 or pl[now].buff[0]/10==7) pl[now].handcard[i].MISS=20;
+				else if(pl[now].buff[0]%10==9 or pl[now].buff[0]/10==9) pl[now].handcard[i].MISS=20;
+				else pl[now].handcard[i].MISS=100;
+			}
+			if(pl[now].handcard[i].func==114){
+				if(pl[now].buff[0]%10==8 or pl[now].buff[0]/10==8) pl[now].handcard[i].MISS=0;
+				else pl[now].handcard[i].MISS=50;
+			}
+			if(pl[now].handcard[i].func==118){
+				pl[now].handcard[i].HEAL=pl[now].buff[0]*3;
+			}
+			if(pl[now].handcard[i].func==121){
+				if(pl[now].buff[0]==92) pl[now].handcard[i].MISS=0;
+				else pl[now].handcard[i].MISS=97;
+			}
+			if(pl[now].handcard[i].func==122){
+				if(pl[now].buff[0]%10==5 or pl[now].buff[0]/10==5) pl[now].handcard[i].MISS=0;
+				else pl[now].handcard[i].MISS=100;
+			}
+			if(pl[now].handcard[i].func==124){
+				pl[now].handcard[i].ATK=pl[now].buff[0];
 			}
 			if(pl[now].handcard[i].func==127){
 				pl[now].handcard[i].cost=pl[now].cost;
@@ -1855,7 +1798,7 @@ int Ask(int now){
 					pl[now].used[cursor]=1;
 					pl[now].rest--;
 					if(pl[now].handcard[cursor].Use(now,3-now)) extra(now,cursor);
-					if(mode!=4 && pl[now].occ==5 && rad()%100<80) {
+					if(pl[now].occ==5 && rad()%100<80) {
 						pl[now].used[cursor]=0;
 						pl[now].rest++;
 						pl[now].handcard[cursor]=pl[now].heap[(rad()%pl[now].heapn)+1];
@@ -1863,8 +1806,7 @@ int Ask(int now){
 					for(int i=1;i<=pl[now].cardcnt;i++){
 						if(pl[now].used[i]) continue;
 						if(pl[now].handcard[i].func==41) pl[now].handcard[i].ATK+=10;
-						if(pl[now].handcard[i].func==75) pl[now].handcard[i].ATK+=5;
-					}//func 41 75 增加ATK
+					}//func 41 增加ATK
 					while(pl[now].used[cursor] && cursor<=pl[now].cardcnt+1 && pl[now].rest){
 						cursor++;
 						if(cursor>pl[now].cardcnt) cursor=1;
@@ -1872,7 +1814,7 @@ int Ask(int now){
 					if(pl[now].occ==7){
 						pl[now].buff[10]=0;
 						for(int i=1;i<=pl[now].cardcnt;i++) 
-							if(!pl[now].used[i] && pl[now].handcard[i].id==114) pl[now].buff[10]++; //114-->[神圣意志]
+							if(!pl[now].used[i] && pl[now].handcard[i].func==42) pl[now].buff[10]++; //42-->[神圣意志]
 					}//牧师检索[神圣意志]
 					if(send_gaming(use_card)<0) {
 						another_player_quit(server_mode); 
@@ -1891,7 +1833,7 @@ int Ask(int now){
 				option_giveup=1;
 			}
 			else{
-				if(pl[now].occ!=6 || mode==4){
+				if(pl[now].occ!=6){
 					if(giveupcard(now,cursor)){
 						use_card=pl[now].handcard[cursor];
 						use_card.MISS=2;
@@ -1961,7 +1903,7 @@ int Ask(int now){
 				if(pl[now].occ==7){
 					pl[now].buff[10]=0;
 					for(int i=1;i<=pl[now].cardcnt;i++) 
-						if(!pl[now].used[i] && pl[now].handcard[i].id==114) pl[now].buff[10]++; //114-->[神圣意志]
+						if(!pl[now].used[i] && pl[now].handcard[i].func==42) pl[now].buff[10]++; //42-->[神圣意志]
 				}//牧师检索[神圣意志]
 				if(send_gaming(void_card)<0) {
 					another_player_quit(server_mode); 
@@ -2016,7 +1958,7 @@ int Ask(int now){
 int Ask_same(int now){
 	int option_use=0,option_giveup=0,option_over=0;
 	start_turn(now);
-	if(mode==1) treasure(now);
+	if(mode[3]) treasure(now);
 	UI(now);
 	if(Check(now)) return 0;
 	//死亡判断
@@ -2034,9 +1976,6 @@ int Ask_same(int now){
 	}
 	//补充手牌
 	pl[now].rest=pl[now].cardcnt;
-	if(pl[now].occ==10){
-		pl[now].handcard[4]=lib[10][1];
-	}//赌徒第4张牌变为[赌局开盘] 
 
 	int cursor=1;
 	SetColor(7);
@@ -2065,6 +2004,7 @@ int Ask_same(int now){
 			else if(cursor==i && option_giveup) SetColor(color=15),printf("×"); 
 			else if(cursor==i && option_use) SetColor(color=15),printf("●"); 
 			else SetColor(color=7),printf("  "); 
+			if(pl[now].occ==10 and pl[now].handcard[i].func==121 and pl[now].buff[0]==92) color--;
 			SetPos(7,Row+i),printf("%d",i); 
 			if(pl[now].used[i]){
 				SetColor(8);
@@ -2087,11 +2027,52 @@ int Ask_same(int now){
 				}
 				pl[now].handcard[i].ATK=da;
 			}
+			if(pl[now].handcard[i].func==90){
+				pl[now].handcard[i].HEAL=pl[now].buff[0]*2;
+			}
 			if(pl[now].handcard[i].func==102){
 				pl[now].handcard[i].ATK=pl[now].def*1.75;
 			}
+			if(pl[now].handcard[i].func==110){
+				if(pl[now].buff[0]%10==6 or pl[now].buff[0]/10==6) pl[now].handcard[i].MISS=0;
+				else pl[now].handcard[i].MISS=100;
+			}
+			if(pl[now].handcard[i].func==111){
+				if(pl[now].buff[0]%10==2 or pl[now].buff[0]/10==2) pl[now].handcard[i].MISS=20;
+				else if(pl[now].buff[0]%10==3 or pl[now].buff[0]/10==3) pl[now].handcard[i].MISS=20;
+				else if(pl[now].buff[0]%10==5 or pl[now].buff[0]/10==5) pl[now].handcard[i].MISS=20;
+				else if(pl[now].buff[0]%10==7 or pl[now].buff[0]/10==7) pl[now].handcard[i].MISS=20;
+				else pl[now].handcard[i].MISS=100;
+			}
+			if(pl[now].handcard[i].func==112){
+				if(pl[now].buff[0]%10==1 or pl[now].buff[0]/10==1) pl[now].handcard[i].MISS=20;
+				else pl[now].handcard[i].MISS=100;
+			}
 			if(pl[now].handcard[i].func==113){
-				pl[now].handcard[i].ATK=pl[now].buff[0]%10000;
+				if(pl[now].buff[0]%10==1 or pl[now].buff[0]/10==1) pl[now].handcard[i].MISS=20;
+				else if(pl[now].buff[0]%10==3 or pl[now].buff[0]/10==3) pl[now].handcard[i].MISS=20;
+				else if(pl[now].buff[0]%10==5 or pl[now].buff[0]/10==5) pl[now].handcard[i].MISS=20;
+				else if(pl[now].buff[0]%10==7 or pl[now].buff[0]/10==7) pl[now].handcard[i].MISS=20;
+				else if(pl[now].buff[0]%10==9 or pl[now].buff[0]/10==9) pl[now].handcard[i].MISS=20;
+				else pl[now].handcard[i].MISS=100;
+			}
+			if(pl[now].handcard[i].func==114){
+				if(pl[now].buff[0]%10==8 or pl[now].buff[0]/10==8) pl[now].handcard[i].MISS=0;
+				else pl[now].handcard[i].MISS=50;
+			}
+			if(pl[now].handcard[i].func==118){
+				pl[now].handcard[i].HEAL=pl[now].buff[0]*3;
+			}
+			if(pl[now].handcard[i].func==121){
+				if(pl[now].buff[0]==92) pl[now].handcard[i].MISS=0;
+				else pl[now].handcard[i].MISS=97;
+			}
+			if(pl[now].handcard[i].func==122){
+				if(pl[now].buff[0]%10==5 or pl[now].buff[0]/10==5) pl[now].handcard[i].MISS=0;
+				else pl[now].handcard[i].MISS=100;
+			}
+			if(pl[now].handcard[i].func==124){
+				pl[now].handcard[i].ATK=pl[now].buff[0];
 			}
 			if(pl[now].handcard[i].func==127){
 				pl[now].handcard[i].cost=pl[now].cost;
@@ -2220,7 +2201,7 @@ int Ask_same(int now){
 					pl[now].used[cursor]=1;
 					pl[now].rest--;
 					if(pl[now].handcard[cursor].Use(now,3-now)) extra(now,cursor);
-					if(mode!=4 && pl[now].occ==5 && rad()%100<80) {
+					if(pl[now].occ==5 && rad()%100<80) {
 						pl[now].used[cursor]=0;
 						pl[now].rest++;
 						pl[now].handcard[cursor]=pl[now].heap[(rad()%pl[now].heapn)+1];
@@ -2228,8 +2209,7 @@ int Ask_same(int now){
 					for(int i=1;i<=pl[now].cardcnt;i++){
 						if(pl[now].used[i]) continue;
 						if(pl[now].handcard[i].func==41) pl[now].handcard[i].ATK+=10;
-						if(pl[now].handcard[i].func==75) pl[now].handcard[i].ATK+=5;
-					}//func 41 75 增加ATK
+					}//func 41 增加ATK
 					while(pl[now].used[cursor] && cursor<=pl[now].cardcnt+1 && pl[now].rest){
 						cursor++;
 						if(cursor>pl[now].cardcnt) cursor=1;
@@ -2246,7 +2226,7 @@ int Ask_same(int now){
 				option_giveup=1;
 			}
 			else{
-				if(pl[now].occ!=6 || mode==4){
+				if(pl[now].occ!=6){
 					giveupcard(now,cursor);
 					if(rad()%2 and pl[now].occ==11)
 					{
@@ -2337,7 +2317,7 @@ int Ask_same(int now){
 
 void bot(){
 	SetColor(7,0);
-	system("cls");
+	cls();
 	SetPos(15,0);
 	printf("※ 按键设置 ※");
 	SetPos(0,1);
@@ -2413,119 +2393,95 @@ void bot(){
 
 bool Options(bool x){
 	if(x){
-		system("cls");
-		SetPos(3,2);
+		cls();
+		SetPos(6,4);
 		printf("※ 设置 Options ※");
 		int cursor=1;
-		if(server_mode!=1) cursor=0;
 		while(1){
-
-			SetPos(3,5);
-			if(cursor!=1)SetColor(7,0);
-			else SetColor(0,7);
-			printf("天气变化                                    ");
-			SetPos(27,5);
-			if(env_on==1)printf("■开");
-			else printf("关■");//天气设定
-
-			SetPos(3,7);
-			if(cursor!=2)SetColor(7,0);
-			else SetColor(0,7);
-			printf("先手玩家                                    ");
-			SetPos(27,7);
-			if(player_bgn>0)
-				printf("P%d",player_bgn);
-			else
-				printf("随机");//先手玩家设定
-
-			SetPos(3,9);
-			if(cursor!=3) SetColor(7,0);
-			else SetColor(0,7);
-			printf("游戏模式                                    ");
-			SetPos(27,9);
-			if(mode==0){
-				printf("经典模式");
-				SetPos(8,14);SetColor(7,0);
-				printf("最经典的游戏模式                                             ");
-				printf("\n\t                                          ");
+			for(int i=1;i<=5;i++)
+			{
+				SetPos(6,6+i);
+				if(cursor!=i) SetColor(7,0);
+				else SetColor(0,7);
+				if(i==1) printf("先手玩家                              ");
+				if(i==2) printf("天气变化                              ");
+				if(i==3) printf("宝藏牌                                ");
+				if(i==4) printf("娱乐：随机buff                        ");
+				if(i==5) printf("娱乐：高失误                          ");
+				SetPos(38,6+i);
+				if(i==1)
+				{
+					if(mode[1]==0) printf("随机");
+					else printf(" P%d",mode[1]);
+				}
+				else
+				{
+					if(mode[i]==1) printf("■开");
+					else printf("关■");
+				}
 			}
-			else if(mode==1){
-				printf("竞技模式：宝藏牌");
-				SetPos(8,14);SetColor(7,0);
-				printf("各职业增加宝藏牌,特殊条件下会置入手牌,每局仅1次                    ");
-				printf("\n\t                                          ");
+			SetPos(8,15);SetColor(7,0);
+			if(cursor==1){
+				printf("选择先手玩家，后手有一定补偿                          ");
+				printf("\n\t                                                  ");
 			}
-			else if(mode==2){
-				printf("欢乐模式：随机buff");
-				SetPos(8,14);SetColor(7,0);
-				printf("每回合开始时获得1回合随机buff,双方牌库中添加娱乐牌");
-				printf("\n\t所有牌ATK/HEAL/DEF降为原先的70%%          ");
+			if(cursor==2){
+				printf("天气变化将影响到战局，带给双方增益或减益              ");
+				printf("\n\t                                                  ");
 			}
-			else if(mode==3){
-				printf("竞技模式：攻防之战");
-				SetPos(8,14);SetColor(7,0);
-				printf("进攻与防守的结合,有多种胜利方式,考验玩家的操作                  ");
-				printf("\n\t                                          ");
+			if(cursor==3){
+				printf("在满足特定要求时将获得特殊的强力宝藏牌，每局仅1次     ");
+				printf("\n\t                                                  ");
 			}
-			else if(mode==4){
-				printf("欢乐模式：假面舞会");
-				SetPos(8,14);SetColor(7,0);
-				printf("每隔几个回合所有玩家的职业将随机变动,让隐藏连招成为可能             ");
-				printf("\n\t                                          ");
+			if(cursor==4){
+				printf("每回合开始时获得1回合随机buff,双方牌库中添加娱乐牌    ");
+				printf("\n\t所有牌ATK/HEAL/DEF降为原先的70%                   ");
 			}
-			else if(mode==5){
-				printf("竞技模式：热血竞技");
-				SetPos(8,14);SetColor(7,0);
-				printf("三局两胜的热血竞技,体验其他竞技模式,是时候展现你真正的实力了!             ");
-				printf("\n\t依次进行:经典模式->攻防之战->宝藏牌           ");
+			if(cursor==5){
+				printf("所有牌MISS增加25,但ATK/HEAL/DEF同时也上调25%%          ");
+				printf("\n\t                                                  ");
 			}
-			mouse(0);
-			//游戏模式设定
+			
+			
 			if(server_mode==1){
 				input=getch();
 				if(input==bottom[1] || input==UP) cursor--;
 				if(input==bottom[2] || input==DOWN) cursor++;
-				if(cursor>3) cursor=1;
-				if(cursor<1) cursor=3;
+				if(cursor>5) cursor=1;
+				if(cursor<1) cursor=5;
 				if(input==bottom[3]){
 					if(cursor==1){
-						env_on^=1;
+						mode[1]=(mode[1]+1)%3;
 					}
-					if(cursor==2){
-						player_bgn=(player_bgn+1)%3;
-					}
-					if(cursor==3){
-						mode=(mode+1)%6;
-					}
+					else mode[cursor]^=1;
 				}
 				if(input==bottom[5] || input==ENTER){
 					send_int(8255); break;
 				}
-				if(send_int(6000+env_on)<0) {
+				if(send_int(6000+cursor)<0)
+				{
 					another_player_quit(server_mode); 
 					winner=server_mode;
 					return 1;
 				}
-				if(send_int(6100+mode)<0) {
-					another_player_quit(server_mode); 
-					winner=server_mode;
-					return 1;
-				}
-				if(send_int(6200+player_bgn)<0) {
-					another_player_quit(server_mode);
-					winner=server_mode;
-					return 1;
-				}
+				for(int i=1;i<=5;i++)
+					if(send_int(6000+i*100+mode[i])<0)
+					{
+						another_player_quit(server_mode); 
+						winner=server_mode;
+						return 1;
+					}
 			}
 			else{
 				bool quit_option=0;
-				for(int i=1;i<=3;i++){
+				for(int i=0;i<=5;i++){
 					int recv_val=recv_message();
 					if(recv_val<0) {
 						another_player_quit(server_mode); 
 						winner=server_mode;
 						return 1;
 					}
+					if(recv_val/1000==6 and recv_val%1000/100==0) cursor=recv_val%100;
 					if(recv_val==8255){
 						quit_option=1; break;
 					}
@@ -2535,80 +2491,66 @@ bool Options(bool x){
 		}
 	}
 	else {
-		SetPos(3,2);
+		SetPos(6,4);
 		printf("※ 设置 Options ※");
 		int cursor=1;
 		while(1){
-			SetPos(3,5);
-			if(cursor!=1)SetColor(7,0);
-			else SetColor(0,7);
-			printf("天气变化                                    ");
-			SetPos(27,5);
-			if(env_on==1)printf("■开");
-			else printf("关■");//天气设定
-
-			SetPos(3,7);
-			if(cursor!=2)SetColor(7,0);
-			else SetColor(0,7);
-			printf("先手玩家                                    ");
-			SetPos(27,7);
-			if(player_bgn>0)
-				printf("P%d",player_bgn);
-			else
-				printf("随机");//先手玩家设定
-
-			SetPos(3,9);
-			if(cursor!=3) SetColor(7,0);
-			else SetColor(0,7);
-			printf("游戏模式                                    ");
-			SetPos(27,9);
-			if(mode==0){
-				printf("经典模式");
-				SetPos(8,14);SetColor(7,0);
-				printf("最经典的游戏模式                                             ");
-				printf("\n\t                                          ");
+			for(int i=1;i<=5;i++)
+			{
+				SetPos(6,6+i);
+				if(cursor!=i) SetColor(7,0);
+				else SetColor(0,7);
+				if(i==1) printf("先手玩家                              ");
+				if(i==2) printf("天气变化                              ");
+				if(i==3) printf("宝藏牌                                ");
+				if(i==4) printf("娱乐：随机buff                        ");
+				if(i==5) printf("娱乐：高失误                          ");
+				SetPos(38,6+i);
+				if(i==1)
+				{
+					if(mode[1]==0) printf("随机");
+					else printf(" P%d",mode[1]);
+				}
+				else
+				{
+					if(mode[i]==1) printf("■开");
+					else printf("关■");
+				}
 			}
-			else if(mode==1){
-				printf("竞技模式：宝藏牌");
-				SetPos(8,14);SetColor(7,0);
-				printf("各职业增加宝藏牌,特殊条件下会置入手牌,每局仅1次                    ");
-				printf("\n\t                                          ");
+			SetPos(8,15);SetColor(7,0);
+			if(cursor==1){
+				printf("选择先手玩家，后手有一定补偿                          ");
+				printf("\n\t                                                  ");
 			}
-			else if(mode==2){
-				printf("欢乐模式：随机buff");
-				SetPos(8,14);SetColor(7,0);
-				printf("每回合开始时获得1回合随机buff,双方牌库中添加娱乐牌                ");
-				printf("\n\t所有牌ATK/HEAL/DEF降为原先的70%%");
+			if(cursor==2){
+				printf("天气变化将影响到战局，带给双方增益或减益              ");
+				printf("\n\t                                                  ");
 			}
-			else if(mode==3){
-				printf("竞技模式：攻防之战");
-				SetPos(8,14);SetColor(7,0);
-				printf("进攻与防守的结合,有多种胜利方式,考验玩家的操作                  ");
-				printf("\n\t                                          ");
+			if(cursor==3){
+				printf("在满足特定要求时将获得特殊的强力宝藏牌，每局仅1次     ");
+				printf("\n\t                                                  ");
 			}
-			else if(mode==4){
-				printf("欢乐模式：假面舞会");
-				SetPos(8,14);SetColor(7,0);
-				printf("每隔几个回合所有玩家的职业将随机变动,让隐藏连招成为可能             ");
-				printf("\n\t                                          ");
+			if(cursor==4){
+				printf("每回合开始时获得1回合随机buff,双方牌库中添加娱乐牌    ");
+				printf("\n\t所有牌ATK/HEAL/DEF降为原先的70%                   ");
 			}
+			if(cursor==5){
+				printf("所有牌MISS增加25,但ATK/HEAL/DEF同时也上调25%%          ");
+				printf("\n\t                                                  ");
+			}
+			
 			//游戏模式设定
 			mouse(0);
 			input=getch();
 			if(input==UP || input==LEFT || input=='w' || input=='a') cursor--;
 			if(input==DOWN || input==RIGHT || input=='s' || input=='d') cursor++;
-			if(cursor>3) cursor=1;
-			if(cursor<1) cursor=3;
+			if(cursor>5) cursor=1;
+			if(cursor<1) cursor=5;
 			if(input=='z' || input=='+'){
 				if(cursor==1){
-					env_on^=1;
+					mode[1]=(mode[1]+1)%3;
 				}
-				if(cursor==2){
-					player_bgn=(player_bgn+1)%3;
-				}
-				if(cursor==3){
-					mode=(mode+1)%3;
-				}
+				else mode[cursor]^=1;
 			}
 			if(input==SPACE || input==ENTER){
 				break;
@@ -2653,6 +2595,21 @@ void Connect(){
 	printf("游戏版本: v"),printf(version);
 	SetPos(3,21);
 	printf("游戏主页: https://github.com/cyw580/CARD-GAME");
+	SetPos(3,22);
+	printf("洛谷团队: https://www.luogu.com.cn/team/72157");
+	
+	SetPos(50,6);
+	printf("v3.3.0 更新内容：");
+	SetPos(50,7);
+	printf("1.完全重做赌徒");
+	SetPos(50,8);
+	printf("2.加强剑客，并有其他数值微调");
+	SetPos(50,9);
+	printf("3.“模式”改为“选项”");
+	SetPos(50,10);
+	printf("(警告：本版本对代码修改幅度较大，");
+	SetPos(50,11);
+	printf("且未进行足够测试，可能会有 BUG 出现)"); 
 	
 	int cursor=1;
 	while(1){
@@ -2713,26 +2670,21 @@ int game(){
 		else send_int(2020);
 		send_player(pl[server_mode]);
 		recv_message();
-		if(pl[server_mode].occ!=6 || mode==4) pl[server_mode].cost=3;//初始费用设置
+		if(pl[server_mode].occ!=6) pl[server_mode].cost=3;//初始费用设置
 		if(pl[server_mode].occ==9) pl[server_mode].buff[0]=5;//盾卫初始5点荆棘 
-		if(pl[server_mode].occ==10) pl[server_mode].buff[0]=20;//赌徒初始20点筹码 
+		if(pl[server_mode].occ==10) pl[server_mode].buff[0]=rad()%100;//赌徒初始随机局面 
 		init(server_mode);//获得相应牌形成牌库
-		if(mode!=4){
-			if(pl[3-server_mode].occ==7 && pl[server_mode].occ!=7) {//获得[亵渎] 
-				pl[server_mode].heap[++pl[server_mode].heapn]=lib[7][libcnt[7]+2];
-			}
-			if(pl[3-server_mode].occ==9 && pl[server_mode].occ!=9) {//获得[防御攻破] 
-				pl[server_mode].heap[++pl[server_mode].heapn]=lib[9][libcnt[9]+1];
-			}
-			if(pl[3-server_mode].occ==11 && pl[server_mode].occ!=11){//获得[虚弱疗愈]
-				pl[server_mode].heap[++pl[server_mode].heapn]=lib[11][libcnt[11]+1];
-			}
+		if(pl[3-server_mode].occ==7 && pl[server_mode].occ!=7) {//获得[亵渎] 
+			pl[server_mode].heap[++pl[server_mode].heapn]=lib[7][libcnt[7]+2];
+		}
+		if(pl[3-server_mode].occ==9 && pl[server_mode].occ!=9) {//获得[防御攻破] 
+			pl[server_mode].heap[++pl[server_mode].heapn]=lib[9][libcnt[9]+1];
+		}
+		if(pl[3-server_mode].occ==11 && pl[server_mode].occ!=11){//获得[虚弱疗愈]
+			pl[server_mode].heap[++pl[server_mode].heapn]=lib[11][libcnt[11]+1];
 		}
 		for(int i=1;i<=pl[server_mode].cardcnt;i++) {
 			pl[server_mode].handcard[i]=pl[server_mode].heap[(rad()%pl[server_mode].heapn)+1];
-		}
-		if(mode==3){
-			pl[1].handcard[5]=pl[2].handcard[5]=(Card){0,0,0,0,0,75,119};
 		}
 		//初始发牌
 		if(server_mode==1) send_int(2010);
@@ -2743,12 +2695,12 @@ int game(){
 		SetConsoleTitle("Here we go...");
 		Sleep(1500);
 		while(_kbhit()) getch();
-		system("cls");//清屏并开始游戏
+		cls();//清屏并开始游戏
 		if(server_mode==1){
-			if(!player_bgn){
-				player_bgn=rad()%2+1;
+			if(!mode[1]){
+				mode[1]=rad()%2+1;
 			}//随机先手
-			now=player_bgn;
+			now=mode[1];
 		}
 		env_now=0;
 		char title[]="CARD GAME:Turn of P1  Turn:   ";
@@ -2764,20 +2716,11 @@ int game(){
 		if(server_mode==now) adturn=1;
 		while(!winner && !Check(now)){
 			if(!if_adv) adv(3-now),if_adv=1; //后手补偿
-			if(pl[3-now].occ==7 && pl[3-now].buff[10]==pl[3-now].cardcnt && mode!=4) {
-				system("cls");
+			if(pl[3-now].occ==7 && pl[3-now].buff[10]==pl[3-now].cardcnt) {
+				cls();
 				SetPos(13,0);
 				SetColor(14);
 				printf("对方受到了[神圣意志]的净化,你输了!");
-				Sleep(500);
-				winner=3-now;
-				break;
-			}
-			if(mode==3 && pl[3-now].buff[0]>=50) {
-				system("cls");
-				SetPos(13,0);
-				SetColor(14);
-				printf("对方建立起了绝对防线,你输了!");
 				Sleep(500);
 				winner=3-now;
 				break;
@@ -2801,25 +2744,14 @@ int game(){
 				Sleep(1500);
 				while(_kbhit()) getch();
 				appcnt=0;
-				system("cls");
-				if(mode==4){
-					if(changejob<2) changejob++;
-					else {
-						if(rad()%100<25*changejob) {
-							pl[now].occ=rad()%sumjob+1;
-							init(now);
-							changejob=0;
-						}
-						else changejob++;
-					}
-				}
+				cls();
 				if(Ask(now)==1) break;			//origin copy
 				if(pl[now].occ==7){
 					if(pl[now].cost==0) pl[now].buff[0]++;
 					pl[now].buff[10]=0;
 					for(int i=1;i<=pl[now].cardcnt;i++) 
-						if(!pl[now].used[i] && pl[now].handcard[i].id==114) pl[now].buff[10]++; //114-->[神圣意志]
-					if(pl[now].buff[10]==pl[now].cardcnt && mode!=4)  winner=now;
+						if(!pl[now].used[i] && pl[now].handcard[i].func==42) pl[now].buff[10]++; //42-->[神圣意志]
+					if(pl[now].buff[10]==pl[now].cardcnt)  winner=now;
 				}//牧师检索[神圣意志]
 				if(pl[now].occ==20){
 					if(pl[now].cost==0) {
@@ -2854,9 +2786,8 @@ int game(){
 					Check(3-now);
 				}
 				pl[now].UpdateBuff(2);
-				if(mode==3 && pl[now].buff[0]>=50) winner=now;
 				//环境变动
-				if(env_on){
+				if(mode[2]){
 					if(env_cnt>=2){
 						env_rate+=25;
 						if(rad()%100 < env_rate){
@@ -2884,10 +2815,10 @@ int game(){
 					}
 					Sleep(1500);
 					while(_kbhit()) getch();
-					system("cls");
+					cls();
 				}
-				else if(pl[now].occ==7 && pl[now].buff[10]==pl[now].cardcnt && mode!=4){ 
-					system("cls");
+				else if(pl[now].occ==7 && pl[now].buff[10]==pl[now].cardcnt){ 
+					cls();
 					SetPos(11,0);
 					SetColor(6);
 					printf("[神圣意志]洗涤了你的心灵,你直接获得了胜利!");
@@ -2899,21 +2830,8 @@ int game(){
 					}
 					Sleep(500);
 				}
-				else if(mode==3 && pl[now].buff[0]>=50){ 
-					system("cls");
-					SetPos(11,0);
-					SetColor(6);
-					printf("干得漂亮!你建立起了强大的防线");
-					now=3-now;
-					if(send_gaming(void_card)<0){
-						another_player_quit(server_mode); 
-						winner=server_mode;
-						break;
-					}
-					Sleep(500);
-				}
 				else if(winner==now){
-					system("cls");
+					cls();
 					SetPos(13,0);
 					SetColor(6);
 					printf("恭喜你击败对手获得了胜利!");
@@ -2948,40 +2866,34 @@ int game(){
 		SetConsoleTitle("Here we go...");
 		Sleep(1500);
 		while(_kbhit()) getch();
-		system("cls");//清屏并开始游戏
+		cls();//清屏并开始游戏
 
-		for(int i=1;i<=2;i++) if(pl[i].occ!=6 || mode==4) pl[i].cost=3;//初始费用设置
+		for(int i=1;i<=2;i++) if(pl[i].occ!=6) pl[i].cost=3;//初始费用设置
 		for(int i=1;i<=2;i++) if(pl[i].occ==9) pl[i].buff[0]=5;//盾卫初始5点荆棘 
-		for(int i=1;i<=2;i++) if(pl[i].occ==10) pl[i].buff[0]=20;//赌徒初始20点筹码 
+		for(int i=1;i<=2;i++) if(pl[i].occ==10) pl[i].buff[0]=rad()%100;//赌徒初始随机局面 
 		for(int x=1;x<=2;x++) {
 			init(x);//获得相应牌形成牌库
 			for(int i=1;i<=pl[x].cardcnt;i++) {
 				pl[x].handcard[i]=pl[x].heap[(rad()%pl[x].heapn)+1];
 			}
-			if(mode!=4){
-				if(pl[3-x].occ==7 && pl[x].occ!=7) {//获得[亵渎] 
-					pl[x].heap[++pl[x].heapn]=lib[7][libcnt[7]+2];
-				}
-				if(pl[3-x].occ==9 && pl[x].occ!=9) {//获得[防御攻破] 
-					pl[x].heap[++pl[x].heapn]=lib[9][libcnt[9]+1];
-				}
-				if(pl[3-x].occ==11 && pl[x].occ!=11){//获得[虚弱疗愈]
-					pl[x].heap[++pl[x].heapn]=lib[11][libcnt[11]+1];
-				}
+			if(pl[3-x].occ==7 && pl[x].occ!=7) {//获得[亵渎] 
+				pl[x].heap[++pl[x].heapn]=lib[7][libcnt[7]+2];
 			}
-		}
-
-		if(mode==3){
-			pl[1].handcard[5]=pl[2].handcard[5]=(Card){0,0,0,0,0,75,119};
+			if(pl[3-x].occ==9 && pl[x].occ!=9) {//获得[防御攻破] 
+				pl[x].heap[++pl[x].heapn]=lib[9][libcnt[9]+1];
+			}
+			if(pl[3-x].occ==11 && pl[x].occ!=11){//获得[虚弱疗愈]
+				pl[x].heap[++pl[x].heapn]=lib[11][libcnt[11]+1];
+			}
 		}
 		//初始发牌
 
-		if(!player_bgn){
-			player_bgn=rad()%2+1;
+		if(!mode[1]){
+			mode[1]=rad()%2+1;
 		}//随机先手
-		int now=player_bgn;
+		int now=mode[1];
 
-		adv(3-player_bgn);//后手补偿
+		adv(3-mode[1]);//后手补偿
 
 		env_now=0;
 
@@ -2999,23 +2911,12 @@ int game(){
 			title[29]=turn%10+'0';
 			SetConsoleTitle(title);
 			UI(now);
-			if(mode==4){
-				if(changejob<2) changejob++;
-				else {
-					if(rad()%100<25*changejob) {
-						pl[now].occ=rad()%sumjob+1;
-						init(now);
-						changejob=0;
-					}
-					else changejob++;
-				}
-			}
 			if(Ask_same(now)==1) break;
 			if(pl[now].occ==7){
 				if(pl[now].cost==0) pl[now].buff[0]++;
 				bool ssyz=1;
-				for(int i=1;i<=pl[now].cardcnt;i++) if(pl[now].used[i] || pl[now].handcard[i].id!=114) ssyz=0;
-				if(ssyz && mode!=4) winner=now;
+				for(int i=1;i<=pl[now].cardcnt;i++) if(pl[now].used[i] || pl[now].handcard[i].func!=42) ssyz=0;
+				if(ssyz) winner=now;
 			}//牧师检索[神圣意志]
 			if(pl[now].occ==20){
 				if(pl[now].cost==0) {
@@ -3051,12 +2952,12 @@ int game(){
 			}
 			if(pl[now].occ==20 && pl[now].buff[0]>=50) winner=now;
 			pl[now].UpdateBuff(2);
-			system("cls");
+			cls();
 			now++;
 			if(now>2)now=1;
 
 			//环境变动
-			if(env_on){
+			if(mode[2]){
 				if(env_cnt>=2){
 					env_rate+=25;
 					if(rad()%100 < env_rate){
@@ -3090,7 +2991,7 @@ int main(){
 		bool connect_established=0;
 		while(!connect_established){
 			connect_established=1;
-			system("cls");
+			cls();
 			Connect();
 			if(server_mode==3 || server_mode==4 || server_mode==5 || server_mode==6) break;
 			SetColor(7,0);
@@ -3106,7 +3007,7 @@ int main(){
 			}
 			if(TCP_initialize(server_mode)!=0){
 				connect_established=0;
-				system("cls");
+				cls();
 				if(server_mode==1){
 					SetColor(6);
 					printf("无法设立服务端...请检查是否有同一程序正在运行或者稍后再试...\n");
@@ -3130,7 +3031,7 @@ int main(){
 		if(server_mode==4) break;
 		if(server_mode!=3){
 			if(server_mode==1){
-				system("cls");
+				cls();
 				int qwq1,qwq2,qwq3;
 				recv_int(qwq1),recv_int(qwq2),recv_int(qwq3);
 				send_int(version1),send_int(version2),send_int(version3);
@@ -3146,10 +3047,10 @@ int main(){
 				while(_kbhit()) getch();
 				SetColor(0,7);
 				system("color 07");
-				system("cls");//清屏并切换到Choose界面
+				cls();//清屏并切换到Choose界面
 			}
 			else {
-				system("cls");
+				cls();
 				int qwq1,qwq2,qwq3;
 				send_int(version1),send_int(version2),send_int(version3);
 				recv_int(qwq1),recv_int(qwq2),recv_int(qwq3);
@@ -3164,70 +3065,23 @@ int main(){
 				while(_kbhit()) getch();
 			}
 			while(_kbhit()) getch();
-			system("cls");
+			cls();
 		}
 		else {
 			SetColor(7,0);
-			system("cls");
+			cls();
 			SetConsoleTitle("CARD GAME:Options");
 			Options(0);
 			SetColor(0,7);
 			system("color 07");
-			system("cls");//清屏并切换到Choose界面
+			cls();//清屏并切换到Choose界面
 		}
 		while(_kbhit()) getch();
-		if(mode==5){
-			fight=1,mode=0;
-			game();
-			Sleep(1200),system("cls"),UI(server_mode),showresult();
-			if(winner==server_mode) havewon++;
-			else havelost++;
-			prepare();
-			mode=3;
-			if(send_gaming(void_card)<0) {
-				another_player_quit(server_mode); 
-				winner=server_mode;
-				continue;
-			}
-			game();
-			Sleep(1200),system("cls"),UI(server_mode),showresult();
-			if(winner==server_mode) havewon++;
-			else havelost++;
-			if(havewon==2){
-				fightresult(1,server_mode);
-				continue;
-			}
-			if(havelost==2){
-				fightresult(0,server_mode);
-				continue;
-			}
-			prepare();
-			mode=1;
-			if(send_gaming(void_card)<0) {
-				another_player_quit(server_mode); 
-				winner=server_mode;
-				continue;
-			}
-			game();
-			Sleep(1200),system("cls"),UI(server_mode),showresult();
-			if(winner==server_mode) havewon++;
-			else havelost++;
-			if(havewon==2){
-				fightresult(1,server_mode);
-				continue;
-			}
-			else {
-				fightresult(0,server_mode);
-				continue;
-			}
-		}
-		else {
-			game();
-			Sleep(1200);
-			system("cls");
-			UI(server_mode);
-			showresult();
-		}
+		game();
+		Sleep(1200);
+		cls();
+		UI(server_mode);
+		showresult();
 	}
 	SetColor(7,0);
 	return 0;

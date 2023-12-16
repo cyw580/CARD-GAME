@@ -128,9 +128,8 @@ int recv_message(){
         else recv_int(env_rate);
     }
     if(command/1000==6){
-        if(command/100==60) env_on=command%100;
-        else if(command/100==61) mode=command%100;
-        else player_bgn=command%100;
+    	if(command%1000/100==0) return command;
+        mode[command%1000/100]=command%100;
     }
     if(command==8255){
         return 8255;
@@ -166,3 +165,4 @@ inline int send_gaming(Card use_card){
 // inline int recv_option(){
 
 // }
+
