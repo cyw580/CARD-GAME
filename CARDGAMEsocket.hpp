@@ -107,6 +107,7 @@ int recv_player(player &pl){
     for(int i=0;i<11;i++) return_value+=recv_int(pl.buff[i]);
     return return_value<0?-1:0;
 }
+bool converflag=false;
 int recv_message(){
     int return_val=0;
     char msg_from_client[15000]={0};
@@ -118,6 +119,18 @@ int recv_message(){
     }
     if(command/1000==3){
         if(recv_card(appcard[++appcnt])<0) return -1;
+        if(appcard[appcnt]==conver_card) converflag=1,appcnt--;
+        else
+        {
+	        int damage=appcard[appcnt].ATK;
+			if(damage>=150){//ÖØ»÷¶¯»­
+				if(damage>=3000) system("color E7");
+				else system("color 47");
+				Shake(10,1);
+				system("color 07");
+				cls();
+			}	
+		}
     }
     if(command/1000==4){
         now=command%100/10;
@@ -140,7 +153,17 @@ int recv_message(){
 
 */
 inline int recv_gaming(){
+	converflag=false;
     for(int i=1;i<=7;i++) if(recv_message()<0) return -1;
+    if(converflag)
+    {
+    	int siz=0;if(recv_int(siz)<0) return -1;
+    	string res="";
+    	for(int i=0,tmp=0;i<siz;i++)
+    		if(recv_int(tmp)<0) return -1;
+    		else res.push_back(char(tmp));
+    	Con::append(res);
+	}
     return 0;
 }
 inline int send_gaming(Card use_card){
