@@ -123,7 +123,7 @@ int recv_message(){
         else
         {
 	        int damage=appcard[appcnt].ATK;
-			if(damage>=150){//重击动画
+			if(damage>=150 and appcard[appcnt].MISS!=3){//重击动画
 				if(damage>=3000) system("color E7");
 				else system("color 47");
 				Shake(10,1);
@@ -162,7 +162,7 @@ inline int recv_gaming(){
     	for(int i=0,tmp=0;i<siz;i++)
     		if(recv_int(tmp)<0) return -1;
     		else res.push_back(char(tmp));
-    	Con::append(res);
+    	Con::append(res),cols=130;cls();
 	}
     return 0;
 }
