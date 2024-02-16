@@ -110,7 +110,6 @@ int recv_player(player &pl){
 bool converflag=false;
 int recv_message(){
     int return_val=0;
-    char msg_from_client[15000]={0};
     int command;
     if(recv_int(command)<0) return -1;
     if(command/1000==2){
@@ -123,8 +122,9 @@ int recv_message(){
         else
         {
 	        int damage=appcard[appcnt].ATK;
-			if(damage>=150 and appcard[appcnt].MISS!=3){//重击动画
+			if(damage>=150 and appcard[appcnt].MISS%10!=3){//重击动画
 				if(damage>=3000) system("color E7");
+				else if(appcard[appcnt].func==187) system("color D7");
 				else system("color 47");
 				Shake(10,1);
 				system("color 07");
@@ -141,9 +141,14 @@ int recv_message(){
         else recv_int(env_rate);
     }
     if(command/1000==6){
-    	if(command%1000/100==0) return command;
-        mode[command%1000/100]=command%100;
+    	for(int i=1;i<=40;i++)
+			if(recv_int(mode[i])<0) return -1;
+		return command;
     }
+    if(command/1000==7){
+    	winner=command%100;
+    	for(int i=1;i<=3;i++) recv_int(death[i]);
+	}
     if(command==8255){
         return 8255;
     }
@@ -154,7 +159,7 @@ int recv_message(){
 */
 inline int recv_gaming(){
 	converflag=false;
-    for(int i=1;i<=7;i++) if(recv_message()<0) return -1;
+    for(int i=1;i<=9;i++) if(recv_message()<0) return -1;
     if(converflag)
     {
     	int siz=0;if(recv_int(siz)<0) return -1;
@@ -167,19 +172,22 @@ inline int recv_gaming(){
     return 0;
 }
 inline int send_gaming(Card use_card){
-    int return_val=0;
     if(send_int(2010)<0) return -1;
     if(send_player(pl[1])<0) return -1;
     if(send_int(2020)<0) return -1;
     if(send_player(pl[2])<0) return -1;
+    if(send_int(2030)<0) return -1;
+    if(send_player(pl[3])<0) return -1;
     if(send_int(3000)<0) return -1;
     if(send_card(use_card)<0) return -1;
-    if(now==1) {if(send_int(4010)<0) return -1;}
-    else if(send_int(4020)<0) return -1;
+    if(send_int(4000+now*10)<0) return -1;
     if(send_int(5000+env_now*10)<0) return -1;
     if(send_int(5100+env_cnt)<0) return -1;
     if(send_int(5200)<0) return -1;
     if(send_int(env_rate)<0) return -1;
+    if(send_int(7000+winner)<0) return -1;
+    for(int i=1;i<=3;i++)
+    	if(send_int(death[i])<0) return -1;
     return 0;
 }
 // inline int send_option(){
