@@ -1,5 +1,6 @@
 # CARD-GAME
 一个卡牌游戏
+（注意：Windows11 请使用“控制台主机”的终端打开本游戏，也即与 Win7、Win10 类似的控制台，否则可能会产生意想不到的错误）
 
 ## 简介
 [Wiki](https://github.com/cyw580/CARD-GAME/wiki)
