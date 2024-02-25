@@ -507,7 +507,7 @@ string Card::Intro(){
 	if(func==184)return "对手[诅咒]1回合";
 	if(func==185)return "若对手有其他buff则对手[诅咒]1回合；否则对手[诅咒]4回合";
 	if(func==186)return "双方[易伤]2回合";
-	if(func==187)return "当<★癫狂>等于0时，MISS固定为0，否则为100";
+	if(func==187)return "当<★癫狂>等于0时，MISS固定为0，否则为100；对手[易伤]6回合";
 	if(func==188)return "将所有空位替换为[狂锯]";
 	if(func==189)return "-2<★理智>";
 	if(func==190)return "ATK,HEAL=<★癫狂>*15"; 
@@ -833,7 +833,9 @@ void previous(){
 	lib[50][4]=(Card){3,130,0,0,0,0,254};boss_cardkind[254]=1;
 	lib[50][5]=lib[50][1];
 	lib[50][6]=lib[50][3];
-	libcnt[50]=6;
+	for(int i=7;i<=12;i++)
+		lib[50][i]=lib[50][i-6];
+	libcnt[50]=12;
 	lib[50][libcnt[50]+1]=(Card){9,0,0,0,0,0,253};
 	funcnt[1][50]=0;
 	job[50]={2000,6,100,8};
@@ -847,18 +849,24 @@ void previous(){
 	lib[51][6]=(Card){4,0,0,0,0,176,248};boss_cardkind[248]=0;
 	lib[51][7]=(Card){5,110,0,0,10,177,249};boss_cardkind[249]=1;
 	lib[51][8]=(Card){2,0,0,0,0,179,255};boss_cardkind[255]=0;
-	libcnt[51]=8;
+	for(int i=9;i<=16;i++)
+		lib[51][i]=lib[51][i-8];
+	libcnt[51]=16;
 	funcnt[1][51]=0;
 	job[51]={1150,4,200,8};
 	
 	//小丑魔
-	lib[52][1]=(Card){0,5,0,0,5,0,263};boss_cardkind[263]=1;
-	lib[52][2]=(Card){0,230,0,0,0,187,264};boss_cardkind[264]=1;
+	lib[52][1]=(Card){0,15,0,0,5,0,263};boss_cardkind[263]=1;
+	lib[52][2]=(Card){0,0,0,0,0,187,264};boss_cardkind[264]=1;
 	lib[52][3]=(Card){2,0,0,0,0,188,265};boss_cardkind[265]=0;
-	lib[52][4]=(Card){4,0,20,20,0,189,266};boss_cardkind[266]=0;
+	lib[52][4]=(Card){4,0,50,30,0,189,266};boss_cardkind[266]=0;
 	lib[52][5]=(Card){4,0,0,20,0,190,267};boss_cardkind[267]=1;
-	lib[52][6]=(Card){3,0,110,10,10,191,268};boss_cardkind[268]=2;
-	libcnt[52]=6;
+	lib[52][6]=(Card){3,0,110,20,10,191,268};boss_cardkind[268]=2;
+	lib[52][7]=lib[52][2];
+	lib[52][8]=lib[52][3];
+	for(int i=9;i<=16;i++)
+		lib[52][i]=lib[52][i-8];
+	libcnt[52]=16;
 	funcnt[1][52]=0;
 	job[52]={1200,5,100,8}; 
 	
@@ -1243,7 +1251,7 @@ void occ_func(int x){
 		SetPos(pos1,pos2+7),printf("                                                           ");
 	}else if(x==9){
 		SetPos(pos1,pos2-1),printf("HP 420   MAX_DEF 200  手牌上限 4   ◆3/6   ");if(mode[6]==0) printf("后手:获得40DEF  ");SetColor(13);
-		SetPos(pos1,pos2+1),printf("<★荆棘> 数量与反弹伤害和溢出伤害相关,初始5点,范围在0到7间 ");SetColor(7);
+		SetPos(pos1,pos2+1),printf("<★荆棘> 数量与反弹伤害和溢出伤害相关,初始4点,范围在0到6间 ");SetColor(7);
 		SetPos(pos1,pos2+2),printf("1.[反甲] <★荆棘>*10%盾牌吸收伤害转化为真实伤害反击对手    ");
 		SetPos(pos1,pos2+3),printf("2.[过载] 100%-<★荆棘>*10%溢出的盾牌转化为真实伤害攻击对手 ");
 		SetPos(pos1,pos2+4),printf("3.[力竭] 你的非盾卫对手牌库中增加[防御攻破]牌              ");
@@ -1315,8 +1323,8 @@ void occ_func(int x){
 		SetPos(pos1,pos2+7),printf("                                                           ");
 	}else if(x==52){
 		SetPos(pos1,pos2-1),printf("HP 1200  MAX_DEF 100  手牌上限 5   ◆0/8                   ");SetColor(13);
-		SetPos(pos1,pos2+1),printf("<★癫狂> 场上每成功打出一张牌-1<★癫狂>,初始为10           ");
-		SetPos(pos1,pos2+2),printf("<★理智> <★癫狂>小于0后回复至<★理智>,初始为10            ");SetColor(7);
+		SetPos(pos1,pos2+1),printf("<★癫狂> 场上每成功打出一张牌-1<★癫狂>,初始为9           ");
+		SetPos(pos1,pos2+2),printf("<★理智> <★癫狂>小于0后回复至<★理智>,初始为9            ");SetColor(7);
 		SetPos(pos1,pos2+3),printf("1.[恐惧症] 玩家成功打出牌后有(<★癫狂>*4)%获得随机负面buff ");
 		SetPos(pos1,pos2+4),printf("2.[面具] HP小于HP上限的一半后<★癫狂>和<★理智>对玩家不可见");
 		SetPos(pos1,pos2+5),printf("3.[心灵枷锁] 玩家回合开始时随机一个卡片槽被锁定，该卡片槽的");
@@ -1449,7 +1457,7 @@ void FAQ_part1()
 	fout<<"  狂暴：回合结束时减少一层，拥有[狂暴]时牌的 ATK 翻倍。"<<endl;
 	fout<<"  虚弱：回合结束时减少一层，拥有[虚弱]时牌的 ATK 和 HEAL(负数同样生效) 变为 70%。"<<endl;
 	fout<<"  迷惑：回合结束时减少一层，拥有[迷惑]时牌的 MISS 增加 25 点。"<<endl;
-	fout<<"  易伤：回合结束时减少一层，对手手牌的 ATK 提高 ([易伤]层数*30)%。"<<endl;
+	fout<<"  易伤：回合结束时减少一层，对手手牌的 ATK 提高 ([易伤]层数*25)%。"<<endl;
 	fout<<"  诅咒：回合结束时减少一层，[诅咒]以任意方式消失时受到 150 点伤害。"<<endl;
 	fout<<"  勇者特性：勇者限定，回合结束时减少一层，拥有该 buff 时不会死亡。（该 buff 较为特殊，不能被清除buff之类的技能影响）"<<endl;
 	fout<<endl;

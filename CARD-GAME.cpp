@@ -9,8 +9,8 @@ int Tysta=0;
 
 int version1=4;
 int version2=0;
-int version3=0;
-string version="4.0.0";
+int version3=1;
+string version="4.0.1";
 
 #define UP 72
 #define DOWN 80
@@ -79,7 +79,7 @@ int Card::cal_atk(int from,int to){//计算实际攻击力
 		if(pl[from].buff[4])//虚弱
 			damage*=0.7;
 		if(pl[to].buff[7])//易伤
-			damage*=1+pl[to].buff[7]*0.3; 
+			damage*=1+pl[to].buff[7]*0.25; 
 		//Buff影响
 		if(env_now==1)//血月
 			damage*=1.2;
@@ -756,7 +756,7 @@ int Card::Special(int from,int to){
 	}
 	else if(func==100){
 		pl[from].def/=2;
-		pl[from].buff[0]=min(7,pl[from].buff[0]+2);
+		pl[from].buff[0]=min(6,pl[from].buff[0]+2);
 	}
 	else if(func==101){
 		if(damage>=pl[to].def)
@@ -1151,6 +1151,9 @@ int Card::Special(int from,int to){
 		pl[from].buff[7]+=2;
 		pl[to].buff[7]+=2;
 	}
+	else if(func==187){
+		pl[to].buff[7]+=6;
+	}
 	else if(func==188){
 		for(int i=1;i<=pl[from].cardcnt;i++){
 			if(pl[from].used[i]){
@@ -1288,6 +1291,7 @@ void init(int x){
 		for(int i=1;i<=mode[24];i++) pl[x].heap[++pl[x].heapn]=fun[3][0][1];
 	}
 }
+
 void treasure(int from,int to){//竞技模式：宝藏牌
 	if(gettre[from]) return;
 	if(pl[from].occ==1 && pl[from].buff[0]>=3)
@@ -1628,8 +1632,16 @@ int UI(){
 			if(pl[rnk].occ==52)
 			{
 				printf("★       ");SetPos(8,rnk*4);
-				if(pl[rnk].buff[0]%100==0) SetColor(14);
-				printf("★%d/%d",pl[rnk].buff[0]%100,pl[rnk].buff[0]/100%100);
+				if(pl[rnk].hp<pl[rnk].maxhp/2 and !DimlyCheck)
+				{
+					SetColor(12);printf("★[面具]");
+				}
+				else
+				{
+					if(pl[rnk].buff[0]%100==0) SetColor(14);
+					printf("★%d/%d",pl[rnk].buff[0]%100,pl[rnk].buff[0]/100%100);	
+				}
+				
 			}
 		}
 
@@ -2249,7 +2261,8 @@ void showcard(int from,int to,int cursor,int i,int option_giveup,int option_use)
 int Ask(int from,int to){
 	int option_use=0,option_giveup=0,option_over=0,option_quit=0;
 	start_turn(from,to);
-	if(chooseto<3 and death[chooseto]) chooseto=3;
+	if(mode[6]==0) chooseto=3-server_mode;
+	if(chooseto<3 and death[chooseto] and mode[6]==1) chooseto=3;
 	UI();
 	if(Check(from) and mode[6]==0){send_gaming(void_card); return 1;}
 	if(death[from] and mode[6]==1) return 0;
@@ -2608,11 +2621,12 @@ vector<pridata> boss_calpri(){
 			if(boss_cardkind[nowcard.id]==1){
 				pri+=350-(pl[to].hp*pow(0.75,pl[to].buff[2])+pl[to].def-40*pl[to].buff[1]+35*pl[to].buff[5])*0.5+(nowcard.cal_atk(3,to)-nowcard.ATK);
 				if(pl[to].occ==5) pri+=max(120-pl[to].buff[0]*6,0);
-				if(pl[to].occ==7) pri+=50;
+				if(pl[to].occ==7) pri+=100;
 				if(pl[to].occ==8) pri+=pl[to].buff[0]*3.5+min(pl[to].buff[0],(int)(nowcard.cal_atk(3,to)/3))*3.5;
 				if(pl[to].occ==9) pri+=pl[to].def*0.5+min(pl[to].def,nowcard.cal_atk(3,to))*0.5;
 				if(pl[to].occ==13 and pl[to].buff[0]/1000000!=0) pri+=min(int(pl[to].hp*1.2)+(pl[to].buff[0]/1000000)*45,0);
 				if(nowcard.cal_atk(3,to)>=pl[to].hp+pl[to].def and pl[to].occ!=13) pri+=50;
+				if(pl[3].occ==52) pri+=pl[to].buff[7]*10;
 			}
 			if(boss_cardkind[nowcard.id]==2)
 				pri+=350-(pl[3].hp*pow(0.75,pl[3].buff[2])+pl[3].def-40*pl[3].buff[1]+35*pl[3].buff[5])*0.25+(nowcard.cal_heal(3,to)-nowcard.HEAL);
@@ -2652,13 +2666,21 @@ vector<pridata> boss_calpri(){
 					pri+=300;
 			}
 			if(nowcard.id==265){
-				
+				int cnt=1;
+				for(int i=1;i<=pl[3].cardcnt;i++)
+					if(pl[3].used[i]) cnt++;
+				int maxn=pl[1].buff[7];
+				if(death[1] or (!death[2] and pl[2].buff[7]>maxn)) maxn=pl[2].buff[7];
+				pri+=cnt*(20*(1+maxn*0.25)*(1+int(pl[3].buff[3]>0)*1)*(1-int(pl[3].buff[4]>0)*0.3)*(1+int(env_now==1)*0.2)*(1-int(env_now==2)*0.2));
 			}
 			if(nowcard.id==266){
-				pri+=pl[3].buff[0]/100%100*25;
+				pri+=pl[3].buff[0]/100%100*30;
+			}
+			if(nowcard.id==267){
+				pri+=(pl[3].buff[0]%100-6)*30;
 			}
 			if(nowcard.id==268){
-				pri+=pl[3].buff[0]/100%100*10;
+				pri+=pl[3].buff[0]/100%100*8;
 			}
 			
 			if(nowcard.id==172)
@@ -2678,7 +2700,7 @@ vector<pridata> boss_calpri(){
 			pri*=(100-nowcard.cal_miss(3,to))/100.0;
 			
 			for(int i=1;i<=2;i++)
-				if(!death[i] and pl[i].occ==12 and pl[3].rest<=pl[3].cardcnt/2)
+				if(!death[i] and pl[i].occ==12 and pl[3].rest<=pl[3].cardcnt/2-1)
 					pri=-114514;
 			
 			if(nowcard.id==223)
@@ -2691,19 +2713,16 @@ vector<pridata> boss_calpri(){
 }
 
 namespace Joker{
-	int s1[15],s2[15],s3[15],s4[15],cnt,cost,buff0,buff6,thefir;
-	double maxn;
+	int s1[15],s2[15],s3[15],s4[15],cnt,cost,buff0,buff6;
+	struct two{
+		double t1;int t2;
+	};
 	struct five{
 		int n,t1,t2,t3,t4;
 	};
-	void dfs(double now,int fir)
+	two dfs()
 	{
-		if(now<=maxn) return;
-		if(buff0==0)
-		{
-			maxn=now,thefir=fir;
-			return;
-		}
+		double n1=0;int n2=0;
 		for(int i=1;i<=pl[3].cardcnt;i++)
 		{
 			if(s3[i]==1) continue;
@@ -2721,10 +2740,12 @@ namespace Joker{
 							s1[j]=s2[j]=s3[j]=s4[j]=0;
 						}
 				}
-				dfs(now*((100-min(100,thes2+int(buff6>0)*25))/100.0),((fir==0)?i:fir));
+				two res=dfs();
+				double delta=(100-min(100,thes2+int(buff6>0)*25))/100.0;
+				if(res.t1+delta>n1) n1=res.t1+delta,n2=i;
 				for(five x:pre)
 					s1[x.n]=x.t1,s2[x.n]=x.t2,s3[x.n]=x.t3,s4[x.n]=x.t4;
-				cost+=s1[i],s3[i]=0,buff0++;
+				cost+=s1[i],s3[i]=0;
 			}
 			if(s3[i]==0 or (s3[i]==-1 and cnt>1))
 			{
@@ -2732,14 +2753,16 @@ namespace Joker{
 				if(s3[i]==-1) cnt--;
 				if(s4[i]==156) buff6++;
 				s3[i]=1;
-				dfs(now,((fir==0)?(-i):fir));
+				two res=dfs();
+				if(res.t1>n1) n1=res.t1,n2=-i;
 				s3[i]=pres3,cnt=precnt,buff6=prebuff6;
 			}
 		}
+		return two{n1,n2};
 	}
 	int check()
 	{
-		cnt=maxn=thefir=0,cost=pl[3].cost,buff0=pl[3].buff[0]%100,buff6=pl[3].buff[6];
+		cnt=0,cost=pl[3].cost,buff0=pl[3].buff[0]%100,buff6=pl[3].buff[6];
 		for(int i=1;i<=pl[3].cardcnt;i++)
 			if(!pl[3].used[i])
 			{
@@ -2747,8 +2770,11 @@ namespace Joker{
 				if(pl[3].handcard[i].func==187) cnt++,s3[i]=-1;
 			}
 			else s3[i]=1;
+		if(buff0==0) return 0;
 		if(cnt==0) return 0;
-		dfs(1,0);return thefir;
+		two res=dfs();
+		if(res.t1+0.1>=buff0) return res.t2;
+		return 0;
 	}
 }//一个用于检测能不能凑出[完美谢幕]的模块。然而并不是那么完美。 
 
@@ -2800,7 +2826,17 @@ int Ask_boss(int from){
 				maxn=x[i].num;
 				kind=1,cursor=x[i].cursor,to=x[i].to;
 			}
-		if(kind==3)
+		if(kind==1 and pl[from].handcard[cursor].func==188)
+		{
+			minn=114514;
+			for(int i=0;i<x.size();i++)
+				if(((x[i].num<minn and x[i].num!=-114514) or (x[i].num==minn and rad()%2==0)) and pl[from].handcard[x[i].cursor].func!=188)
+				{
+					minn=x[i].num;
+					kind=2,cursor=x[i].cursor,to=x[i].to;
+				}
+		}
+		else if(kind==3)
 		{
 			for(int i=0;i<x.size();i++)
 				if((x[i].num<minn and x[i].num!=-114514) or (x[i].num==minn and rad()%2==0))
@@ -2929,6 +2965,8 @@ int Ask_same(int now){
 		}
 		if(cursor<=0)cursor=pl[now].cardcnt;
 		if(cursor>pl[now].cardcnt)cursor=1;//移动焦点
+		SetPos(11,Row+10);
+		printf("                                                ");
 		if(checkz(input))//使用
 		{
 			SetPos(0,1);
@@ -3399,6 +3437,14 @@ void Connect(){
 	SetPos(50,10);
 	printf("3.剑客、忍者大幅改动");
 	
+	SetPos(50,12);
+	printf("v4.0.1 更新内容：");
+	SetPos(50,13);
+	printf("1.小丑魔AI优化和强度调整");
+	SetPos(50,14);
+	printf("2.修复BUG；部分其他改动");
+	
+	
 	int cursor=1;
 	string qwqin="";
 	while(1){
@@ -3468,9 +3514,9 @@ void Connect(){
 
 void set_player_init(int from,int to){
 	if(pl[from].occ!=6 and pl[from].occ<=50) pl[from].cost=3;//初始费用设置
-	if(pl[from].occ==9) pl[from].buff[0]=5;//盾卫初始5点荆棘 
+	if(pl[from].occ==9) pl[from].buff[0]=4;//盾卫初始4点荆棘 
 	if(pl[from].occ==10) pl[from].buff[0]=rad()%100;//赌徒初始随机局面
-	if(pl[from].occ==52) pl[from].buff[0]=1010;
+	if(pl[from].occ==52) pl[from].buff[0]=909;
 	if(pl[from].occ==13){
 		int base=40;
 		if(pl[to].occ!=5 and pl[to].occ!=6 and pl[to].occ!=8) base+=10;
